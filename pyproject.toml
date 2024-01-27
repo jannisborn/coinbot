@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "coinbot"
+version = "0.0.1"
+description = "Telegram bot for coin collection"
+authors = ["jannisborn <jab@zurich.ibm.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+Flask = "^2.0.1"
+python-telegram-bot = "13.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
