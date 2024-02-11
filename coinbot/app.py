@@ -1,11 +1,13 @@
 import json
 import os
+from random import random
 
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
 from coinbot.llm import LLM, get_feature_value
 from coinbot.metadata import translate_countries
+from coinbot.utils import convert_number_to_readable
 
 # Load tokens
 with open(os.path.join(os.path.dirname(__file__), "secrets.json"), "r") as f:
@@ -17,12 +19,68 @@ with open(os.path.join(os.path.dirname(__file__), "secrets.json"), "r") as f:
 # Load data
 db = DataBase("/Users/jannisborn/Dropbox/github/telegram-coin-bot/coins.xlsm")
 
-feat_llm = LLM(
+eu_llm = LLM(
     model="Open-Orca/Mistral-7B-OpenOrca",
     token=anyscale_token,
-    task_prompt="From the below, extract 3 features, Country, value and Year. Use a colon (:) before each feature value",
+    task_prompt="You are a feature extractor! Extract 3 features, Country, value and Year. Use a colon (:) before each feature value",
     temperature=0.0,
 )
+ger_llm = LLM(
+    model="Open-Orca/Mistral-7B-OpenOrca",
+    token=anyscale_token,
+    task_prompt=(
+        "You are a feature extractor! Extract 4 features, Country, value, year and source. The source is given as single character, A, D, F, G or J. "
+        "Use a colon (:) before each feature value"
+    ),
+    temperature=0.0,
+)
+joke_llm = LLM(
+    model="Open-Orca/Mistral-7B-OpenOrca",
+    token=anyscale_token,
+    task_prompt=(
+        "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
+    ),
+    temperature=0.0,
+)
+language_llm = LLM(
+    model="mlabonne/NeuralHermes-2.5-Mistral-7B",
+    token=anyscale_token,
+    task_prompt=(
+        "Detect the language of the text. NOTE: The text contains the NAME of a country. This name is NOT the language. Most importantly: Reply with ONE word only"
+    ),
+    temperature=0.0,
+)
+
+
+def return_message(update, text: str, language: str):
+    if language == "english":
+        update.message.reply_text(text)
+    else:
+        translate_llm = LLM(
+            model="Open-Orca/Mistral-7B-OpenOrca",
+            token=anyscale_token,
+            task_prompt=(
+                f"You are a translation tool. Translate the following into {language} but be colloquial and use emojis. Translate numerals literally, e.g., `8.720 million` --> `8.72 Millionen`"
+            ),
+            temperature=0.0,
+        )
+        print("Translate", text, language)
+        translated_text = translate_llm(text)
+        update.message.reply_text(translated_text)
+
+
+def get_tuple(country: str, value: str, year: int, source: str):
+    if country == "deutschland":
+        return f"({country}, {year}, {source}, {value})"
+    else:
+        return f"({country}, {year}, {value})"
+
+
+def update_response_with_amount(response, amount_raw):
+    if amount_raw == 0:
+        return response
+    amount = convert_number_to_readable(amount_raw)
+    return f"{response}\n\n (Coin was minted {amount} times)"
 
 
 def search_coin_in_db(update, context):
@@ -31,35 +89,68 @@ def search_coin_in_db(update, context):
         # Parse the message
         message = update.message.text
 
-        output = feat_llm(message)
+        language = language_llm(message).lower()
+
+        if random() < 0.001:
+            output = joke_llm(message)
+            return_message(update, output, language)
+            return
+
+        if "germany" in message.lower() or "deutschland" in message.lower():
+            output = ger_llm(message)
+            source = get_feature_value(output, "Source").lower()
+        else:
+            output = eu_llm(message)
+            source = None
+        print("LLM says", output, "\n")
         c = get_feature_value(output, "Country")
         value = get_feature_value(output, "Value").lower()
+        value = value.replace("€", " euro").replace("  ", " ")
         year = int(get_feature_value(output, "Year"))
         country = translate_countries[c] if c in translate_countries.keys() else c
-        country = country.capitalize()
-
-        # TODO: Integrate more DFs
+        country = country.lower()
 
         # Search in the dataframe
-        coin_status = db.eu_df[
-            (db.eu_df["Country"] == country)
-            & (db.eu_df["Coin Value"] == value)
-            & (db.eu_df["Year"] == year)
-        ]["Status"].values
-        print(coin_status)
+        print(country, value, year, source)
+
+        coin_df = db.df[
+            (db.df["Country"] == country)
+            & (db.df["Coin Value"] == value)
+            & (db.df["Year"] == year)
+            & (
+                ((db.df["Country"] == "deutschland") & (db.df["Source"] == source))
+                | ((db.df["Country"] != "deutschland") & (db.df["Source"].isna()))
+            )
+        ]
+        print(coin_df, len(coin_df))
+
+        match = get_tuple(country, value, year, source)
 
         # Respond to the user
-        if coin_status.size > 0:
-            response = (
-                f"The status of {value} from {country} in {year} is: {coin_status[0]}"
-            )
-        else:
-            response = "Coin not found."
+        if len(coin_df) == 0:
+            response = f"🤷🏻‍♂️ The coin {match} was not found. Check your prompt!🧐"
+            return_message(update, response, language)
+            return
 
-        update.message.reply_text(response)
+        coin_status = coin_df["Status"].values[0]
+        if coin_status == "unavailable":
+            response = f"🤯 The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
+        elif coin_status == "missing":
+            response = f"🚀🎉 The coin {match} is missing! Please keep it safe 🤩"
+            amount_raw = coin_df["Amount"].values[0]
+            response = update_response_with_amount(response, amount_raw)
+        elif coin_status == "collected":
+            response = f"😢 The coin {match} was already collected 😢"
+            amount_raw = coin_df["Amount"].values[0]
+            response = update_response_with_amount(response, amount_raw)
+        else:
+            response = "❓Coin not found."
+
+        return_message(update, response, language)
 
     except Exception as e:
-        update.message.reply_text(f"An error occurred: {e}")
+        response = f"An error occurred: {e}"
+        return_message(update, response, language)
 
 
 def main():
