@@ -17,7 +17,7 @@ with open(os.path.join(os.path.dirname(__file__), "secrets.json"), "r") as f:
 
 
 # Load data
-db = DataBase(os.path.join(os.path.dirnam(os.path.dirname(__file__)), "coins.xlsm"))
+db = DataBase(os.path.join(os.path.dirname(os.path.dirname(__file__)), "coins.xlsm"))
 
 eu_llm = LLM(
     model="Open-Orca/Mistral-7B-OpenOrca",
