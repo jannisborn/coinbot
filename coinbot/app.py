@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 from coinbot.db import DataBase
 from coinbot.llm import LLM, get_feature_value
 from coinbot.metadata import translate_countries
-from coinbot.utils import large_int_to_readable
+from coinbot.utils import large_int_to_readable, log_to_csv
 
 missing_hints = ["feature", "missing", "provided", "not"]
 
@@ -54,7 +54,9 @@ language_llm = LLM(
 )
 
 
-def return_message(update, text: str, language: str, amount: int = 0):
+def return_message(
+    update, text: str, language: str, amount: int = 0, org_msg: str = ""
+):
     if amount > 0:
         number_text = large_int_to_readable(amount * 1000)
         text = f"{text}\n\n(Coin was minted {number_text} times)"
@@ -71,8 +73,10 @@ def return_message(update, text: str, language: str, amount: int = 0):
             temperature=0.0,
         )
 
-        translated_text = translate_llm(text)
-        update.message.reply_text(translated_text)
+        text = translate_llm(text)
+        update.message.reply_text(text)
+
+    log_to_csv(org_msg, text)
 
 
 def get_tuple(country: str, value: str, year: int, source: str):
@@ -93,7 +97,7 @@ def search_coin_in_db(update, context):
 
         if random() < 0.001:
             output = joke_llm(message)
-            return_message(update, output, language)
+            return_message(update, output, language, org_msg=message)
             return
 
         if "germany" in message.lower() or "deutschland" in message.lower():
@@ -109,6 +113,7 @@ def search_coin_in_db(update, context):
                     text=output
                     + "\nYou need to provide the features `year`, `country`, `coin value` and `mint location` (A, D, F, G or J)",
                     language=language,
+                    org_msg=message,
                 )
                 return
 
@@ -123,6 +128,7 @@ def search_coin_in_db(update, context):
                     text=output
                     + "\nYou need to provide the features `year`, `country` and `coin value`",
                     language=language,
+                    org_msg=message,
                 )
                 return
             source = None
@@ -150,12 +156,13 @@ def search_coin_in_db(update, context):
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ The coin {match} was not found. Check your input 🧐"
             print(f"Returns: {response}\n")
-            return_message(update, response, language)
+            return_message(update, response, language, org_msg=message)
             return
 
         coin_status = coin_df["Status"].values[0]
         if coin_status == "unavailable":
             response = f"🤯 The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
+            amount = 0
         elif coin_status == "missing":
             response = f"🚀🎉 The coin {match} is not yet in the collection 🤩"
             amount = coin_df["Amount"].values[0]
@@ -167,11 +174,11 @@ def search_coin_in_db(update, context):
 
         res = response.split("\n")[0]
         print(f"Returns: {res}\n")
-        return_message(update, response, language, amount=amount)
+        return_message(update, response, language, amount=amount, org_msg=message)
 
     except Exception as e:
         response = f"An error occurred: {e}"
-        return_message(update, response, language)
+        return_message(update, response, language, org_msg=message)
 
 
 def main():

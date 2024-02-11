@@ -1,3 +1,8 @@
+import csv
+import os
+from datetime import datetime
+
+
 def convert_to_thousands(value) -> int:
     if isinstance(value, int):
         return value / 1000  # Convert to thousands if it's an integer
@@ -28,3 +33,31 @@ def large_int_to_readable(n):
         readable = f"{rounded} Thousand"
 
     return readable
+
+
+# Define a function to log messages to CSV
+def log_to_csv(input_text: str, output_text: str):
+    """
+    Logs the input message, output message, and date to a CSV file.
+
+    Parameters:
+        date: The current date when the log entry is made.
+        input_text: The text message received from the user.
+        output_text: The text message sent as a response.
+    """
+    file_path = "messages.csv"
+    # Check if file exists to decide on writing headers
+    file_exists = os.path.isfile(file_path)
+    with open(file_path, "a", newline="", encoding="utf-8") as csvfile:
+        fieldnames = ["date", "input", "output"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()  # Write headers only if file doesn't exist
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        writer.writerow(
+            {
+                "date": current_date,
+                "input": input_text.replace("\n", " "),
+                "output": output_text.replace("\n", " "),
+            }
+        )
