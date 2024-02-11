@@ -7,20 +7,24 @@ def convert_to_thousands(value) -> int:
         return -1  # Default to -1 for non-integer strings
 
 
-def convert_number_to_readable(number):
-    """
-    Converts a number to a human-readable format, using the most appropriate
-    unit such as 'thousand', 'million', or 'billion'.
-    """
-    if number < 1:
-        # For numbers less than 1 thousand, convert to hundreds
-        return f"{(number * 1000):.3f} hundred"
-    elif number < 1000:
-        # For numbers less than 1 million (but more than or equal to 1 thousand), keep as thousand
-        return f"{number:.3f} thousand"
-    elif number < 1000000:
-        # For numbers less than 1 billion (but more than or equal to 1 million), convert to million
-        return f"{(number / 1000):.3f} million"
-    else:
-        # For numbers more than or equal to 1 billion, convert to billion
-        return f"{(number / 1000000):.3f} billion"
+def large_int_to_readable(n):
+    # Values will always be above one thousand
+    billion = n // 1000000000
+    million = (n % 1000000000) // 1000000
+    thousand = (n % 1000000) // 1000
+
+    # Round the numbers
+    if billion > 0:
+        # If there are billions, round to the nearest billion
+        rounded = round(n / 1000000000)
+        readable = f"{rounded} Billion"
+    elif million > 0:
+        # If there are millions, round to the nearest million
+        rounded = round(n / 1000000)
+        readable = f"{rounded} Million"
+    elif thousand > 0:
+        # If there are thousands, round to the nearest thousand
+        rounded = round(n / 1000)
+        readable = f"{rounded} Thousand"
+
+    return readable
