@@ -64,7 +64,6 @@ def return_message(update, text: str, language: str):
             ),
             temperature=0.0,
         )
-        print("Translate", text, language)
         translated_text = translate_llm(text)
         update.message.reply_text(translated_text)
 
@@ -88,6 +87,7 @@ def search_coin_in_db(update, context):
     try:
         # Parse the message
         message = update.message.text
+        print("Received: ", message)
 
         language = language_llm(message).lower()
 
@@ -102,7 +102,6 @@ def search_coin_in_db(update, context):
         else:
             output = eu_llm(message)
             source = None
-        print("LLM says", output, "\n")
         c = get_feature_value(output, "Country")
         value = get_feature_value(output, "Value").lower()
         value = value.replace("€", " euro").replace("  ", " ")
@@ -111,8 +110,6 @@ def search_coin_in_db(update, context):
         country = country.lower()
 
         # Search in the dataframe
-        print(country, value, year, source)
-
         coin_df = db.df[
             (db.df["Country"] == country)
             & (db.df["Coin Value"] == value)
@@ -122,13 +119,13 @@ def search_coin_in_db(update, context):
                 | ((db.df["Country"] != "deutschland") & (db.df["Source"].isna()))
             )
         ]
-        print(coin_df, len(coin_df))
 
         match = get_tuple(country, value, year, source)
 
         # Respond to the user
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ The coin {match} was not found. Check your prompt!🧐"
+            print(f"Returns: {response}\n")
             return_message(update, response, language)
             return
 
@@ -146,6 +143,7 @@ def search_coin_in_db(update, context):
         else:
             response = "❓Coin not found."
 
+        print(f"Returns: {response}\n")
         return_message(update, response, language)
 
     except Exception as e:
