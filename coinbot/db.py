@@ -96,7 +96,7 @@ class DataBase:
 
                         status = self.cell_status(cell)
                         data.append(
-                            ["Deutschland", year, source, coin_value, amount, status]
+                            ["Germany", year, source, coin_value, amount, status]
                         )
 
         # Create DataFrame from data

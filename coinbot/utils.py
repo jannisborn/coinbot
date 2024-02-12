@@ -83,3 +83,10 @@ def contains_germany(sentence: str, threshold: int = 80):
         if score >= threshold:
             return True
     return False
+
+
+def get_tuple(country: str, value: str, year: int, source: str):
+    if country == "germany":
+        return f"({country}, {year}, {source.upper()}, {value})"
+    else:
+        return f"({country}, {year}, {value})"
