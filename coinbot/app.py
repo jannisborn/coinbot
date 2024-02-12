@@ -7,7 +7,7 @@ from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 from coinbot.db import DataBase
 from coinbot.llm import LLM, get_feature_value
 from coinbot.metadata import translate_countries
-from coinbot.utils import large_int_to_readable, log_to_csv
+from coinbot.utils import contains_germany, large_int_to_readable, log_to_csv
 
 missing_hints = ["feature", "missing", "provided", "not"]
 
@@ -100,7 +100,7 @@ def search_coin_in_db(update, context):
             return_message(update, output, language, org_msg=message)
             return
 
-        if "germany" in message.lower() or "deutschland" in message.lower():
+        if contains_germany(message, threshold=99):
             output = ger_llm(message)
             if any([x in output.lower() for x in missing_hints]) or any(
                 [
@@ -138,6 +138,7 @@ def search_coin_in_db(update, context):
         year = int(get_feature_value(output, "Year"))
         country = translate_countries[c] if c in translate_countries.keys() else c
         country = country.lower()
+        print("LLM says", output)
 
         # Search in the dataframe
         coin_df = db.df[

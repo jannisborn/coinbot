@@ -71,3 +71,32 @@ translate_countries = {
 }
 
 countries = eurozone + euro_users
+
+
+germany = [
+    "Germany",
+    "Deutschland",
+    "Allemagne",
+    "Alemania",
+    "Germania",
+    "Германия",
+    "Tyskland",
+    "Saksa",
+    "Németország",
+    "Niemcy",
+    "Duitsland",
+    "Tyskland",
+    "Germanio",
+    "Vācija",
+    "Vokietija",
+    "Saksamaa",
+    "Njemačka",
+    "Німеччина",
+    "Německo",
+    "Германија",
+    "Németország",
+    "Tedesco",
+    "Alemanha",
+    "Germanija",
+    "Германия",
+]

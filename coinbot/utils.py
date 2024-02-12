@@ -2,6 +2,10 @@ import csv
 import os
 from datetime import datetime
 
+from thefuzz import process as fuzzysearch
+
+from coinbot.metadata import germany
+
 
 def convert_to_thousands(value) -> int:
     if isinstance(value, int):
@@ -35,7 +39,6 @@ def large_int_to_readable(n):
     return readable
 
 
-# Define a function to log messages to CSV
 def log_to_csv(input_text: str, output_text: str):
     """
     Logs the input message, output message, and date to a CSV file.
@@ -61,3 +64,22 @@ def log_to_csv(input_text: str, output_text: str):
                 "output": output_text.replace("\n", " "),
             }
         )
+
+
+def contains_germany(sentence: str, threshold: int = 80):
+    """
+    Checks if a sentence contains the word "Germany" in any language, using fuzzy matching.
+
+    Parameters:
+        sentence: The sentence to check.
+        threshold : The minimum score to consider a match (default is 80).
+
+    Returns:
+        bool: True if "Germany" is detected in any language, False otherwise.
+    """
+    words = sentence.split()
+    for word in words:
+        match, score = fuzzysearch.extract(word, germany, limit=1)[0]
+        if score >= threshold:
+            return True
+    return False
