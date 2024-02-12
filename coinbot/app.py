@@ -31,7 +31,7 @@ ger_llm = LLM(
     model="Open-Orca/Mistral-7B-OpenOrca",
     token=anyscale_token,
     task_prompt=(
-        "You are a feature extractor! Extract 4 features, Country, value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`"
+        "You are a feature extractor! Extract 4 features, Country, value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
         "Use a colon (:) before each feature value"
     ),
     temperature=0.0,
@@ -48,7 +48,15 @@ language_llm = LLM(
     model="mlabonne/NeuralHermes-2.5-Mistral-7B",
     token=anyscale_token,
     task_prompt=(
-        "Detect the language of the text. NOTE: The text contains the NAME of a country. This name is NOT the language. Most importantly: Reply with ONE word only"
+        "You are a language classifier. NOTE: The text contains the NAME of a country. But the name is NOT the language. It's a trick question! Most importantly: Reply with ONE word only"
+    ),
+    temperature=0.0,
+)
+to_german_llm = LLM(
+    model="Open-Orca/Mistral-7B-OpenOrca",
+    token=anyscale_token,
+    task_prompt=(
+        "Translate to the German name of the country. Be concise, only one word!"
     ),
     temperature=0.0,
 )
@@ -136,8 +144,8 @@ def search_coin_in_db(update, context):
         value = get_feature_value(output, "Value").lower()
         value = value.replace("€", " euro").replace("  ", " ")
         year = int(get_feature_value(output, "Year"))
-        country = translate_countries[c] if c in translate_countries.keys() else c
-        country = country.lower()
+        country = to_german_llm(c)
+        country = country.lower().strip()
         print("LLM says", output)
 
         # Search in the dataframe
