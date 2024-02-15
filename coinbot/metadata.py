@@ -18,33 +18,30 @@ coin_values = [
 ]
 
 eurozone = [
-    "Belgien",  # Belgium
-    "Deutschland",  # Germany
-    "Estland",  # Estonia
-    "Finnland",  # Finland
-    "Frankreich",  # France
-    "Griechenland",  # Greece
-    "Irland",  # Ireland
-    "Italien",  # Italy
-    "Kroatien",  # Croatia
-    "Lettland",  # Latvia
-    "Litauen",  # Lithuania
-    "Luxemburg",  # Luxembourg
-    "Malta",  # Malta
-    "Niederlande",  # Netherlands
-    "Österreich",  # Austria
-    "Portugal",  # Portugal
-    "Slowakei",  # Slovakia
-    "Slowenien",  # Slovenia
-    "Spanien",  # Spain
-    "Zypern",  # Cyprus
+    "Belgium",
+    "Germany",
+    "Estonia",
+    "Finland",
+    "France",
+    "Greece",
+    "Ireland",
+    "Italy",
+    "Croatia",
+    "Latvia",
+    "Lithuania",
+    "Luxembourg",
+    "Malta",
+    "Netherlands",
+    "Austria",
+    "Portugal",
+    "Slovakia",
+    "Slovenia",
+    "Spain",
+    "Cyprus",
 ]
 
 # To include countries that use the Euro but are not part of the Eurozone, you might add:
-euro_users = [
-    "Monaco",
-    "Vatikan",  # Vatican City
-]
+euro_users = ["Monaco", "Vatican"]
 translate_countries = {
     "Belgium": "Belgien",
     "Germany": "Deutschland",
@@ -71,3 +68,32 @@ translate_countries = {
 }
 
 countries = eurozone + euro_users
+
+
+germany = [
+    "Germany",
+    "Deutschland",
+    "Allemagne",
+    "Alemania",
+    "Germania",
+    "Германия",
+    "Tyskland",
+    "Saksa",
+    "Németország",
+    "Niemcy",
+    "Duitsland",
+    "Tyskland",
+    "Germanio",
+    "Vācija",
+    "Vokietija",
+    "Saksamaa",
+    "Njemačka",
+    "Німеччина",
+    "Německo",
+    "Германија",
+    "Németország",
+    "Tedesco",
+    "Alemanha",
+    "Germanija",
+    "Германия",
+]

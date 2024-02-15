@@ -14,8 +14,9 @@ class DataBase:
         self.sonder_sheet = self.wb["Sondermünzen"]
 
         self.eu_df = self.setup_eu_dataframe()
-
-        # TODO: Setup the Deutschland and Sondermünzen dataframes
+        self.ger_df = self.setup_ger_dataframe()
+        self.df = pd.concat([self.eu_df, self.ger_df])
+        self.df = self.df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
 
     def cell_status(self, cell):
         """Determine the collection status based on the cell color."""
@@ -63,6 +64,44 @@ class DataBase:
         df = pd.DataFrame(
             data, columns=["Country", "Year", "Coin Value", "Amount", "Status"]
         )
+        df["Amount"] = df["Amount"].apply(convert_to_thousands).astype(int)
+        df["Coin Value"] = df["Coin Value"].str.lower()
+        return df
+
+    def setup_ger_dataframe(self):
+        """Setup a dataframe for the Deutschland (Germany) sheet."""
+        data = []
+        rows = list(self.deutschland_sheet.iter_rows(min_row=1))
+
+        # Define the start row for each 5-year block
+        year_blocks = {2002: 0, 2007: 12, 2012: 24, 2017: 36, 2022: 48}
+
+        for start_year, year_row in year_blocks.items():
+            source_row = year_row + 1
+            coin_value_rows = range(source_row + 1, source_row + 9)
+
+            for year_idx in range(5):  # For each year in the block
+                year = start_year + year_idx
+                # Extract prägestätte marks and associate with years
+                source_cell = rows[source_row][year_idx * 5 + 1 : year_idx * 5 + 6]
+                sources = [cell.value for cell in source_cell]
+
+                for value_idx, coin_row in enumerate(coin_value_rows):
+                    coin_value = coin_values[value_idx]
+                    for source_idx, source in enumerate(sources):
+                        cell = rows[coin_row][year_idx * 5 + 1 + source_idx]
+                        amount = (
+                            cell.value if cell.value not in [None, "---", "???"] else 0
+                        )
+
+                        status = self.cell_status(cell)
+                        data.append(
+                            ["Germany", year, source, coin_value, amount, status]
+                        )
+
+        # Create DataFrame from data
+        df = pd.DataFrame(data)
+        df.columns = ["Country", "Year", "Source", "Coin Value", "Amount", "Status"]
         df["Amount"] = df["Amount"].apply(convert_to_thousands).astype(int)
         df["Coin Value"] = df["Coin Value"].str.lower()
         return df
