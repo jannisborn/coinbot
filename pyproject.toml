@@ -17,6 +17,7 @@ requests = "^2.31.0"
 thefuzz = "^0.22.1"
 countrynames = "^1.15.3"
 pycountry = "^23.12.11"
+loguru = "^0.7.2"
 
 [build-system]
 requires = ["poetry-core"]
