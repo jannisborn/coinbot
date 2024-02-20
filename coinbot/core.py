@@ -1,8 +1,11 @@
 import json
 import os
+import threading
 from collections import defaultdict
 from random import random
 
+import requests
+from loguru import logger
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
@@ -11,7 +14,7 @@ from coinbot.utils import contains_germany, get_tuple, large_int_to_readable, lo
 
 
 class CoinBot:
-    def __init__(self, database: DataBase, telegram_token: str, anyscale_token: str):
+    def __init__(self, public_link: str, telegram_token: str, anyscale_token: str):
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
         self.anyscale_token = anyscale_token
@@ -32,9 +35,48 @@ class CoinBot:
         self.dp.add_handler(
             MessageHandler(Filters.text & (~Filters.command), self.handle_text_message)
         )
+
+        self.filepath = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "coins.xlsm"
+        )
+        self.public_link = public_link
+        self.fetch_file(link=public_link)
+        self.db = DataBase(self.filepath)
+
         self.set_llms()
 
-        self.db = database
+    def fetch_file(self, link: str):
+        """
+        Download a file from a given path and save to `self.filepath`.
+
+        Args:
+            link: The public link from which to download the file
+        """
+        response = requests.get(link)
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Write the content of the response to a file
+            with open(self.filepath, "wb") as f:
+                f.write(response.content)
+            logger.debug(f"File downloaded successfully from {link}")
+        else:
+            logger.warning(f"Failed to download file from {link}")
+
+    def start_periodic_reload(self, interval: int = 3600):
+        """Starts the periodic reloading of data."""
+        self.reload_data()
+        # Set up a timer to call this method again after `interval` seconds
+        threading.Timer(interval, self.start_periodic_reload, [interval]).start()
+
+    def reload_data(self):
+        """Fetches the file and re-initializes the database."""
+        logger.info("Reloading data...")
+        try:
+            self.fetch_file(link=self.public_link)
+            self.db = DataBase(self.filepath)
+            logger.info("Data reloaded successfully.")
+        except Exception as e:
+            logger.error(f"Failed to reload data: {e}")
 
     def collecting_language(self, update, context) -> bool:
         user_id = update.message.from_user.id
@@ -213,7 +255,8 @@ class CoinBot:
             self.return_message(update, response)
 
     def run(self):
-        print("Starting bot")
+        logger.info("Starting bot")
+        self.start_periodic_reload()
         self.updater.start_polling()
         self.updater.idle()
 
