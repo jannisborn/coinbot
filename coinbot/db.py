@@ -16,7 +16,7 @@ class DataBase:
         self.eu_df = self.setup_eu_dataframe()
         self.ger_df = self.setup_ger_dataframe()
         self.df = pd.concat([self.eu_df, self.ger_df])
-        self.df = self.df.applymap(lambda x: x.lower() if isinstance(x, str) else x)
+        self.df = self.df.map(lambda x: x.lower() if isinstance(x, str) else x)
 
     def cell_status(self, cell):
         """Determine the collection status based on the cell color."""
