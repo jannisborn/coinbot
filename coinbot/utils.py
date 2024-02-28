@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 from datetime import datetime
 
 from thefuzz import process as fuzzysearch
@@ -72,7 +73,7 @@ def contains_germany(sentence: str, threshold: int = 80):
 
     Parameters:
         sentence: The sentence to check.
-        threshold : The minimum score to consider a match (default is 80).
+        threshold: The minimum score to consider a match (default is 80).
 
     Returns:
         bool: True if "Germany" is detected in any language, False otherwise.
@@ -90,3 +91,17 @@ def get_tuple(country: str, value: str, year: int, source: str):
         return f"({country}, {year}, {source.upper()}, {value})"
     else:
         return f"({country}, {year}, {value})"
+
+
+def string_to_bool(input_string: str) -> bool:
+    # Remove all non-alphabetic characters and convert to lowercase
+    cleaned_string = re.sub(r"[^a-zA-Z]", "", input_string).lower()
+
+    # Check if the cleaned string represents a true or false value
+    if cleaned_string == "true":
+        return True
+    elif cleaned_string == "false":
+        return False
+    else:
+        # Handle the case where the string does not represent a boolean
+        raise ValueError("Input string does not represent a boolean value")
