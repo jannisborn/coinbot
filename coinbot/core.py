@@ -14,7 +14,7 @@ from coinbot.utils import (
     get_tuple,
     large_int_to_readable,
     log_to_csv,
-    string_to_bool,
+    sane_no_country,
 )
 
 
@@ -152,7 +152,7 @@ class CoinBot:
 
     def handle_text_message(self, update, context):
 
-        if random() < 0.001:
+        if random() < 0.005:
             output = self.joke_llm(update.message.text)
             self.return_message(update, output)
             return
@@ -175,7 +175,7 @@ class CoinBot:
             message = update.message.text
             logger.debug(f"Received: {message}")
 
-            if string_to_bool(self.ommitted_country_llm(message)):
+            if sane_no_country(message):
                 message += " Germany "
 
             if contains_germany(message, threshold=99):
@@ -292,21 +292,13 @@ class CoinBot:
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
-            temperature=0.0,
+            temperature=0.6,
         )
         self.to_english_llm = LLM(
             model="Open-Orca/Mistral-7B-OpenOrca",
             token=self.anyscale_token,
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
-            ),
-            temperature=0.0,
-        )
-        self.ommitted_country_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
-            token=self.anyscale_token,
-            task_prompt=(
-                "Does this string contain the value of a coin AND a year AND a single character? Reply with a single word, either `True` or `False`."
             ),
             temperature=0.0,
         )
