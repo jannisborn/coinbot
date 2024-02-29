@@ -1,4 +1,3 @@
-import json
 import os
 import threading
 from collections import defaultdict
@@ -10,7 +9,13 @@ from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
 from coinbot.llm import LLM, get_feature_value
-from coinbot.utils import contains_germany, get_tuple, large_int_to_readable, log_to_csv
+from coinbot.utils import (
+    contains_germany,
+    get_tuple,
+    large_int_to_readable,
+    log_to_csv,
+    sane_no_country,
+)
 
 
 class CoinBot:
@@ -147,7 +152,7 @@ class CoinBot:
 
     def handle_text_message(self, update, context):
 
-        if random() < 0.001:
+        if random() < 0.005:
             output = self.joke_llm(update.message.text)
             self.return_message(update, output)
             return
@@ -168,7 +173,10 @@ class CoinBot:
 
             # Parse the message
             message = update.message.text
-            print("Received: ", message)
+            logger.debug(f"Received: {message}")
+
+            if sane_no_country(message):
+                message += " Germany "
 
             if contains_germany(message, threshold=99):
                 output = self.ger_llm(message)
@@ -181,7 +189,7 @@ class CoinBot:
                     self.return_message(
                         update,
                         text=output
-                        + "\nYou need to provide the features `year`, `country`, `coin value` and `mint location` (A, D, F, G or J)",
+                        + "\nFor a German coin, you need to provide the features `year`, `country`, `coin value` and `mint location` (A, D, F, G or J)",
                     )
                     return
 
@@ -202,7 +210,7 @@ class CoinBot:
             value = get_feature_value(output, "Value").lower()
             value = value.replace("€", " euro").replace("  ", " ")
             year = int(get_feature_value(output, "Year"))
-            country = self.to_german_llm(c)
+            country = self.to_english_llm(c)
             country = country.capitalize().strip().lower()
             print("Feature extraction LLM says", output)
             print("Features for lookup", country, year, value, source)
@@ -238,10 +246,12 @@ class CoinBot:
                 response = f"🤯 The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
             elif coin_status == "missing":
-                response = f"🚀🎉 The coin {match} is not yet in the collection 🤩"
+                response = (
+                    f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
+                )
                 amount = coin_df["Amount"].values[0]
             elif coin_status == "collected":
-                response = f"😢 The coin {match} was already collected 😢"
+                response = f"😢 Bad news! The coin {match} was already collected 😢"
                 amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."
@@ -282,9 +292,9 @@ class CoinBot:
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
-            temperature=0.0,
+            temperature=0.6,
         )
-        self.to_german_llm = LLM(
+        self.to_english_llm = LLM(
             model="Open-Orca/Mistral-7B-OpenOrca",
             token=self.anyscale_token,
             task_prompt=(
