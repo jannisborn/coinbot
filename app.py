@@ -16,6 +16,7 @@ def main():
         public_link=file_link,
         telegram_token=telegram_token,
         anyscale_token=anyscale_token,
+        slack_token=secrets["slack"],
     )
     bot.run()
 
