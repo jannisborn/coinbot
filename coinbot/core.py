@@ -1,5 +1,7 @@
 import os
+import sys
 import threading
+import time
 from collections import defaultdict
 from random import random
 
@@ -9,17 +11,28 @@ from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
 from coinbot.llm import LLM, get_feature_value
+from coinbot.slack import SlackClient
 from coinbot.utils import (
     contains_germany,
     get_tuple,
     large_int_to_readable,
     log_to_csv,
+    logger_filter,
     sane_no_country,
 )
 
+logger.remove()
+logger.add(sys.stderr, filter=logger_filter)
+
 
 class CoinBot:
-    def __init__(self, public_link: str, telegram_token: str, anyscale_token: str):
+    def __init__(
+        self,
+        public_link: str,
+        telegram_token: str,
+        anyscale_token: str,
+        slack_token: str,
+    ):
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
         self.anyscale_token = anyscale_token
@@ -49,6 +62,7 @@ class CoinBot:
         self.db = DataBase(self.filepath)
 
         self.set_llms()
+        self.slackbot = SlackClient(slack_token)
 
     def fetch_file(self, link: str):
         """
@@ -75,15 +89,18 @@ class CoinBot:
 
     def reload_data(self):
         """Fetches the file and re-initializes the database."""
-        logger.info("Reloading data...")
+        logger.debug("Reloading data...")
         try:
             self.fetch_file(link=self.public_link)
             self.db = DataBase(self.filepath)
-            logger.info("Data reloaded successfully.")
+            logger.debug("Data reloaded successfully.")
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
 
-    def collecting_language(self, update, context) -> bool:
+    def setup(self, update, context) -> bool:
+        """
+        Set up the user's language preference and collect their name.
+        """
         user_id = update.message.from_user.id
         text = update.message.text.strip()
         overwrite = text.lower().startswith("language:") or text.lower().startswith(
@@ -95,16 +112,25 @@ class CoinBot:
             update.message.reply_text(
                 "Welcome!\nThis is Jannis' coincollector! 🪙\n\nWhich language do you want me to speak?"
             )
-            self.user_prefs[user_id]["collecting"] = True
+            self.user_prefs[user_id]["collecting_language"] = True
             return True
-        elif self.user_prefs[user_id]["collecting"]:
+        elif self.user_prefs[user_id]["collecting_language"]:
             # Set language
-            self.user_prefs[user_id]["language"] = text
+            self.user_prefs[user_id]["language"] = text.capitalize()
             response = f"Language was set to {text}. You can always change it by texting `Language: YOUR_LANGUAGE`."
+            self.return_message(update, response)
+            time.sleep(1)
+            self.return_message(update, "Only one more thing: What's your name? 🤗")
+            self.user_prefs[user_id]["collecting_language"] = False
+            self.user_prefs[user_id]["collecting_username"] = True
+            return True
+        elif self.user_prefs[user_id]["collecting_username"]:
+            self.user_prefs[user_id]["username"] = text
+            response = (
+                f"Nice to meet you, {text}! 🤝\nYou can start collecting coins now 😊"
+            )
             update.message.reply_text(response)
-            if text.lower() != "english":
-                self.return_message(update, response)
-            self.user_prefs[user_id]["collecting"] = False
+            self.user_prefs[user_id]["collecting_username"] = False
             return True
         elif overwrite:
             if "language" in self.user_prefs[user_id].keys():
@@ -131,9 +157,9 @@ class CoinBot:
             text = f"{text}\n\n(Coin was minted {number_text} times)"
 
         language = self.user_prefs[update.message.from_user.id].get(
-            "language", "english"
+            "language", "English"
         )
-        if language == "english":
+        if language == "English":
             update.message.reply_text(text)
         else:
             translate_llm = LLM(
@@ -156,8 +182,8 @@ class CoinBot:
             output = self.joke_llm(update.message.text)
             self.return_message(update, output)
             return
-        done = self.collecting_language(update, context)
-        if not done:
+        is_setting_up = self.setup(update, context)
+        if not is_setting_up:
             self.search_coin_in_db(update, context)
 
     def search_coin_in_db(self, update, context):
@@ -212,8 +238,8 @@ class CoinBot:
             year = int(get_feature_value(output, "Year"))
             country = self.to_english_llm(c)
             country = country.capitalize().strip().lower()
-            print("Feature extraction LLM says", output)
-            print("Features for lookup", country, year, value, source)
+            logger.debug("Feature extraction LLM says", output)
+            logger.debug("Features for lookup", country, year, value, source)
 
             # Search in the dataframe
             coin_df = self.db.df[
@@ -250,8 +276,11 @@ class CoinBot:
                     f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
                 )
                 amount = coin_df["Amount"].values[0]
+                self.slackbot(
+                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+                )
             elif coin_status == "collected":
-                response = f"😢 Bad news! The coin {match} was already collected 😢"
+                response = f"😢 Bad luck! The coin {match} was already collected 😢"
                 amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."

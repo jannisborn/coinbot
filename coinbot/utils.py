@@ -3,6 +3,7 @@ import os
 import re
 from datetime import datetime
 
+from loguru import logger
 from thefuzz import process as fuzzysearch
 
 from coinbot.metadata import germany
@@ -126,3 +127,7 @@ def sane_no_country(text: str) -> bool:
     no_country_assumed = len(text_after_removal.strip()) <= 5
 
     return coin_found and year_found and source_found and no_country_assumed
+
+
+def logger_filter(record, min_level: str = "INFO"):
+    return record["level"].no >= logger.level(min_level).no
