@@ -129,7 +129,7 @@ class CoinBot:
             response = (
                 f"Nice to meet you, {text}! 🤝\nYou can start collecting coins now 😊"
             )
-            update.message.reply_text(response)
+            self.return_message(update, response)
             self.user_prefs[user_id]["collecting_username"] = False
             return True
         elif overwrite:
