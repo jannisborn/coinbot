@@ -10,7 +10,7 @@ from loguru import logger
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
-from coinbot.llm import LLM, get_feature_value
+from coinbot.llm import INSTRUCTION_MESSAGE, LLM, get_feature_value
 from coinbot.slack import SlackClient
 from coinbot.utils import (
     contains_germany,
@@ -126,9 +126,7 @@ class CoinBot:
             return True
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
-            response = (
-                f"Nice to meet you, {text}! 🤝\nYou can start collecting coins now 😊"
-            )
+            response = f"Nice to meet you, {text}! 🤝\n{INSTRUCTION_MESSAGE}"
             self.return_message(update, response)
             self.user_prefs[user_id]["collecting_username"] = False
             return True
@@ -152,13 +150,15 @@ class CoinBot:
             return False
 
     def return_message(self, update, text: str, amount: int = 0):
+        user_id = update.message.from_user.id
         if amount > 0:
             number_text = large_int_to_readable(amount * 1000)
             text = f"{text}\n\n(Coin was minted {number_text} times)"
 
-        language = self.user_prefs[update.message.from_user.id].get(
-            "language", "English"
-        )
+        if user_id not in self.user_prefs.keys():
+            language = "English"
+        else:
+            language = self.user_prefs[user_id].get("language", "English")
         if language == "English":
             update.message.reply_text(text)
         else:
@@ -269,7 +269,7 @@ class CoinBot:
 
             coin_status = coin_df["Status"].values[0]
             if coin_status == "unavailable":
-                response = f"🤯 The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
+                response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
             elif coin_status == "missing":
                 response = (
@@ -280,7 +280,7 @@ class CoinBot:
                     f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
                 )
             elif coin_status == "collected":
-                response = f"😢 Bad luck! The coin {match} was already collected 😢"
+                response = f"😢 No luck! The coin {match} was already collected 😢"
                 amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."
