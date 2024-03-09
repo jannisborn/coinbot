@@ -15,7 +15,8 @@ class DataBase:
 
         self.eu_df = self.setup_eu_dataframe()
         self.ger_df = self.setup_ger_dataframe()
-        self.df = pd.concat([self.eu_df, self.ger_df])
+        self.sonder_df = self.setup_sonder_dataframe()
+        self.df = pd.concat([self.eu_df, self.ger_df, self.sonder_df])
         self.df = self.df.map(lambda x: x.lower() if isinstance(x, str) else x)
 
     def cell_status(self, cell):
@@ -103,5 +104,60 @@ class DataBase:
         df = pd.DataFrame(data)
         df.columns = ["Country", "Year", "Source", "Coin Value", "Amount", "Status"]
         df["Amount"] = df["Amount"].apply(convert_to_thousands).astype(int)
+        df["Coin Value"] = df["Coin Value"].str.lower()
+        return df
+
+    def setup_sonder_dataframe(self):
+        """Setup a dataframe for the Sondermünzen sheet."""
+        rows = list(self.sonder_sheet.iter_rows(min_row=1))
+        data = []
+
+        # Extract data for unstructured sondermünzen. Everything in the sheet has been collected.
+        for i, row in enumerate(rows):
+            if i < 2:
+                continue
+
+            name = row[0].value
+            country = row[1].value
+            year = row[2].value
+            if country == "Münzmenge":
+                break
+
+            amount = int(row[3].value * 1000)  # Convert to thousands
+            source = row[6].value
+            if source:
+                source = source.split("-")[0].strip()
+
+            data.append([name, country, year, "2 euro", source, amount, "collected"])
+
+        # The remaining rows are from the Bundesländerserie
+        i += 5
+        block_size = 5
+        name = rows[i][0].value
+        while name is not None:
+            year = rows[i][1].value
+            for j in range(block_size):
+                amount = int(
+                    float(rows[i + j][3].value.split("-")[-1].replace(",", ".")) * 1000
+                )
+                source = rows[i + j][3].value.split("-")[0].strip()
+                status = self.cell_status(rows[i + j][3])
+                data.append([name, "Germany", year, "2 euro", source, amount, status])
+            i += block_size
+            name = rows[i][0].value
+
+        # Create DataFrame from data
+        df = pd.DataFrame(
+            data,
+            columns=[
+                "Name",
+                "Country",
+                "Year",
+                "Coin Value",
+                "Source",
+                "Amount",
+                "Status",
+            ],
+        )
         df["Coin Value"] = df["Coin Value"].str.lower()
         return df
