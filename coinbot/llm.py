@@ -1,19 +1,33 @@
 from copy import deepcopy
 
+import numpy as np
+import openai
 import requests
 
 INSTRUCTION_MESSAGE = """
-I'm helping you to identify and collect *unique* and *rare* EURO coins. Just ask me about
-a coin. I always need the value, the country and the year of the coin. I will let you know
-how many times the coin was minted and if it's already available in Jannis' coin collection. 
-If it's not, please keep it and give it to Jannis soon, I'm sure he will be happy 🤩 \n
-For example, if you write: \n`Spain 2010 1 Euro`\n I will tell you that the coin was minted 40 million times but that it's already in Jannis' collection.
-Remember that for German coins you also need to enter the minting site which is a single character (A, D, F, G, J), e.g.,: \n`Germany 2002 1 Euro D`\n
+I'm helping you to identify & collect **rare** EURO coins. Just ask me about a coin. I always need the value, the country and the year of the coin. I will let you know how many times the coin was minted and if it's already available in Jannis' coin collection. 
+If it's not in the collection, please keep it and give it to Jannis soon, I'm sure he will be happy 🤩 \n
+For example, if you write: \n\n`Spain 2010 1 Euro`\n\n I will tell you that the coin was minted 40 million times but that it's already in Jannis' collection.
+
+Remember that for German coins you also need to enter the minting site which is a single character (A, D, F, G, J), e.g.,: \n`20 Cent 2021 Germany D`.\
+
+To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
+
+`Special Austria` ➡️ Lists all special coins from Austria.
+
+`Special Germany 2015` ➡️ Lists all special coins from Germany from 2015.
+
+`Special Olympics` ➡️ Lists all special coins with the word "Olympics" in the name.
+
+`Special Germany Hamburg 2023` ➡️ Lists all German special coins from 2023 related to Hamburg.
+
 Now you're ready! Get started and happy coin collecting 😊
 """
 
 
 def get_feature_value(output: str, feature: str) -> str:
+    if feature not in output:
+        return ""
     return output.split(f"{feature}:")[-1].split("\n")[0].strip()
 
 
@@ -61,6 +75,21 @@ class LLM:
 
     def __call__(self, *args, **kwargs):
         return self.send_message(*args, **kwargs)
-        return self.send_message(*args, **kwargs)
-        return self.send_message(*args, **kwargs)
-        return self.send_message(*args, **kwargs)
+
+
+class Embedding:
+    def __init__(self, token: str, model: str = "thenlper/gte-large"):
+        self.token = token
+        self.api_base = "https://api.endpoints.anyscale.com/v1"
+        self.model = model
+
+        self.client = openai.OpenAI(base_url=self.api_base, api_key=self.token)
+
+    def embed(self, message: str):
+        embedding = self.client.embeddings.create(model=self.model, input=message)
+        output = embedding.model_dump()
+        embedding = np.array(output["data"][0]["embedding"])
+        return embedding
+
+    def __call__(self, *args, **kwargs):
+        return self.embed(*args, **kwargs)
