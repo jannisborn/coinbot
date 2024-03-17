@@ -4,13 +4,17 @@ import threading
 import time
 from collections import defaultdict
 from random import random
+from typing import Tuple
 
 import requests
+import telegram
 from loguru import logger
+from telegram import Message, Update
 from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
 
 from coinbot.db import DataBase
-from coinbot.llm import LLM, get_feature_value
+from coinbot.llm import INSTRUCTION_MESSAGE, LLM, get_feature_value
+from coinbot.metadata import countries
 from coinbot.slack import SlackClient
 from coinbot.utils import (
     contains_germany,
@@ -20,9 +24,13 @@ from coinbot.utils import (
     logger_filter,
     sane_no_country,
 )
+from coinbot.vectorstorage import VectorStorage
 
 logger.remove()
 logger.add(sys.stderr, filter=logger_filter)
+
+missing_hints = ["feature", "missing", "provided", "not"]
+username_message = "Only one more thing: What's your name? 🤗"
 
 
 class CoinBot:
@@ -32,6 +40,7 @@ class CoinBot:
         telegram_token: str,
         anyscale_token: str,
         slack_token: str,
+        vectorstorage_path: str,
     ):
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
@@ -60,6 +69,9 @@ class CoinBot:
         self.public_link = public_link
         self.fetch_file(link=public_link)
         self.db = DataBase(self.filepath)
+
+        self.vectorstorage_path = vectorstorage_path
+        self.vectorstorage = VectorStorage.load(vectorstorage_path)
 
         self.set_llms()
         self.slackbot = SlackClient(slack_token)
@@ -90,6 +102,7 @@ class CoinBot:
     def reload_data(self):
         """Fetches the file and re-initializes the database."""
         logger.debug("Reloading data...")
+        # TODO: Rewrite the vector storage periodically (if new coins were added)
         try:
             self.fetch_file(link=self.public_link)
             self.db = DataBase(self.filepath)
@@ -100,6 +113,7 @@ class CoinBot:
     def setup(self, update, context) -> bool:
         """
         Set up the user's language preference and collect their name.
+        Returns whether the user message was part of the setup process.
         """
         user_id = update.message.from_user.id
         text = update.message.text.strip()
@@ -107,8 +121,37 @@ class CoinBot:
             "sprache:"
         )
 
+        if overwrite:
+            if "language" in self.user_prefs[user_id].keys():
+                response = (
+                    f"Language used to be {self.user_prefs[user_id]['language']}.\n"
+                )
+            else:
+                response = ""
+            new_language = text.split(":")[-1].strip()
+            response += f"Language has now been set to {new_language}."
+            self.user_prefs[user_id]["language"] = new_language
+            self.return_message(update, response)
+            if self.user_prefs[user_id]["collecting_username"]:
+                time.sleep(0.5)
+                self.return_message(update, username_message)
+            elif not self.user_prefs[user_id]["collecting_language"]:
+                time.sleep(0.5)
+                self.return_message(update, "Here are the instructions again:")
+                context.bot.send_chat_action(
+                    chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+                )
+                response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+                # Pinning the message
+                context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+                context.bot.pin_chat_message(
+                    chat_id=update.message.chat_id,
+                    message_id=response_message.message_id,
+                    disable_notification=False,
+                )
+            return True
         # Check if the user's language preference is already set
-        if user_id not in self.user_prefs:
+        elif user_id not in self.user_prefs:
             update.message.reply_text(
                 "Welcome!\nThis is Jannis' coincollector! 🪙\n\nWhich language do you want me to speak?"
             )
@@ -116,33 +159,33 @@ class CoinBot:
             return True
         elif self.user_prefs[user_id]["collecting_language"]:
             # Set language
-            self.user_prefs[user_id]["language"] = text.capitalize()
+            self.user_prefs[user_id]["language"] = text.capitalize().strip()
             response = f"Language was set to {text}. You can always change it by texting `Language: YOUR_LANGUAGE`."
             self.return_message(update, response)
-            time.sleep(1)
-            self.return_message(update, "Only one more thing: What's your name? 🤗")
+            if text.capitalize() == "English":
+                time.sleep(0.2)
+            self.return_message(update, username_message)
             self.user_prefs[user_id]["collecting_language"] = False
             self.user_prefs[user_id]["collecting_username"] = True
             return True
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
-            response = (
-                f"Nice to meet you, {text}! 🤝\nYou can start collecting coins now 😊"
+            self.return_message(
+                update, f"Nice to meet you, {text}! 🤝\nHere is the manual:"
             )
-            self.return_message(update, response)
+            context.bot.send_chat_action(
+                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+            )
+            response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+            time.sleep(1)
+            # Pinning the message
+            context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+            context.bot.pin_chat_message(
+                chat_id=update.message.chat_id,
+                message_id=response_message.message_id,
+                disable_notification=False,
+            )
             self.user_prefs[user_id]["collecting_username"] = False
-            return True
-        elif overwrite:
-            if "language" in self.user_prefs[user_id].keys():
-                response = (
-                    f"Language used to be {self.user_prefs[user_id]['language']}.\n"
-                )
-            else:
-                response = ""
-            response += f"Language has now been set to {text}."
-            self.user_prefs[user_id]["language"] = text
-            if text.lower() != "english":
-                self.return_message(update, response)
             return True
         elif "language" in self.user_prefs[user_id].keys():
             # Language was already set
@@ -151,30 +194,43 @@ class CoinBot:
             update.message.reply_text("No language recognized, consider setting it")
             return False
 
-    def return_message(self, update, text: str, amount: int = 0):
+    def return_message(self, update: Update, text: str, amount: int = 0) -> Message:
+        user_id = update.message.from_user.id
         if amount > 0:
             number_text = large_int_to_readable(amount * 1000)
             text = f"{text}\n\n(Coin was minted {number_text} times)"
 
-        language = self.user_prefs[update.message.from_user.id].get(
-            "language", "English"
-        )
-        if language == "English":
-            update.message.reply_text(text)
+        if user_id not in self.user_prefs.keys():
+            language = "English"
         else:
-            translate_llm = LLM(
+            language = self.user_prefs[user_id].get("language", "English")
+        if language == "English":
+            response_message = update.message.reply_text(text, parse_mode="Markdown")
+        else:
+            self.translate_llm = LLM(
                 model="Open-Orca/Mistral-7B-OpenOrca",
                 token=self.anyscale_token,
                 task_prompt=(
                     f"You are a translation chatbot. Translate the following into {language}, use colloquial language like in a personal chat"
                 ),
-                temperature=0.0,
+                temperature=0.5,
             )
+            if "`Special" in text:
+                # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
+                snippets = text.split("`Special")
+                t_snips = [self.translate_llm(snippet) for snippet in snippets]
+                t_snips = [
+                    t.split("➡️")[0] + "` ➡️ " + t.split("➡️")[1] if "➡️" in t else t
+                    for t in t_snips
+                ]
+                text = "\n`Special".join(t_snips)
+            else:
+                text = self.translate_llm(text)
 
-            text = translate_llm(text)
-            update.message.reply_text(text)
+            response_message = update.message.reply_text(text, parse_mode="Markdown")
 
         log_to_csv(update.message.text, text)
+        return response_message
 
     def handle_text_message(self, update, context):
 
@@ -186,10 +242,136 @@ class CoinBot:
         if not is_setting_up:
             self.search_coin_in_db(update, context)
 
+    def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
+        """
+        Extracts the country, year, value, and source from the LLM output.
+
+        Args:
+            llm_output: The output from the LLM model.
+
+        Returns:
+            Tuple[str, int, str, str]: The country, year, value, and source.
+        """
+        c = get_feature_value(llm_output, "Country")
+        value = get_feature_value(llm_output, "Value").lower()
+        value = value.replace("€", " euro").replace("  ", " ")
+        year = get_feature_value(llm_output, "Year")
+        try:
+            year = int(year)
+        except ValueError:
+            year = -1
+        country = c if c == "" else self.to_english_llm(c)
+        country = country.strip().lower()
+        return country, year, value
+
+    def format_coin_result(self, row) -> str:
+        amount = large_int_to_readable(row["Amount"] * 1000)
+        header = f"Title: {row['Name']}"
+        if row["IsFederalStateSeries"]:
+            header += f" {row['Year']} {row['Source'].capitalize()}"
+            further = f"(Country = {row['Country'].capitalize()};"
+        elif row["Country-specific"]:
+            header += f" {row['Country'].capitalize()}"
+            further = f"(Year: {row['Year']};"
+            if row.Country == "germany":
+                header += f" {row['Source'].upper()}"
+        else:
+            further = f"(Country: {row['Country'].capitalize()}, Year: {row['Year']};"
+
+        further += f" Total coin count: {amount})"
+        return f"{header}\n{further}"
+
+    def search_special_coin(self, update, message: str):
+        user_id = update.message.from_user.id
+        # User asked for a special/commemorative coin
+        to_llm = message.split("Special")[1]
+        print("to lLm", to_llm)
+        output = self.special_llm(to_llm)
+
+        output += "\nValue: 2 Euro"
+        print("LLM output", output)
+        # Extract feature values
+        country, year, value = self.extract_features(output)
+        if country.capitalize() not in countries:
+            country = "none"
+        if year < 1999:
+            year = -1
+        name = get_feature_value(output, "Name")
+        print("Features", country, year, value, name)
+        # Nail down the Dataframe feature by feature
+        tdf = self.db.df[
+            (self.db.df["Coin Value"] == "2 euro") & (self.db.df["Special"])
+        ]
+        print(len(tdf), "org", len(self.db.df))
+
+        # If year was given, filter by year
+        if year != -1:
+            tdf = tdf[(tdf.Year == year)]
+            print("Year", year, len(tdf))
+
+        # If country was given, filter by country
+        if country and country.lower() not in ["unknown", "missing", "none"]:
+            tdf = tdf[(tdf.Country == country)]
+            print("Country", country, len(tdf))
+            if country == "germany":
+                sources = [
+                    s.lower()
+                    for s in message.split(" ")
+                    if len(s) == 1 and s.lower() in ["a", "d", "f", "g", "j"]
+                ]
+                if len(sources) == 1:
+                    source = sources[0]
+                elif len(sources) > 1:
+                    self.return_message(
+                        update,
+                        f"Found more than one mint location: {sources}, try again!",
+                    )
+                else:
+                    source = None
+                if source:
+                    tdf = tdf[(tdf.Source == source)]
+        if len(name) > 4 and name.lower() not in ["unknown", "missing", "none"]:
+            tdf = self.vectorstorage.query(name, df=tdf, verbose=True).sort_values(
+                by="Distance", ascending=True
+            )
+            # TODO: Threshold could be optimized
+            tdf = tdf[tdf["Distance"] < 0.65]
+        query = "\n\n\tValue = 2 Euro\n"
+        if year != -1:
+            query += f"\tYear = {year}\n"
+        if country:
+            query += f"\tCountry = {country.capitalize()}\n"
+        if name:
+            query += f"\tName = {name}\n"
+        if country == "germany" and source:
+            query += f"\tMint location = {source.upper()}\n"
+
+        final_df = tdf[tdf["Status"] == "collected"]
+        query += "\n"
+
+        # Return all coins in DB
+        if len(final_df) == 0:
+
+            response = f"🚀🎉 Hooray! A commemorative coin:{query}is not yet in the collection 🤩"
+            self.return_message(update, response)
+            self.slackbot(f"User {self.user_prefs[user_id]['username']}: {response}")
+            return
+        self.return_message(
+            update,
+            f"For your query {query}the following coins are already in the collection:",
+        )
+        final_df = final_df.sort_values(by=["Year", "Country", "Name"])
+        for i, row in final_df.iterrows():
+            text = self.format_coin_result(row)
+            self.return_message(update, text)
+
+        print()
+
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
-        missing_hints = ["feature", "missing", "provided", "not"]
-        try:
+
+        # try:
+        if True:
             user_id = update.message.from_user.id
             # Check if the user's language preference is set
             if user_id not in self.user_prefs:
@@ -200,6 +382,9 @@ class CoinBot:
             # Parse the message
             message = update.message.text
             logger.debug(f"Received: {message}")
+
+            if message.lower().startswith("special"):
+                return self.search_special_coin(update, message)
 
             if sane_no_country(message):
                 message += " Germany "
@@ -232,12 +417,8 @@ class CoinBot:
                     )
                     return
                 source = None
-            c = get_feature_value(output, "Country")
-            value = get_feature_value(output, "Value").lower()
-            value = value.replace("€", " euro").replace("  ", " ")
-            year = int(get_feature_value(output, "Year"))
-            country = self.to_english_llm(c)
-            country = country.capitalize().strip().lower()
+
+            country, year, value = self.extract_features(output)
             logger.debug("Feature extraction LLM says", output)
             logger.debug("Features for lookup", country, year, value, source)
 
@@ -269,7 +450,7 @@ class CoinBot:
 
             coin_status = coin_df["Status"].values[0]
             if coin_status == "unavailable":
-                response = f"🤯 The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
+                response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
             elif coin_status == "missing":
                 response = (
@@ -280,18 +461,17 @@ class CoinBot:
                     f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
                 )
             elif coin_status == "collected":
-                response = f"😢 Bad luck! The coin {match} was already collected 😢"
+                response = f"😢 No luck! The coin {match} was already collected 😢"
                 amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."
 
             res = response.split("\n")[0]
-            print(f"Returns: {res}\n")
             self.return_message(update, response, amount=amount)
 
-        except Exception as e:
-            response = f"An error occurred: {e}"
-            self.return_message(update, response)
+        # except Exception as e:
+        #     response = f"An error occurred: {e}"
+        #     self.return_message(update, response)
 
     def run(self):
         logger.info("Starting bot")
@@ -330,4 +510,10 @@ class CoinBot:
                 "Give me the ENGLISH name of this country. Be concise, only one word."
             ),
             temperature=0.0,
+        )
+        self.special_llm = LLM(
+            model="Open-Orca/Mistral-7B-OpenOrca",
+            token=self.anyscale_token,
+            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
+            temperature=0.5,
         )

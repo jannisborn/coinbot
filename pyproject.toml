@@ -19,6 +19,8 @@ countrynames = "^1.15.3"
 pycountry = "^23.12.11"
 loguru = "^0.7.2"
 slackclient = "^2.9.4"
+openai = "^1.13.3"
+numpy = "^1.26.4"
 
 [build-system]
 requires = ["poetry-core"]

@@ -68,7 +68,7 @@ def log_to_csv(input_text: str, output_text: str):
         )
 
 
-def contains_germany(sentence: str, threshold: int = 80):
+def contains_germany(sentence: str, threshold: int = 80) -> bool:
     """
     Checks if a sentence contains the word "Germany" in any language, using fuzzy matching.
 
