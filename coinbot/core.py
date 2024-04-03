@@ -19,6 +19,7 @@ from coinbot.slack import SlackClient
 from coinbot.utils import (
     contains_germany,
     get_tuple,
+    get_year,
     large_int_to_readable,
     log_to_csv,
     logger_filter,
@@ -115,6 +116,7 @@ class CoinBot:
         Set up the user's language preference and collect their name.
         Returns whether the user message was part of the setup process.
         """
+
         user_id = update.message.from_user.id
         text = update.message.text.strip()
         overwrite_language = text.lower().startswith(
@@ -176,7 +178,7 @@ class CoinBot:
         elif self.user_prefs[user_id]["collecting_language"]:
             # Set language
             self.user_prefs[user_id]["language"] = text.capitalize().strip()
-            response = f"Language was set to {text}. You can always change it by texting `Language: YOUR_LANGUAGE`."
+            response = f"Language was set to {text}. You can always change it by writing\n`Language: YOUR_LANGUAGE`."
             self.return_message(update, response)
             if text.capitalize() == "English":
                 time.sleep(0.2)
@@ -189,7 +191,7 @@ class CoinBot:
             context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
             reponse_name = self.return_message(
                 update,
-                f"Nice to meet you, {text}!🤝 You can always change your username by texting `Name: YOUR_NAME`\nHere is the manual:",
+                f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\nHere is the manual:",
             )
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
@@ -252,10 +254,19 @@ class CoinBot:
             else:
                 text = self.translate_llm(text)
 
-            response_message = update.message.reply_text(text, parse_mode="Markdown")
+            response_message = update.message.reply_text(text)
 
         log_to_csv(update.message.text, text)
         return response_message
+
+    def verify(self, update, context):
+        user_id = update.message.from_user.id
+        # Check if the user's language preference is set
+        if user_id not in self.user_prefs:
+            # Ask for the user's language preference
+            update.message.reply_text("Which language do you want me to speak?")
+            return False
+        return True
 
     def handle_text_message(self, update, context):
 
@@ -264,8 +275,61 @@ class CoinBot:
             self.return_message(update, output)
             return
         is_setting_up = self.setup(update, context)
-        if not is_setting_up:
+        if is_setting_up:
+            return
+
+        if not self.verify(update, context):
+            return
+
+        # Determine whether query is about searching a coin or querying a series
+        msg = update.message.text.lower().strip()
+        if msg.startswith("status"):
+            self.report_series(update, msg)
+        else:
+            # Query the DB with a specific coin
             self.search_coin_in_db(update, context)
+
+    def report_series(self, update, context):
+        """
+        Report the status of a series (year, country)-tuple of coins.
+        """
+        message = update.message.text.lower().strip()
+
+        year = get_year(message)
+        if year is None:
+            self.return_message(
+                update,
+                "No year or multiple year found, please provide single year with four digits.",
+            )
+            return
+
+        words = message.split("status ")[1].split(" ")
+        words.remove(str(year))
+        country = self.to_english_llm(" ".join(words)).strip().lower()
+
+        # Search in the dataframe
+        coin_df = self.db.df[
+            (self.db.df["Country"] == country)
+            & (self.db.df["Year"] == year)
+            & (~self.db.df["Special"])
+        ]
+
+        if len(coin_df) == 0:
+            response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
+            self.return_message(update, response)
+
+        dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
+
+        for i, row in coin_df.iterrows():
+            match = get_tuple(row.Country, row["Coin Value"], row.Year, row["Source"])
+            status = row["Status"]
+            icon = dict_mapper[status]
+            if status != "unavailable":
+                amount = large_int_to_readable(row["Amount"] * 1000)
+                response = f"{match}: {icon}{status.upper()}{icon} (mints: {amount})"
+            else:
+                response = f"{match}: {icon}{status.upper()}{icon}"
+            update.message.reply_text(response, parse_mode="Markdown")
 
     def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
         """
@@ -398,12 +462,6 @@ class CoinBot:
         # try:
         if True:
             user_id = update.message.from_user.id
-            # Check if the user's language preference is set
-            if user_id not in self.user_prefs:
-                # Ask for the user's language preference
-                update.message.reply_text("Which language do you want me to speak?")
-                return
-
             # Parse the message
             message = update.message.text
             logger.debug(f"Received: {message}")
