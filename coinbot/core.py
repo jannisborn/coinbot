@@ -117,11 +117,27 @@ class CoinBot:
         """
         user_id = update.message.from_user.id
         text = update.message.text.strip()
-        overwrite = text.lower().startswith("language:") or text.lower().startswith(
-            "sprache:"
-        )
+        overwrite_language = text.lower().startswith(
+            "language:"
+        ) or text.lower().startswith("sprache:")
+        overwrite_username = text.lower().startswith(
+            "username:"
+        ) or text.lower().startswith("name:")
 
-        if overwrite:
+        if overwrite_username:
+            if "username" in self.user_prefs[user_id].keys():
+                response = (
+                    f"Username used to be {self.user_prefs[user_id]['username']}.\n"
+                )
+            else:
+                response = ""
+            new_username = text.split(":")[-1].strip()
+            response += f"Username has now been set to {new_username}."
+            self.user_prefs[user_id]["username"] = new_username
+            self.return_message(update, response)
+            return True
+
+        elif overwrite_language:
             if "language" in self.user_prefs[user_id].keys():
                 response = (
                     f"Language used to be {self.user_prefs[user_id]['language']}.\n"
@@ -170,16 +186,25 @@ class CoinBot:
             return True
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
-            self.return_message(
-                update, f"Nice to meet you, {text}! 🤝\nHere is the manual:"
+            context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+            reponse_name = self.return_message(
+                update,
+                f"Nice to meet you, {text}!🤝 You can always change your username by texting `Name: YOUR_NAME`\nHere is the manual:",
             )
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
+            # Pinning the message to change username
+            context.bot.pin_chat_message(
+                chat_id=update.message.chat_id,
+                message_id=reponse_name.message_id,
+                disable_notification=False,
+            )
+
             response_message = self.return_message(update, INSTRUCTION_MESSAGE)
             time.sleep(1)
-            # Pinning the message
-            context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+
+            # Pin instructions
             context.bot.pin_chat_message(
                 chat_id=update.message.chat_id,
                 message_id=response_message.message_id,
