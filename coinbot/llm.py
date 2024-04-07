@@ -11,6 +11,9 @@ For example, if you write: \n\n`Spain 2010 1 Euro`\n\n I will tell you that the 
 
 Remember that for German coins you also need to enter the minting site which is a single character (A, D, F, G, J), e.g.,: \n`20 Cent 2021 Germany D`.\
 
+You can also request a list of coins, just start your message with `Status`, for example:
+`Status France 2010` ➡️ Lists all coins from France from 2010.
+
 To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
 
 `Special Austria` ➡️ Lists all special coins from Austria.
@@ -58,16 +61,8 @@ class LLM:
 
     def send_message(self, message: str):
         body = deepcopy(self.body)
-        if self.counter == 0:
-
-            body["messages"].append({"role": "user", "content": message})
-        else:
-            # body["messages"][0].update(
-            #     {"role": "user", "content": f"Same task: {message}"}
-            # )
-
-            # TODO: Seems like we have to re-provide the task prompt every time...
-            body["messages"].append({"role": "user", "content": message})
+        # Seems like we have to re-provide the task prompt every time...
+        body["messages"].append({"role": "user", "content": message})
         with self.session.post(self.url, headers=self.headers, json=body) as resp:
             output = resp.json()
         self.counter += 1

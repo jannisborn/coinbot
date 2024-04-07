@@ -89,9 +89,9 @@ def contains_germany(sentence: str, threshold: int = 80) -> bool:
 
 def get_tuple(country: str, value: str, year: int, source: str):
     if country == "germany":
-        return f"({country}, {year}, {source.upper()}, {value})"
+        return f"({country.capitalize()}, {year}, {source.upper()}, {value})"
     else:
-        return f"({country}, {year}, {value})"
+        return f"({country.capitalize()}, {year}, {value})"
 
 
 def string_to_bool(input_string: str) -> bool:
@@ -106,6 +106,25 @@ def string_to_bool(input_string: str) -> bool:
     else:
         # Handle the case where the string does not represent a boolean
         raise ValueError("Input string does not represent a boolean value")
+
+
+def get_year(text: str) -> int:
+    """
+    Extracts the year from a given text.
+
+    Parameters:
+        text: The text to extract the year from.
+
+    Returns:
+        int: The extracted year.
+    """
+    # Find all occurrences of 4 digits in the text
+    years = re.findall(r"\b\d{4}\b", text)
+
+    # Return the first year found
+    if len(years) != 1:
+        return None
+    return int(years[0])
 
 
 def sane_no_country(text: str) -> bool:
