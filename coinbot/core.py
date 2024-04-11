@@ -240,7 +240,7 @@ class CoinBot:
                 task_prompt=(
                     f"You are a translation chatbot. Translate the following into {language}, use colloquial language like in a personal chat"
                 ),
-                temperature=0.5,
+                temperature=0.0,
             )
             if "`Special" in text:
                 # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
@@ -598,5 +598,5 @@ class CoinBot:
             model="Open-Orca/Mistral-7B-OpenOrca",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
-            temperature=0.5,
+            temperature=0.0,
         )
