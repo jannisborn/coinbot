@@ -235,7 +235,7 @@ class CoinBot:
             response_message = update.message.reply_text(text, parse_mode="Markdown")
         else:
             self.translate_llm = LLM(
-                model="Open-Orca/Mistral-7B-OpenOrca",
+                model="meta-llama/Llama-2-70b-chat-hf",
                 token=self.anyscale_token,
                 task_prompt=(
                     f"You are a translation chatbot. Translate the following into {language}, use colloquial language like in a personal chat"
@@ -564,13 +564,13 @@ class CoinBot:
 
     def set_llms(self):
         self.eu_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract 3 features, Country, value and Year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`",
             temperature=0.0,
         )
         self.ger_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "You are a feature extractor! Extract 4 features, Country, value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
@@ -579,7 +579,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.joke_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
@@ -587,7 +587,7 @@ class CoinBot:
             temperature=0.6,
         )
         self.to_english_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
@@ -595,7 +595,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.special_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,
