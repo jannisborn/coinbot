@@ -139,9 +139,9 @@ def sane_no_country(text: str) -> bool:
     # Check for coin size (assuming sizes are the same in any language)
     coin_found = re.search(r"\b(1|2|5|10|20|50)\b", text) is not None
     year_found = re.search(r"\b\d{4}\b", text) is not None
-    source_found = re.search(r"\b(A|D|F|G|J)\b", text) is not None
+    source_found = re.search(r"\b(A|D|F|G|J)\b", text, re.IGNORECASE) is not None
     text_after_removal = re.sub(
-        r"\b(1|2|5|10|20|50)\b|\b\d{4}\b|\b(A|D|F|G|J)\b", "", text
+        r"\b(1|2|5|10|20|50)\b|\b\d{4}\b|\b(A|D|F|G|J|a|d|f|g|j)\b", "", text
     )
     no_country_assumed = len(text_after_removal.strip()) <= 5
 
