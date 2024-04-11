@@ -30,7 +30,7 @@ from coinbot.vectorstorage import VectorStorage
 logger.remove()
 logger.add(sys.stderr, filter=logger_filter)
 
-missing_hints = ["feature", "missing", "provided", "not"]
+missing_hints = ["miss", "provided", "not"]
 username_message = "Only one more thing: What's your name? 🤗"
 
 
@@ -149,17 +149,18 @@ class CoinBot:
             new_language = text.split(":")[-1].strip()
             response += f"Language has now been set to {new_language}."
             self.user_prefs[user_id]["language"] = new_language
-            self.return_message(update, response)
             if self.user_prefs[user_id]["collecting_username"]:
                 time.sleep(0.5)
                 self.return_message(update, username_message)
             elif not self.user_prefs[user_id]["collecting_language"]:
                 time.sleep(0.5)
-                self.return_message(update, "Here are the instructions again:")
+                response += "\nHere are the instructions again:\n"
                 context.bot.send_chat_action(
                     chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
                 )
-                response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+                response_message = self.return_message(
+                    update, response + INSTRUCTION_MESSAGE
+                )
                 # Pinning the message
                 context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
                 context.bot.pin_chat_message(
@@ -179,30 +180,29 @@ class CoinBot:
             # Set language
             self.user_prefs[user_id]["language"] = text.capitalize().strip()
             response = f"Language was set to {text}. You can always change it by writing\n`Language: YOUR_LANGUAGE`."
-            self.return_message(update, response)
             if text.capitalize() == "English":
                 time.sleep(0.2)
-            self.return_message(update, username_message)
+            self.return_message(update, response + username_message)
             self.user_prefs[user_id]["collecting_language"] = False
             self.user_prefs[user_id]["collecting_username"] = True
             return True
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
             context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
-            reponse_name = self.return_message(
-                update,
-                f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\nHere is the manual:",
-            )
-            context.bot.send_chat_action(
-                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
-            )
+            txt = f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\nHere is the manual:"
+            if self.user_prefs[user_id]["language"] != "English":
+                txt += "(Sorry translating this may take a while)"
+            reponse_name = self.return_message(update, txt)
+
             # Pinning the message to change username
             context.bot.pin_chat_message(
                 chat_id=update.message.chat_id,
                 message_id=reponse_name.message_id,
                 disable_notification=False,
             )
-
+            context.bot.send_chat_action(
+                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+            )
             response_message = self.return_message(update, INSTRUCTION_MESSAGE)
             time.sleep(1)
 
@@ -235,12 +235,13 @@ class CoinBot:
             response_message = update.message.reply_text(text, parse_mode="Markdown")
         else:
             self.translate_llm = LLM(
-                model="Open-Orca/Mistral-7B-OpenOrca",
+                model="meta-llama/Llama-2-70b-chat-hf",
                 token=self.anyscale_token,
                 task_prompt=(
-                    f"You are a translation chatbot. Translate the following into {language}, use colloquial language like in a personal chat"
+                    f"You are a translation tool. Translate the following into {language}. Translate exactly. NEVER make any meta comments!"
                 ),
                 temperature=0.0,
+                remind_task=1,
             )
             if "`Special" in text:
                 # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
@@ -341,10 +342,10 @@ class CoinBot:
         Returns:
             Tuple[str, int, str, str]: The country, year, value, and source.
         """
-        c = get_feature_value(llm_output, "Country")
-        value = get_feature_value(llm_output, "Value").lower()
-        value = value.replace("€", " euro").replace("  ", " ")
-        year = get_feature_value(llm_output, "Year")
+        c = get_feature_value(llm_output, "country")
+        value = get_feature_value(llm_output, "value").lower()
+        value = value.replace("€", " euro").replace("  ", " ").strip()
+        year = get_feature_value(llm_output, "year")
         try:
             year = int(year)
         except ValueError:
@@ -380,7 +381,7 @@ class CoinBot:
         output += "\nValue: 2 Euro"
         print("LLM output", output)
         # Extract feature values
-        country, year, value = self.extract_features(output)
+        country, year, value = self.extract_features(output.lower())
         if country.capitalize() not in countries:
             country = "none"
         if year < 1999:
@@ -454,8 +455,6 @@ class CoinBot:
             text = self.format_coin_result(row)
             self.return_message(update, text)
 
-        print()
-
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
 
@@ -473,12 +472,9 @@ class CoinBot:
                 message += " Germany "
 
             if contains_germany(message, threshold=99):
-                output = self.ger_llm(message)
-                if any([x in output.lower() for x in missing_hints]) or any(
-                    [
-                        x not in output.lower()
-                        for x in ["source", "year", "country", "value"]
-                    ]
+                output = self.ger_llm(message).lower()
+                if any([x in output for x in missing_hints]) or any(
+                    [x not in output for x in ["source", "year", "country", "value"]]
                 ):
                     self.return_message(
                         update,
@@ -487,11 +483,11 @@ class CoinBot:
                     )
                     return
 
-                source = get_feature_value(output, "Source").lower()
+                source = get_feature_value(output, "source").lower()
             else:
-                output = self.eu_llm(message)
-                if any([x in output.lower() for x in missing_hints]) or any(
-                    [x not in output.lower() for x in ["year", "country", "value"]]
+                output = self.eu_llm(message).lower()
+                if any([x in output for x in missing_hints]) or any(
+                    [x not in output for x in ["year", "country", "value"]]
                 ):
                     self.return_message(
                         update,
@@ -500,10 +496,9 @@ class CoinBot:
                     )
                     return
                 source = None
-
             country, year, value = self.extract_features(output)
-            logger.debug("Feature extraction LLM says", output)
-            logger.debug("Features for lookup", country, year, value, source)
+            logger.debug(f"Feature extraction LLM says {output}")
+            logger.debug(f"Features for lookup: {country, year, value, source}")
 
             # Search in the dataframe
             coin_df = self.db.df[
@@ -564,22 +559,22 @@ class CoinBot:
 
     def set_llms(self):
         self.eu_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, value and Year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value and year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
-                "Use a colon (:) before each feature value"
+                "You are a feature extractor! Extract 4 features, Country, coin value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
             temperature=0.0,
         )
         self.joke_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
@@ -595,7 +590,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.special_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-2-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,
