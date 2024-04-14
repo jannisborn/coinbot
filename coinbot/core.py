@@ -234,27 +234,36 @@ class CoinBot:
         if language == "English":
             response_message = update.message.reply_text(text, parse_mode="Markdown")
         else:
-            self.translate_llm = LLM(
-                model="Open-Orca/Mistral-7B-OpenOrca",
-                token=self.anyscale_token,
-                task_prompt=(
-                    f"You are a translation tool. Translate the following into {language}. Translate exactly. NEVER make any meta comments!"
-                ),
-                temperature=0.5,
-                remind_task=1,
+            # Uncommented until a better LM is available
+            # self.translate_llm = LLM(
+            #     model="Open-Orca/Mistral-7B-OpenOrca",
+            #     token=self.anyscale_token,
+            #     task_prompt=(
+            #         f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments!
+            #         Here's the text to translate:\n\n"
+            #     ),
+            #     temperature=0.5,
+            #     remind_task=1,
+            # )
+            # if "`Special" in text:
+            #     # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
+            #     snippets = text.split("`Special")
+            #     t_snips = [self.translate_llm(snippet) for snippet in snippets]
+            #     t_snips = [
+            #         t.split("➡️")[0] + "` ➡️ " + t.split("➡️")[1] if "➡️" in t else t
+            #         for t in t_snips
+            #     ]
+            #     text = "\n`Special".join(t_snips)
+            # else:
+            #     text = self.translate_llm(text)
+            #     text = (
+            #         text
+            #         if text != ""
+            #         else "A translation error occurred. Please set language to English"
+            #     )
+            update.message.reply_text(
+                f"Language set to {language}. Currently only `English` is supported. Set by typing `Language: english`."
             )
-            if "`Special" in text:
-                # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
-                snippets = text.split("`Special")
-                t_snips = [self.translate_llm(snippet) for snippet in snippets]
-                t_snips = [
-                    t.split("➡️")[0] + "` ➡️ " + t.split("➡️")[1] if "➡️" in t else t
-                    for t in t_snips
-                ]
-                text = "\n`Special".join(t_snips)
-            else:
-                text = self.translate_llm(text)
-
             response_message = update.message.reply_text(text)
 
         log_to_csv(update.message.text, text)
