@@ -235,12 +235,12 @@ class CoinBot:
             response_message = update.message.reply_text(text, parse_mode="Markdown")
         else:
             self.translate_llm = LLM(
-                model="meta-llama/Llama-2-70b-chat-hf",
+                model="Open-Orca/Mistral-7B-OpenOrca",
                 token=self.anyscale_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly. NEVER make any meta comments!"
                 ),
-                temperature=0.0,
+                temperature=0.5,
                 remind_task=1,
             )
             if "`Special" in text:
