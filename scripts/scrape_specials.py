@@ -17,7 +17,7 @@ DATA_LINK = "https://de.wikipedia.org/wiki/2-Euro-Gedenkmünzen"
 
 def main(
     filepath: str = typer.Option(
-        ..., "--output", "-o", help="Path to the output .xlsm file"
+        ..., "--output", "-o", help="Path to the output .csv file"
     )
 ):
     dfs = wikitable(DATA_LINK, to_csv=False, overwrite=False)
@@ -125,25 +125,27 @@ def main(
         "Landspezifisch?",
         df["Name der Münze"].apply(lambda x: x not in unique_names),
     )
+    if os.path.exists(filepath):
+        df.to_csv(filepath.replace(".csv", "_new.csv"))
+    else:
+        df.to_csv(filepath)
 
-    wb = load_workbook(filepath, read_only=False, keep_vba=True)
-    ws = wb["Sondermünzen"]
+    # wb = load_workbook(filepath, read_only=False, keep_vba=True)
+    # ws = wb["Sondermünzen"]
 
-    # Collect existing names from the column (assumes 'Name der Münze' is in column A)
-    existing_names = set()
-    for row in ws.iter_rows(min_col=1, max_col=1, min_row=1, max_row=ws.max_row):
-        if row[0].value:
-            existing_names.add(row[0].value)
-    # Append new data only if the name is not already present
-    for _, data_row in df.iterrows():
-        name = data_row["Name der Münze"]
-        if name not in existing_names:
-            logger.info(f"Append {data_row}")
-            ws.append(data_row.tolist())
+    # # Collect existing names from the column (assumes 'Name der Münze' is in column A)
+    # existing_names = set()
+    # for row in ws.iter_rows(min_col=1, max_col=1, min_row=1, max_row=ws.max_row):
+    #     if row[0].value:
+    #         existing_names.add(row[0].value)
+    # # Append new data only if the name is not already present
+    # for _, data_row in df.iterrows():
+    #     name = data_row["Name der Münze"]
+    #     if name not in existing_names:
+    #         logger.info(f"Append {data_row}")
+    #         ws.append(data_row.tolist())
 
-    wb.save(filepath.replace(".xlsm", "_new.xlsm"))
-
-    # TODO: cron job to update the .csv and push csv to github
+    # wb.save(filepath.replace(".xlsm", "_new.xlsm"))
 
 
 if __name__ == "__main__":
