@@ -132,49 +132,16 @@ class DataBase:
 
             name = row[0].value
             country = row[1].value
-            if country == "Münzmenge":
-                break
-            if name == rows[i + 1][0].value or name == rows[i - 1][0].value:
-                name += f" {country}"
-
             year = row[2].value
-
             amount = int(row[3].value * 1000)  # Convert to thousands
-            source = row[6].value
-            if source:
-                source = source.split("-")[0].strip()
+            source = row[5].value
             cs = row[5].value is not None
-            data.append(
-                [name, country, year, "2 euro", source, amount, "collected", cs, False]
-            )
+            desc = row[7].value
+            collected = self.cell_status(row[0])
 
-        # The remaining rows are from the Bundesländerserie
-        i += 5
-        block_size = 5
-        name = rows[i][0].value
-        while name is not None:
-            year = rows[i][1].value
-            for j in range(block_size):
-                amount = int(
-                    float(rows[i + j][3].value.split("-")[-1].replace(",", ".")) * 1000
-                )
-                source = rows[i + j][3].value.split("-")[0].strip()
-                status = self.cell_status(rows[i + j][3])
-                data.append(
-                    [
-                        name,
-                        "Germany",
-                        year,
-                        "2 euro",
-                        source,
-                        amount,
-                        status,
-                        True,
-                        True,
-                    ]
-                )
-            i += block_size
-            name = rows[i][0].value
+            data.append(
+                [name, country, year, "2 euro", source, amount, collected, cs, desc]
+            )
 
         # Create DataFrame from data
         df = pd.DataFrame(
@@ -188,7 +155,7 @@ class DataBase:
                 "Amount",
                 "Status",
                 "Country-specific",
-                "IsFederalStateSeries",
+                "Description",
             ],
         )
         df["Coin Value"] = df["Coin Value"].str.lower()
