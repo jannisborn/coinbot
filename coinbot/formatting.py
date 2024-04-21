@@ -10,6 +10,8 @@ replace_dict = {
     "Ü": "Ü",
     "ß": "ß",
     " ": " ",
+    "\xa0": " ",
+    "  ": " ",
 }
 
 
@@ -31,9 +33,8 @@ def fix_string(text: str) -> str:
     return text
 
 
-is_float = lambda x: (
-    True if x.replace(".", "", 1).isdigit() and x.count(".") < 2 else False
-)
+def is_float(x):
+    return x.replace(".", "", 1).isdigit() and x.count(".") < 2
 
 
 def isint(x: str) -> bool:

@@ -42,7 +42,8 @@ eurozone = [
 
 # To include countries that use the Euro but are not part of the Eurozone, you might add:
 euro_users = ["Monaco", "Vatican"]
-translate_countries = {
+country_eng2ger = {
+    "Andorra": "Andorra",
     "Belgium": "Belgien",
     "Germany": "Deutschland",
     "Estonia": "Estland",
@@ -59,6 +60,7 @@ translate_countries = {
     "Netherlands": "Niederlande",
     "Austria": "Österreich",
     "Portugal": "Portugal",
+    "San Marino": "San Marino",
     "Slovakia": "Slowakei",
     "Slovenia": "Slowenien",
     "Spain": "Spanien",
@@ -66,6 +68,8 @@ translate_countries = {
     "Monaco": "Monaco",
     "Vatican": "Vatikan",
 }
+country_ger2eng = dict(zip(country_eng2ger.values(), country_eng2ger.keys()))
+country_ger2eng["Vatikanstadt"] = "Vatican"
 
 countries = eurozone + euro_users
 

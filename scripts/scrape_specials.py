@@ -10,6 +10,7 @@ from loguru import logger
 from wikitable import wikitable
 
 from coinbot.formatting import fix_string, get_years, non_alphabetic
+from coinbot.metadata import country_ger2eng
 
 DATA_LINK = "https://de.wikipedia.org/wiki/2-Euro-Gedenkmünzen"
 
@@ -73,7 +74,9 @@ def main(
 
             name = fix_string(row["Anlass"])
             country = fix_string(row["Land"]).strip()
-            num_entries = country.count(" ") + 1
+            # Count coins by spaces but ignoring San Marino
+            num_entries = country.count(" ") - country.count("n M") + 1
+
             if num_entries > 1:
                 countries = [c.strip() for c in country.split(" ")]
                 coins = [
@@ -95,7 +98,7 @@ def main(
                 amount = round(float(coins[k]) / 1000000, 3)
                 base_entry = {
                     "Name der Münze": name,
-                    "Herkunftsland": countries[k],
+                    "Herkunftsland": country_ger2eng[countries[k]],
                     "Ausgabejahr": year,
                     "Menge in Mill.": amount,
                     "Prägestätte": "",
