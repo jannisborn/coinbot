@@ -11,18 +11,14 @@ Remember that for German coins you also need to enter the minting site which is 
 You can also request a list of coins, just start your message with `Status`, for example:
 `Status France 2010` ➡️ Lists all coins from France from 2010.
 
+To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
+`Special Austria` ➡️ Lists all special coins from Austria.
+`Special Germany 2015` ➡️ Lists all special coins from Germany from 2015.
+`Special Olympics` ➡️ Lists all special coins with the word "Olympics" in the name.
+`Special Germany Hamburg 2023` ➡️ Lists all German special coins from 2023 related to Hamburg.
+
 Now you're ready! Get started and happy coin collecting 😊
 """
-
-# To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
-
-# `Special Austria` ➡️ Lists all special coins from Austria.
-
-# `Special Germany 2015` ➡️ Lists all special coins from Germany from 2015.
-
-# `Special Olympics` ➡️ Lists all special coins with the word "Olympics" in the name.
-
-# `Special Germany Hamburg 2023` ➡️ Lists all German special coins from 2023 related to Hamburg.
 
 
 def get_feature_value(output: str, feature: str) -> str:

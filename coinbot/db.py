@@ -1,5 +1,6 @@
 import openpyxl
 import pandas as pd
+from loguru import logger
 
 from coinbot.metadata import coin_values, colors, countries
 from coinbot.utils import convert_to_thousands
@@ -18,16 +19,14 @@ class DataBase:
         self.sonder_df = self.setup_sonder_dataframe()
         self.df = pd.concat([self.eu_df, self.ger_df, self.sonder_df])
         self.df.update(
-            self.df.drop(columns=["Name"]).map(
+            self.df.drop(columns=["Name", "Link"]).map(
                 lambda x: x.lower() if isinstance(x, str) else x
             )
         )
-        print(
-            self.df[
-                (self.df["Country"] == "germany")
-                & (self.df["Special"])
-                & (self.df["Year"] == 2008)
-            ]
+        collected = len(self.df[self.df["Status"] == "collected"])
+        special = len(self.df[self.df["Special"]])
+        logger.info(
+            f"Total: {len(self.df)} coins, {special} specials and {collected} collected"
         )
 
     def cell_status(self, cell):
@@ -35,7 +34,7 @@ class DataBase:
         # Assuming default colors for collected, uncollected, and unavailable
         fill_color = cell.fill.start_color.index
         if fill_color not in colors.keys():
-            print(cell, fill_color)
+            logger.warning(f"Unknown cell color {fill_color} in {cell}")
         return colors.get(fill_color, "unknown")
 
     def setup_eu_dataframe(self):
@@ -67,7 +66,6 @@ class DataBase:
                         amount = (
                             cell.value if cell.value not in [None, "---", "???"] else 0
                         )
-                        # print(country, year, coin_value, cell.fill.start_color.index)
                         status = self.cell_status(cell)
                         data.append([country, year, coin_value, amount, status])
                 num_countries += 1
@@ -136,11 +134,12 @@ class DataBase:
             amount = int(row[3].value * 1000)  # Convert to thousands
             source = row[5].value
             cs = row[5].value is not None
-            desc = row[7].value
-            collected = self.cell_status(row[0])
+            link = row[7].value
+            desc = row[8].value
+            state = self.cell_status(row[0])
 
             data.append(
-                [name, country, year, "2 euro", source, amount, collected, cs, desc]
+                [name, country, year, "2 euro", source, amount, state, cs, desc, link]
             )
 
         # Create DataFrame from data
@@ -156,6 +155,7 @@ class DataBase:
                 "Status",
                 "Country-specific",
                 "Description",
+                "Link",
             ],
         )
         df["Coin Value"] = df["Coin Value"].str.lower()

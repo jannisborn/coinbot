@@ -1,12 +1,18 @@
 import csv
 import os
 import re
-from datetime import datetime
+from datetime import date, datetime
 
+import numpy as np
+import requests
+from Levenshtein import distance as levenshtein
 from loguru import logger
+from requests.auth import HTTPBasicAuth
 from thefuzz import process as fuzzysearch
 
-from coinbot.metadata import germany
+from coinbot.metadata import countries_all_languages, country_to_english, germany
+
+CURRENT_YEAR = date.today().year
 
 
 def convert_to_thousands(value) -> int:
@@ -87,11 +93,24 @@ def contains_germany(sentence: str, threshold: int = 80) -> bool:
     return False
 
 
-def get_tuple(country: str, value: str, year: int, source: str):
+def get_tuple(
+    country: str,
+    year: int,
+    source: str,
+    name: str = "",
+    value: str = "2 euro",
+    isspecial: bool = False,
+):
     if country == "germany":
-        return f"({country.capitalize()}, {year}, {source.upper()}, {value})"
+        if isspecial:
+            return f"({country.capitalize()}, {year}, {name}, SOURCE: {source.upper()})"
+        else:
+            return f"({country.capitalize()}, {year}, {source.upper()}, {value})"
     else:
-        return f"({country.capitalize()}, {year}, {value})"
+        if isspecial:
+            return f"({country.capitalize()}, {year}, {name})"
+        else:
+            return f"({country.capitalize()}, {year}, {value})"
 
 
 def string_to_bool(input_string: str) -> bool:
@@ -123,7 +142,7 @@ def get_year(text: str) -> int:
 
     # Return the first year found
     if len(years) != 1:
-        return None
+        return -1
     return int(years[0])
 
 
@@ -148,5 +167,24 @@ def sane_no_country(text: str) -> bool:
     return coin_found and year_found and source_found and no_country_assumed
 
 
-def logger_filter(record, min_level: str = "INFO"):
-    return record["level"].no >= logger.level(min_level).no
+def fuzzy_search_country(text: str, threshold: int = 95) -> str:
+    for word in text.split():
+        dists = [levenshtein(c, word) for c in countries_all_languages]
+        if np.min(dists) <= 2:
+            match = countries_all_languages[np.argmin(dists)]
+            country = country_to_english[match].strip().lower()
+            return country, word
+    return "", ""
+
+
+def get_file_content(url: str):
+    """Downloads file content directly into memory."""
+    if ".svg" in url:
+        return None
+    response = requests.get(url, stream=True)
+
+    if response.status_code == 200:
+        return response.content
+    else:
+        logger.error(f"Failed to retrieve file {url}: {response.status_code}")
+        return None

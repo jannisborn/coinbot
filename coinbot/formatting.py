@@ -12,6 +12,7 @@ replace_dict = {
     " ": " ",
     "\xa0": " ",
     "  ": " ",
+    "„": "",
 }
 
 
@@ -25,6 +26,9 @@ def fix_string(text: str) -> str:
     Returns:
         _description_
     """
+    # if "leuet" in text:
+    #     print(text)
+    #     exit()
     for key, value in replace_dict.items():
         text = text.replace(key, value)
     pattern = r":(?=\[\d+\])|\[(\d+)\]|:$"

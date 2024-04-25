@@ -17,7 +17,9 @@ def main():
         telegram_token=telegram_token,
         anyscale_token=anyscale_token,
         slack_token=secrets["slack"],
-        vectorstorage_path=os.path.join(os.path.dirname(__file__), "vectorstorage.npz"),
+        vectorstorage_path=os.path.join(
+            os.path.dirname(__file__), "data", "special_coins.npz"
+        ),
     )
     bot.run()
 

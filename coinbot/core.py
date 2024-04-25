@@ -3,35 +3,46 @@ import sys
 import threading
 import time
 from collections import defaultdict
+from datetime import datetime, timedelta
 from random import random
 from typing import Tuple
 
+import pandas as pd
 import requests
 import telegram
 from loguru import logger
-from telegram import Message, Update
-from telegram.ext import CommandHandler, Filters, MessageHandler, Updater
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
+from telegram.ext import (
+    CallbackQueryHandler,
+    CommandHandler,
+    Filters,
+    MessageHandler,
+    Updater,
+)
 
 from coinbot.db import DataBase
 from coinbot.llm import INSTRUCTION_MESSAGE, LLM, get_feature_value
-from coinbot.metadata import countries
 from coinbot.slack import SlackClient
 from coinbot.utils import (
+    CURRENT_YEAR,
     contains_germany,
+    fuzzy_search_country,
+    get_file_content,
     get_tuple,
     get_year,
     large_int_to_readable,
     log_to_csv,
-    logger_filter,
     sane_no_country,
 )
 from coinbot.vectorstorage import VectorStorage
 
-logger.remove()
-logger.add(sys.stderr, filter=logger_filter)
+log_level = os.getenv("LOGLEVEL", "INFO")
+logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
+logger.debug("Starting script")
+
 
 missing_hints = ["miss", "provided", "not"]
-username_message = "Only one more thing: What's your name? 🤗"
+username_message = " Only one more thing: What's your name? 🤗"
 
 
 class CoinBot:
@@ -63,6 +74,7 @@ class CoinBot:
         self.dp.add_handler(
             MessageHandler(Filters.text & (~Filters.command), self.handle_text_message)
         )
+        self.dp.add_handler(CallbackQueryHandler(self.callback_query_handler))
 
         self.filepath = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "coins.xlsm"
@@ -84,32 +96,39 @@ class CoinBot:
         Args:
             link: The public link from which to download the file
         """
+        if os.path.exists(self.filepath):
+            last_modified_time = datetime.fromtimestamp(os.path.getmtime(self.filepath))
+            if datetime.now() - last_modified_time < timedelta(hours=12):
+                logger.info(
+                    f"File at {self.filepath} is up-to-date. Skipping download."
+                )
+                return
+
+        logger.debug("Downloading data...")
         response = requests.get(link)
         # Check if the request was successful
         if response.status_code == 200:
             # Write the content of the response to a file
             with open(self.filepath, "wb") as f:
                 f.write(response.content)
-            logger.debug(f"File downloaded successfully from {link}")
+            logger.info(f"File downloaded successfully from {link}")
         else:
             logger.warning(f"Failed to download file from {link}")
 
     def start_periodic_reload(self, interval: int = 3600):
         """Starts the periodic reloading of data."""
-        self.reload_data()
-        # Set up a timer to call this method again after `interval` seconds
-        threading.Timer(interval, self.start_periodic_reload, [interval]).start()
+        # Set up a timer to call this method after `interval` seconds
+        threading.Timer(interval, self.reload_data, [interval]).start()
 
-    def reload_data(self):
+    def reload_data(self, interval: int = 3600):
         """Fetches the file and re-initializes the database."""
-        logger.debug("Reloading data...")
-        # TODO: Rewrite the vector storage periodically (if new coins were added)
         try:
             self.fetch_file(link=self.public_link)
             self.db = DataBase(self.filepath)
             logger.debug("Data reloaded successfully.")
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
+        threading.Timer(interval, self.reload_data, [interval]).start()
 
     def setup(self, update, context) -> bool:
         """
@@ -294,19 +313,19 @@ class CoinBot:
         # Determine whether query is about searching a coin or querying a series
         msg = update.message.text.lower().strip()
         if msg.startswith("status"):
-            self.report_series(update, msg)
+            self.extract_and_report_series(update, msg)
         else:
             # Query the DB with a specific coin
             self.search_coin_in_db(update, context)
 
-    def report_series(self, update, context):
+    def extract_and_report_series(self, update, context):
         """
         Report the status of a series (year, country)-tuple of coins.
         """
         message = update.message.text.lower().strip()
 
         year = get_year(message)
-        if year is None:
+        if year == -1:
             self.return_message(
                 update,
                 "No year or multiple year found, please provide single year with four digits.",
@@ -323,23 +342,47 @@ class CoinBot:
             & (self.db.df["Year"] == year)
             & (~self.db.df["Special"])
         ]
-
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             self.return_message(update, response)
 
-        dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
+        self.report_series(update, coin_df)
 
+    def report_series(self, update, coin_df: pd.DataFrame, special: bool = False):
+        """
+        Report the search status of a series of results.
+        """
+        dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
         for i, row in coin_df.iterrows():
-            match = get_tuple(row.Country, row["Coin Value"], row.Year, row["Source"])
             status = row["Status"]
             icon = dict_mapper[status]
+
+            if special:
+                image = get_file_content(row.Link)
+                match = get_tuple(
+                    row.Country, row.Year, row["Source"], name=row.Name, isspecial=True
+                )
+            else:
+                match = get_tuple(
+                    row.Country, row.Year, row["Source"], value=row["Coin Value"]
+                )
+
             if status != "unavailable":
                 amount = large_int_to_readable(row["Amount"] * 1000)
-                response = f"{match}: {icon}{status.upper()}{icon} (mints: {amount})"
+                response = f"{match}:\n{icon}{status.upper()}{icon} (Mints: {amount})"
             else:
-                response = f"{match}: {icon}{status.upper()}{icon}"
-            update.message.reply_text(response, parse_mode="Markdown")
+                response = f"{match}:\n{icon}{status.upper()}{icon}"
+
+            if special:
+                if image is None:
+                    response = response.replace("(Mints:", "📷 No picture 📷(Mints:")
+                    update.message.reply_text(response, parse_mode="Markdown")
+                else:
+                    update.message.reply_photo(
+                        photo=image, caption=response, parse_mode="Markdown"
+                    )
+            else:
+                update.message.reply_text(response, parse_mode="Markdown")
 
     def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
         """
@@ -380,94 +423,136 @@ class CoinBot:
         further += f" Total coin count: {amount})"
         return f"{header}\n{further}"
 
+    def get_year(self, update, text: str) -> int:
+        years = []
+        for word in text.split(" "):
+            y = get_year(word)
+            if y < 1999 or y > CURRENT_YEAR:
+                continue
+            years.append(y)
+        if len(years) > 1:
+            self.return_message(update, f"Found more than one year {years}, try again!")
+            return -1
+        elif len(years) == 0:
+            return -1
+        return years[0]
+
     def search_special_coin(self, update, message: str):
-        user_id = update.message.from_user.id
         # User asked for a special/commemorative coin
-        to_llm = message.split("Special")[1]
-        print("to lLm", to_llm)
-        output = self.special_llm(to_llm)
+        text = message.split("Special")[1].strip()
 
-        output += "\nValue: 2 Euro"
-        print("LLM output", output)
-        # Extract feature values
-        country, year, value = self.extract_features(output.lower())
-        if country.capitalize() not in countries:
-            country = "none"
-        if year < 1999:
-            year = -1
-        name = get_feature_value(output, "Name")
-        print("Features", country, year, value, name)
-        # Nail down the Dataframe feature by feature
-        tdf = self.db.df[
-            (self.db.df["Coin Value"] == "2 euro") & (self.db.df["Special"])
-        ]
-        print(len(tdf), "org", len(self.db.df))
+        # Extract basic features
+        year = self.get_year(update, text)
+        country, matched = fuzzy_search_country(text)
+        logger.debug(f"Special coin: {text}, Country: {country}, Year: {year}")
 
-        # If year was given, filter by year
+        coin_df = self.db.df[self.db.df["Special"]]
+        num_specials = len(coin_df)
+        query = ""
         if year != -1:
-            tdf = tdf[(tdf.Year == year)]
-            print("Year", year, len(tdf))
+            coin_df = coin_df[coin_df["Year"] == year]
+            query += f"`Year: {year}`, "
+            logger.debug(f"After Year {year}: {len(coin_df)} entries remain")
+        if country != "":
+            coin_df = coin_df[coin_df["Country"] == country]
+            query += f"`Country: {country.capitalize()}`, "
+            logger.debug(f"After country {country}: {len(coin_df)} entries remain")
 
-        # If country was given, filter by country
-        if country and country.lower() not in ["unknown", "missing", "none"]:
-            tdf = tdf[(tdf.Country == country)]
-            print("Country", country, len(tdf))
-            if country == "germany":
-                sources = [
-                    s.lower()
-                    for s in message.split(" ")
-                    if len(s) == 1 and s.lower() in ["a", "d", "f", "g", "j"]
-                ]
-                if len(sources) == 1:
-                    source = sources[0]
-                elif len(sources) > 1:
-                    self.return_message(
-                        update,
-                        f"Found more than one mint location: {sources}, try again!",
-                    )
-                else:
-                    source = None
-                if source:
-                    tdf = tdf[(tdf.Source == source)]
-        if len(name) > 4 and name.lower() not in ["unknown", "missing", "none"]:
-            tdf = self.vectorstorage.query(name, df=tdf, verbose=True).sort_values(
-                by="Distance", ascending=True
+        text = text.replace(str(year), "").replace(matched, "").strip()
+        logger.debug(f"Remaining text: {text}")
+        if len(text.split(" ")) > 0:
+            # The query contains more information. Pass this to the vectorstorage
+            coin_df = self.vectorstorage.query(text, coin_df)
+            query += f"`Description: {text}`"
+            index = True
+        else:
+            index = False
+
+        if len(coin_df) == 0:
+            self.return_message(
+                update,
+                f"For your special coin with:\n{query}\nthere are no special 2 euro coins. Please retry!",
             )
-            # TODO: Threshold could be optimized
-            tdf = tdf[tdf["Distance"] < 0.65]
-        query = "\n\n\tValue = 2 Euro\n"
-        if year != -1:
-            query += f"\tYear = {year}\n"
-        if country:
-            query += f"\tCountry = {country.capitalize()}\n"
-        if name:
-            query += f"\tName = {name}\n"
-        if country == "germany" and source:
-            query += f"\tMint location = {source.upper()}\n"
-
-        final_df = tdf[tdf["Status"] == "collected"]
-        query += "\n"
-
-        # Return all coins in DB
-        if len(final_df) == 0:
-
-            response = f"🚀🎉 Hooray! A commemorative coin:{query}is not yet in the collection 🤩"
-            self.return_message(update, response)
-            self.slackbot(f"User {self.user_prefs[user_id]['username']}: {response}")
             return
-        self.return_message(
-            update,
-            f"For your query {query}the following coins are already in the collection:",
-        )
-        final_df = final_df.sort_values(by=["Year", "Country", "Name"])
-        for i, row in final_df.iterrows():
-            text = self.format_coin_result(row)
-            self.return_message(update, text)
+        elif not index and len(coin_df) == num_specials:
+            self.return_message(
+                update, "Be more specific, the query could not be parsed. Please retry!"
+            )
+            return
+
+        if not index:
+            self.return_message(
+                update,
+                f"Found {len(coin_df)} special coins for your query:\n{query}",
+            )
+            coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
+            self.report_series(update, coin_df, special=True)
+            return
+
+        self.return_message(update, f"Results for your special coin query:\n{query}")
+        # Performed vector index lookup, so needs to enter loop to potentially display more
+        user_id = update.message.from_user.id
+        logger.debug(f"Saving {len(coin_df)} for user {user_id}")
+        self.user_prefs[user_id]["data"] = coin_df
+        self.keep_displaying_special(update, user_id=user_id)
+
+    def keep_displaying_special(self, update, user_id: int, start_index: int = 0):
+        """
+        Displays a slice of the DataFrame and asks if the user wants to see more.
+
+        Args:
+            update: The Update object used to send messages. Contains the user ID
+                and thus also the data to display
+            user_id: The user ID.
+            start_index: The index to start slicing the DataFrame from.
+        """
+        coin_df = self.user_prefs[user_id]["data"]
+        end_index = start_index + 5
+        slice_df = coin_df.iloc[start_index:end_index]
+
+        # Display these coins using the existing report_series method
+        if not slice_df.empty:
+            self.report_series(update, slice_df, special=True)
+        else:
+            self.return_message(update, "No more special coins to display.")
+            return
+
+        # Check if there are more items to display
+        if end_index < len(coin_df):
+            # Send a message with a button asking if the user wants to see more
+            keyboard = [
+                [
+                    InlineKeyboardButton(
+                        "Show more", callback_data=f"showmore_{end_index}"
+                    )
+                ]
+            ]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            update.message.reply_text(
+                "Would you like to see more?", reply_markup=reply_markup
+            )
+        else:
+            update.message.reply_text("Those were all special coins 🙂")
+
+    def callback_query_handler(self, update, context):
+        """
+        Handles callback queries for pagination of special coins display.
+        """
+        query = update.callback_query
+        query.answer()
+        user_id = query.from_user.id
+
+        # Extract the index from the callback data
+        _, start_index = query.data.split("_")
+        start_index = int(start_index)
+        logger.debug(f"Continue displaying from entry {start_index} for user {user_id}")
+
+        # Continue displaying special coins starting from the next index
+        self.keep_displaying_special(query, user_id=user_id, start_index=start_index)
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
 
-        # try:
         if True:
             user_id = update.message.from_user.id
             # Parse the message
@@ -526,12 +611,12 @@ class CoinBot:
                 )
             ]
 
-            match = get_tuple(country, value, year, source)
+            match = get_tuple(country, year, source, value=value)
 
             # Respond to the user
             if len(coin_df) == 0:
                 response = f"🤷🏻‍♂️ The coin {match} was not found. Check your input 🧐"
-                print(f"Returns: {response}\n")
+                logger.info(f"Returns: {response}\n")
                 self.return_message(update, response)
                 return
 
@@ -557,8 +642,7 @@ class CoinBot:
             self.return_message(update, response, amount=amount)
 
         # except Exception as e:
-        #     response = f"An error occurred: {e}"
-        #     self.return_message(update, response)
+        #     self.return_message(update, f"An error occurred: {e}")
 
     def run(self):
         logger.info("Starting bot")
@@ -596,6 +680,18 @@ class CoinBot:
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
             ),
+            temperature=0.0,
+        )
+        self.special_llm = LLM(
+            model="meta-llama/Llama-2-70b-chat-hf",
+            token=self.anyscale_token,
+            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
+            temperature=0.0,
+        )
+        self.special_llm = LLM(
+            model="meta-llama/Llama-2-70b-chat-hf",
+            token=self.anyscale_token,
+            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,
         )
         self.special_llm = LLM(
