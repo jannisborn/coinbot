@@ -27,7 +27,9 @@ class DataBase:
     def get_status(self):
         collected = len(self.df[self.df["Status"] == "collected"])
         special = len(self.df[self.df["Special"]])
-        speccol = len(special[special.Status == "collected"])
+        speccol = len(
+            self.df[(self.df["Status"] == "collected") & (self.df["Special"])]
+        )
         report = f"🤑🪙 Collection status 🤑🪙\nOut of {len(self.df)} coins, {collected} are collected.\nFrom {special} special coins {speccol} are collected"
         logger.info(report)
         return report
