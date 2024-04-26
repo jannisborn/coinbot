@@ -23,6 +23,7 @@ def get_wikitable_and_imgs():
     # We have to align both lists
     table_iter = iter(tables)
     tables = [next(table_iter) if "Land" in df.columns else [] for df in dfs]
+    name_to_link = {}
     for i, (table, df) in enumerate(zip(tables, dfs)):
         if i < 2 or table == []:
             continue
@@ -31,10 +32,19 @@ def get_wikitable_and_imgs():
         image_urls = []
         for j, (tablerow, (_, dfrow)) in enumerate(zip(tablerows[1:], df.iterrows())):
             img_tag = tablerow.find("img")
-            if img_tag and "src" in img_tag.attrs:
+            anlass = dfrow["Anlass"]
+            if img_tag and "alt" in img_tag.attrs:
+                # This means that there is no image for this coin
+                if anlass in name_to_link.keys():
+                    # Try to retrieve if it is duplicate name
+                    image_urls.append(name_to_link[anlass])
+                else:
+                    image_urls.append("")
+            elif img_tag and "src" in img_tag.attrs:
                 img_url = img_tag["src"]
                 if img_url.startswith("//"):
                     img_url = "https:" + img_url  # Ensure the URL is complete
+                name_to_link[anlass] = img_url
                 image_urls.append(img_url)
             else:
                 image_urls.append("")

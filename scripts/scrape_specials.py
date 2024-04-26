@@ -7,12 +7,11 @@ from itertools import cycle, islice
 import pandas as pd
 import typer
 from loguru import logger
-from wikitable import wikitable
+from openpyxl import load_workbook
+from wikitable import get_wikitable_and_imgs
 
 from coinbot.formatting import fix_string, get_years, non_alphabetic
 from coinbot.metadata import country_ger2eng
-
-DATA_LINK = "https://de.wikipedia.org/wiki/2-Euro-Gedenkmünzen"
 
 
 def main(
@@ -20,7 +19,7 @@ def main(
         ..., "--output", "-o", help="Path to the output .csv file"
     )
 ):
-    dfs = wikitable(DATA_LINK, to_csv=False, overwrite=False)
+    dfs = get_wikitable_and_imgs()
     all_data = []
     entry_buffer = []  # Buffer to store entries until a description is found
     desc = ""
@@ -103,6 +102,7 @@ def main(
                     "Menge in Mill.": amount,
                     "Prägestätte": "",
                     "Wert": "2 euro",
+                    "Link": row["imageurl"],
                 }
                 if countries[k] != "Deutschland":
                     entry_buffer.append(base_entry)
@@ -127,10 +127,28 @@ def main(
         "Landspezifisch?",
         df["Name der Münze"].apply(lambda x: x not in unique_names),
     )
-    if os.path.exists(filepath):
-        df.to_csv(filepath.replace(".csv", "_new.csv"))
-    else:
-        df.to_csv(filepath)
+
+    if filepath.endswith("xlsm"):
+        wb = load_workbook(filepath, read_only=False, keep_vba=True)
+        ws = wb["Sondermünzen"]
+
+        # Collect existing names from the column (assumes 'Name der Münze' is in column A)
+        existing_names = set()
+        for row in ws.iter_rows(min_col=1, max_col=1, min_row=1, max_row=ws.max_row):
+            if row[0].value:
+                existing_names.add(row[0].value)
+        # Append new data only if the name is not already present
+        for _, data_row in df.iterrows():
+            name = data_row["Name der Münze"]
+            if name not in existing_names:
+                ws.append(data_row.tolist())
+
+        wb.save(filepath.replace(".xlsm", "_new.xlsm"))
+    elif filepath.endswith("csv"):
+        if os.path.exists(filepath):
+            df.to_csv(filepath.replace(".csv", "_new.csv"))
+        else:
+            df.to_csv(filepath)
 
 
 if __name__ == "__main__":
