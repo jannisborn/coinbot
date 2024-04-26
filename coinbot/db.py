@@ -25,12 +25,55 @@ class DataBase:
         )
 
     def get_status(self):
+
+        report_lines = []
+        report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
+
+        # Total coins info
+        total_coins = len(self.df)
         collected = len(self.df[self.df["Status"] == "collected"])
         special = len(self.df[self.df["Special"]])
         speccol = len(
             self.df[(self.df["Status"] == "collected") & (self.df["Special"])]
         )
-        report = f"🤑🪙 Collection status 🤑🪙\nOut of {len(self.df)} coins, {collected} are collected.\nFrom {special} special coins {speccol} are collected"
+        tr = collected / total_coins
+        sr = speccol / special
+
+        # Formatting the total and special coins information
+        report_lines.append(
+            f"**{self._emoji(tr)}Total coins: {total_coins}, Collected: {collected} ({tr:.2%}%)**"
+        )
+        report_lines.append(
+            f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%}%)**\n"
+        )
+
+        # Generating report by Country
+        for country in self.df["Country"].unique():
+            country_df = self.df[self.df["Country"] == country]
+            total_in_country = len(country_df)
+            collected_in_country = len(country_df[country_df["Status"] == "collected"])
+            fraction_collected_country = (
+                collected_in_country / total_in_country if total_in_country > 0 else 0
+            )
+            report_lines.append(
+                f"{self._emoji(fraction_collected_country)} {country}: {fraction_collected_country:.2%} collected"
+            )
+
+        # Generating report by Year
+        report_lines.append("")  # Add a newline for separation
+        for year in sorted(self.df["Year"].unique()):
+            year_df = self.df[self.df["Year"] == year]
+            total_in_year = len(year_df)
+            collected_in_year = len(year_df[year_df["Status"] == "collected"])
+            fraction_collected_year = (
+                collected_in_year / total_in_year if total_in_year > 0 else 0
+            )
+            report_lines.append(
+                f"{self._emoji(fraction_collected_year)} {year}: {fraction_collected_year:.2%} collected"
+            )
+
+        # Joining report lines into a single string
+        report = "\n".join(report_lines)
         logger.info(report)
         return report
 
@@ -166,3 +209,30 @@ class DataBase:
         df["Coin Value"] = df["Coin Value"].str.lower()
         df["Special"] = True
         return df
+
+    def _emoji(self, fraction: float) -> str:
+        """Returns an emoji based on the fraction collected, one per decile."""
+        if fraction == 1:
+            return "✅"
+        elif fraction >= 0.9:
+            return "🟢"
+        elif fraction >= 0.8:
+            return "🟢"
+        elif fraction >= 0.7:
+            return "🍏"
+        elif fraction >= 0.6:
+            return "⚪"
+        elif fraction >= 0.5:
+            return "🟡"
+        elif fraction >= 0.4:
+            return "🟠"
+        elif fraction >= 0.3:
+            return "🔴"
+        elif fraction >= 0.2:
+            return "🟣"
+        elif fraction >= 0.1:
+            return "🟤"
+        elif fraction >= 0:
+            return "⚫"
+        else:
+            return "❔"

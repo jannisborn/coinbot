@@ -17,7 +17,7 @@ To search a 2 Euro special coin (the official term is "commemorative coin"), use
 `Special Olympics` ➡️ Lists all special coins with the word "Olympics" in the name.
 `Special Germany Hamburg 2023` ➡️ Lists all German special coins from 2023 related to Hamburg.
 
-Last, to get a report about the current collection status write: `Status`.
+Last, to get a report about the current collection status write: `Status`
 
 Now you're ready! Get started and happy coin collecting 😊
 """
