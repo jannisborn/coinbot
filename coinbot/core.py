@@ -145,6 +145,9 @@ class CoinBot:
             "username:"
         ) or text.lower().startswith("name:")
 
+        if text.lower().startswith("status"):
+            self.return_message(update, self.db.get_status())
+
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
                 response = (
@@ -358,7 +361,7 @@ class CoinBot:
             icon = dict_mapper[status]
 
             if special:
-                image = get_file_content(row.Link)
+                image = get_file_content(row.Link) if row.Link else None
                 match = get_tuple(
                     row.Country, row.Year, row["Source"], name=row.Name, isspecial=True
                 )

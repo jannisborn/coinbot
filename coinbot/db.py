@@ -23,11 +23,14 @@ class DataBase:
                 lambda x: x.lower() if isinstance(x, str) else x
             )
         )
+
+    def get_status(self):
         collected = len(self.df[self.df["Status"] == "collected"])
         special = len(self.df[self.df["Special"]])
-        logger.info(
-            f"Total: {len(self.df)} coins, {special} specials and {collected} collected"
-        )
+        speccol = len(special[special.Status == "collected"])
+        report = f"🤑🪙 Collection status 🤑🪙\nOut of {len(self.df)} coins, {collected} are collected.\nFrom {special} special coins {speccol} are collected"
+        logger.info(report)
+        return report
 
     def cell_status(self, cell):
         """Determine the collection status based on the cell color."""
