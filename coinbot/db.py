@@ -23,6 +23,7 @@ class DataBase:
                 lambda x: x.lower() if isinstance(x, str) else x
             )
         )
+        self.df.to_csv("tmp.csv")
 
     def get_status(self):
 
@@ -30,12 +31,11 @@ class DataBase:
         report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
 
         # Total coins info
-        total_coins = len(self.df)
-        collected = len(self.df[self.df["Status"] == "collected"])
-        special = len(self.df[self.df["Special"]])
-        speccol = len(
-            self.df[(self.df["Status"] == "collected") & (self.df["Special"])]
-        )
+        df = self.df[self.df["Status"] != "unavailable"]
+        total_coins = len(df)
+        collected = len(df[df["Status"] == "collected"])
+        special = len(df[df["Special"]])
+        speccol = len(df[(df["Status"] == "collected") & (df["Special"])])
         tr = collected / total_coins
         sr = speccol / special
 
@@ -48,28 +48,24 @@ class DataBase:
         )
 
         # Generating report by Country
-        for country in self.df["Country"].unique():
-            country_df = self.df[self.df["Country"] == country]
-            total_in_country = len(country_df)
-            collected_in_country = len(country_df[country_df["Status"] == "collected"])
-            fraction_collected_country = (
-                collected_in_country / total_in_country if total_in_country > 0 else 0
-            )
+        for country in df["Country"].unique():
+            country_df = df[df["Country"] == country]
+            tot = len(country_df)
+            col = len(country_df[country_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fraction_collected_country)} {country}: {fraction_collected_country:.2%} collected"
+                f"{self._emoji(fra)} {country}: {fra:.2%} ({col}/{tot}) collected"
             )
 
         # Generating report by Year
         report_lines.append("")  # Add a newline for separation
-        for year in sorted(self.df["Year"].unique()):
-            year_df = self.df[self.df["Year"] == year]
-            total_in_year = len(year_df)
-            collected_in_year = len(year_df[year_df["Status"] == "collected"])
-            fraction_collected_year = (
-                collected_in_year / total_in_year if total_in_year > 0 else 0
-            )
+        for year in sorted(df["Year"].unique()):
+            year_df = df[df["Year"] == year]
+            tot = len(year_df)
+            col = len(year_df[year_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fraction_collected_year)} {year}: {fraction_collected_year:.2%} collected"
+                f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot}) collected"
             )
 
         # Joining report lines into a single string
