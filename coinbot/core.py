@@ -147,6 +147,7 @@ class CoinBot:
 
         if text.lower().startswith("status"):
             self.return_message(update, self.db.get_status())
+            return
 
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
