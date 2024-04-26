@@ -496,7 +496,6 @@ class CoinBot:
         self.return_message(update, f"Results for your special coin query:\n{query}")
         # Performed vector index lookup, so needs to enter loop to potentially display more
         user_id = update.message.from_user.id
-        logger.debug(f"Saving {len(coin_df)} for user {user_id}")
         self.user_prefs[user_id]["data"] = coin_df
         self.keep_displaying_special(update, user_id=user_id)
 
