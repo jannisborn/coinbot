@@ -257,13 +257,13 @@ class CoinBot:
         if language == "English":
             response_message = update.message.reply_text(text, parse_mode="Markdown")
         else:
-            # Uncommented until a better LM is available
+            # # Uncommented until a better LM is available
             # self.translate_llm = LLM(
-            #     model="Open-Orca/Mistral-7B-OpenOrca",
+            #     model="meta-llama/Llama-3-70b-chat-hf",
             #     token=self.anyscale_token,
             #     task_prompt=(
-            #         f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments!
-            #         Here's the text to translate:\n\n"
+            #         f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments!"
+            #         "Here's the text to translate:\n\n"
             #     ),
             #     temperature=0.5,
             #     remind_task=1,
@@ -399,8 +399,18 @@ class CoinBot:
             Tuple[str, int, str, str]: The country, year, value, and source.
         """
         c = get_feature_value(llm_output, "country")
-        value = get_feature_value(llm_output, "value").lower()
-        value = value.replace("€", " euro").replace("  ", " ").strip()
+        value = get_feature_value(llm_output, "value").lower().strip()
+        value = (
+            value.replace("€", " euro")
+            .replace("cents", "cent")
+            .replace("  ", " ")
+            .strip()
+        )
+
+        if "cent" not in value and "euro" not in value:
+            if int(value) in [5, 10, 20, 50]:
+                value += " cent"
+
         year = get_feature_value(llm_output, "year")
         try:
             year = int(year)
@@ -655,22 +665,22 @@ class CoinBot:
 
     def set_llms(self):
         self.eu_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
+            model="meta-llama/Llama-3-70b-chat-hf",
             token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value and year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value and year. Use a colon (:) before each feature value. Name the unit of the value (cent or euro). If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
+            model="meta-llama/Llama-3-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, coin value, year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "You are a feature extractor! Extract 4 features, Country, coin value, year and source. Name the unit of the value (euro or cent). The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
             temperature=0.0,
         )
         self.joke_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
+            model="meta-llama/Llama-3-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
@@ -686,19 +696,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.special_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
-            token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
-            temperature=0.0,
-        )
-        self.special_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
-            token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
-            temperature=0.0,
-        )
-        self.special_llm = LLM(
-            model="meta-llama/Llama-2-70b-chat-hf",
+            model="meta-llama/Llama-3-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,

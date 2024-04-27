@@ -68,6 +68,17 @@ class DataBase:
                 f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot}) collected"
             )
 
+        # Generating report by Coin value
+        report_lines.append("")  # Add a newline for separation
+        for value in sorted(df["Coin Value"].unique()):
+            value_df = df[df["Coin Value"] == value]
+            tot = len(value_df)
+            col = len(value_df[value_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
+            report_lines.append(
+                f"{self._emoji(fra)} {value}: {fra:.2%} ({col}/{tot}) collected"
+            )
+
         # Joining report lines into a single string
         report = "\n".join(report_lines)
         logger.info(report)
