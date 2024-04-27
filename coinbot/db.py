@@ -29,6 +29,7 @@ class DataBase:
 
         report_lines = []
         report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
+        report_lines.append("Color code:\t100%✅\t>80%\t>60%\t>40%�\t>20%🟠🔴>0%⚫")
 
         # Total coins info
         df = self.df[self.df["Status"] != "unavailable"]
@@ -41,24 +42,25 @@ class DataBase:
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emoji(tr)}Total coins: {total_coins}, Collected: {collected} ({tr:.2%}%)**"
+            f"**{self._emoji(tr)}Total coins: {total_coins}, Collected: {collected} ({tr:.2%})**"
         )
         report_lines.append(
-            f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%}%)**\n"
+            f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%})**\n"
         )
 
         # Generating report by Country
+        report_lines.append("Countries:")
         for country in df["Country"].unique():
             country_df = df[df["Country"] == country]
             tot = len(country_df)
             col = len(country_df[country_df["Status"] == "collected"])
             fra = col / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)} {country}: {fra:.2%} ({col}/{tot}) collected"
+                f"{self._emoji(fra)} {country.capitalize()}: {fra:.2%} ({col}/{tot}) collected"
             )
 
         # Generating report by Year
-        report_lines.append("")  # Add a newline for separation
+        report_lines.append("\nYear:")  # Add a newline for separation
         for year in sorted(df["Year"].unique()):
             year_df = df[df["Year"] == year]
             tot = len(year_df)
@@ -69,8 +71,8 @@ class DataBase:
             )
 
         # Generating report by Coin value
-        report_lines.append("")  # Add a newline for separation
-        for value in sorted(df["Coin Value"].unique()):
+        report_lines.append("\nCoin Value:")  # Add a newline for separation
+        for value in df["Coin Value"].unique():
             value_df = df[df["Coin Value"] == value]
             tot = len(value_df)
             col = len(value_df[value_df["Status"] == "collected"])
@@ -219,27 +221,20 @@ class DataBase:
 
     def _emoji(self, fraction: float) -> str:
         """Returns an emoji based on the fraction collected, one per decile."""
-        if fraction == 1:
+
+        if fraction < 0 or fraction > 1:
+            return "❔"
+        elif fraction == 1:
             return "✅"
-        elif fraction >= 0.9:
-            return "🟢"
         elif fraction >= 0.8:
             return "🟢"
-        elif fraction >= 0.7:
-            return "🍏"
         elif fraction >= 0.6:
-            return "⚪"
-        elif fraction >= 0.5:
             return "🟡"
         elif fraction >= 0.4:
             return "🟠"
-        elif fraction >= 0.3:
-            return "🔴"
         elif fraction >= 0.2:
-            return "🟣"
-        elif fraction >= 0.1:
-            return "🟤"
-        elif fraction >= 0:
+            return "🔴"
+        elif fraction >= 0.0:
             return "⚫"
         else:
             return "❔"
