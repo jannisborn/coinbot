@@ -29,7 +29,9 @@ class DataBase:
 
         report_lines = []
         report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
-        report_lines.append("Color code:\t100%✅\t>80%\t>60%\t>40%�\t>20%🟠🔴>0%⚫")
+        report_lines.append(
+            "Color code:\n100% -> ✅\n>80% -> 🟢\n>60% -> 🟡\n>40% -> 🟠\n>20% -> 🔴\n>0% -> ⚫\n"
+        )
 
         # Total coins info
         df = self.df[self.df["Status"] != "unavailable"]
@@ -48,31 +50,31 @@ class DataBase:
             f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%})**\n"
         )
 
+        # Generating report by Year
+        report_lines.append("Year:")  # Add a newline for separation
+        for year in sorted(df["Year"].unique()):
+            year_df = df[df["Year"] == year]
+            tot = len(year_df)
+            col = len(year_df[year_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
+            report_lines.append(f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot})")
+
         # Generating report by Country
-        report_lines.append("Countries:")
+        report_lines.append("\nCountries:")
         for country in df["Country"].unique():
             country_df = df[df["Country"] == country]
             tot = len(country_df)
             col = len(country_df[country_df["Status"] == "collected"])
             fra = col / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)} {country.capitalize()}: {fra:.2%} ({col}/{tot}) collected"
-            )
-
-        # Generating report by Year
-        report_lines.append("\nYear:")  # Add a newline for separation
-        for year in sorted(df["Year"].unique()):
-            year_df = df[df["Year"] == year]
-            tot = len(year_df)
-            col = len(year_df[year_df["Status"] == "collected"])
-            fra = col / tot if tot > 0 else 0
-            report_lines.append(
-                f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot}) collected"
+                f"{self._emoji(fra)} {country.capitalize()}: {fra:.2%} ({col}/{tot})"
             )
 
         # Generating report by Coin value
         report_lines.append("\nCoin Value:")  # Add a newline for separation
-        for value in df["Coin Value"].unique():
+        for value in [f"{x} cent" for x in [1, 2, 5, 10, 20, 50]] + [
+            f"{x} euro" for x in [1, 2]
+        ]:
             value_df = df[df["Coin Value"] == value]
             tot = len(value_df)
             col = len(value_df[value_df["Status"] == "collected"])
