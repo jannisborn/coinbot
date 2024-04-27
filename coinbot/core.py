@@ -316,7 +316,7 @@ class CoinBot:
 
         # Determine whether query is about searching a coin or querying a series
         msg = update.message.text.lower().strip()
-        if msg.startswith("status"):
+        if msg.startswith("series"):
             self.extract_and_report_series(update, msg)
         else:
             # Query the DB with a specific coin
@@ -336,7 +336,7 @@ class CoinBot:
             )
             return
 
-        words = message.split("status ")[1].split(" ")
+        words = message.split("series ")[1].split(" ")
         words.remove(str(year))
         country = self.to_english_llm(" ".join(words)).strip().lower()
 

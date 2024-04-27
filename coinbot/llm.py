@@ -8,8 +8,8 @@ For example, if you write: \n\n`Spain 2010 1 Euro`\n\n I will tell you that the 
 
 Remember that for German coins you also need to enter the minting site which is a single character (A, D, F, G, J), e.g.,: \n`20 Cent 2021 Germany D`.\
 
-You can also request a list of coins, just start your message with `Status`, for example:
-`Status France 2010` ➡️ Lists all coins from France from 2010.
+You can also request a list of coins, just start your message with `Series`, for example:
+`Series France 2010` ➡️ Lists all coins from France from 2010.
 
 To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
 `Special Austria` ➡️ Lists all special coins from Austria.
