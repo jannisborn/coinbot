@@ -1,5 +1,6 @@
 import openpyxl
 import pandas as pd
+from loguru import logger
 
 from coinbot.metadata import coin_values, colors, countries
 from coinbot.utils import convert_to_thousands
@@ -18,24 +19,81 @@ class DataBase:
         self.sonder_df = self.setup_sonder_dataframe()
         self.df = pd.concat([self.eu_df, self.ger_df, self.sonder_df])
         self.df.update(
-            self.df.drop(columns=["Name"]).map(
+            self.df.drop(columns=["Name", "Link"]).map(
                 lambda x: x.lower() if isinstance(x, str) else x
             )
         )
-        print(
-            self.df[
-                (self.df["Country"] == "germany")
-                & (self.df["Special"])
-                & (self.df["Year"] == 2008)
-            ]
+        self.df.to_csv("tmp.csv")
+
+    def get_status(self):
+
+        report_lines = []
+        report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
+        report_lines.append(
+            "Color code:\n100% -> ✅\n>80% -> 🟢\n>60% -> 🟡\n>40% -> 🟠\n>20% -> 🔴\n>0% -> ⚫\n"
         )
+
+        # Total coins info
+        df = self.df[self.df["Status"] != "unavailable"]
+        total_coins = len(df)
+        collected = len(df[df["Status"] == "collected"])
+        special = len(df[df["Special"]])
+        speccol = len(df[(df["Status"] == "collected") & (df["Special"])])
+        tr = collected / total_coins
+        sr = speccol / special
+
+        # Formatting the total and special coins information
+        report_lines.append(
+            f"**{self._emoji(tr)}Total coins: {total_coins}, Collected: {collected} ({tr:.2%})**"
+        )
+        report_lines.append(
+            f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%})**\n"
+        )
+
+        # Generating report by Year
+        report_lines.append("Year:")  # Add a newline for separation
+        for year in sorted(df["Year"].unique()):
+            year_df = df[df["Year"] == year]
+            tot = len(year_df)
+            col = len(year_df[year_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
+            report_lines.append(f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot})")
+
+        # Generating report by Country
+        report_lines.append("\nCountries:")
+        for country in df["Country"].unique():
+            country_df = df[df["Country"] == country]
+            tot = len(country_df)
+            col = len(country_df[country_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
+            report_lines.append(
+                f"{self._emoji(fra)} {country.capitalize()}: {fra:.2%} ({col}/{tot})"
+            )
+
+        # Generating report by Coin value
+        report_lines.append("\nCoin Value:")  # Add a newline for separation
+        for value in [f"{x} cent" for x in [1, 2, 5, 10, 20, 50]] + [
+            f"{x} euro" for x in [1, 2]
+        ]:
+            value_df = df[df["Coin Value"] == value]
+            tot = len(value_df)
+            col = len(value_df[value_df["Status"] == "collected"])
+            fra = col / tot if tot > 0 else 0
+            report_lines.append(
+                f"{self._emoji(fra)} {value}: {fra:.2%} ({col}/{tot}) collected"
+            )
+
+        # Joining report lines into a single string
+        report = "\n".join(report_lines)
+        logger.info(report)
+        return report
 
     def cell_status(self, cell):
         """Determine the collection status based on the cell color."""
         # Assuming default colors for collected, uncollected, and unavailable
         fill_color = cell.fill.start_color.index
         if fill_color not in colors.keys():
-            print(cell, fill_color)
+            logger.warning(f"Unknown cell color {fill_color} in {cell}")
         return colors.get(fill_color, "unknown")
 
     def setup_eu_dataframe(self):
@@ -67,7 +125,6 @@ class DataBase:
                         amount = (
                             cell.value if cell.value not in [None, "---", "???"] else 0
                         )
-                        # print(country, year, coin_value, cell.fill.start_color.index)
                         status = self.cell_status(cell)
                         data.append([country, year, coin_value, amount, status])
                 num_countries += 1
@@ -136,11 +193,12 @@ class DataBase:
             amount = int(row[3].value * 1000)  # Convert to thousands
             source = row[5].value
             cs = row[5].value is not None
-            desc = row[7].value
-            collected = self.cell_status(row[0])
+            link = row[7].value
+            desc = row[8].value
+            state = self.cell_status(row[0])
 
             data.append(
-                [name, country, year, "2 euro", source, amount, collected, cs, desc]
+                [name, country, year, "2 euro", source, amount, state, cs, desc, link]
             )
 
         # Create DataFrame from data
@@ -156,8 +214,29 @@ class DataBase:
                 "Status",
                 "Country-specific",
                 "Description",
+                "Link",
             ],
         )
         df["Coin Value"] = df["Coin Value"].str.lower()
         df["Special"] = True
         return df
+
+    def _emoji(self, fraction: float) -> str:
+        """Returns an emoji based on the fraction collected, one per decile."""
+
+        if fraction < 0 or fraction > 1:
+            return "❔"
+        elif fraction == 1:
+            return "✅"
+        elif fraction >= 0.8:
+            return "🟢"
+        elif fraction >= 0.6:
+            return "🟡"
+        elif fraction >= 0.4:
+            return "🟠"
+        elif fraction >= 0.2:
+            return "🔴"
+        elif fraction >= 0.0:
+            return "⚫"
+        else:
+            return "❔"

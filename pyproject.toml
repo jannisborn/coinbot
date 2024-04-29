@@ -22,8 +22,9 @@ slackclient = "^2.9.4"
 openai = "^1.13.3"
 numpy = "^1.26.4"
 jupyter = "^1.0.0"
-wikitable = "^1.0.0"
 typer = "^0.12.3"
+levenshtein = "^0.25.1"
+lxml = "^5.2.1"
 
 [build-system]
 requires = ["poetry-core"]

@@ -23,41 +23,40 @@ class VectorStorage:
     def fit(self, *args, **kwargs):
         self.register_data(*args, **kwargs)
 
-    def query(
-        self, text: str, df: pd.DataFrame, verbose: bool = False
-    ) -> Tuple[str, float]:
+    def query(self, text: str, df: pd.DataFrame, nn: int = -1) -> pd.DataFrame:
         """
         Query the vector storage for the best match to the given text.
 
         Args:
             text: The text to query for.
-            verbose: Whether best results should be displayed. Defaults to False.
             df: A pandas DataFrame with a column `Name` which holds a subset of
                 the data to query.
+            nn: The number of nearest neighbors to retrieve. Defaults to -1, meaning
+                everything is retrieved.
 
         Returns:
-            Tuple[str, float]: The best match and the distance to the query.
+            pd.DataFrame: The filtered DF.
         """
+        if len(df) <= nn:
+            logger.warning(
+                f"Received only {len(df)} potential but asking for {nn} matches, will display all"
+            )
+            return df
+        logger.debug(f"Querying vector storage with {len(df)} coins and: {text}")
         query_embedding = self.model.embed(text)
         distances = np.linalg.norm(self.embeddings - query_embedding, axis=1)
         possible_matches = list(df["Name"].values)
-        print(df)
-        print(len(distances), "here")
-        for i in range(len(df)):
-            if possible_matches[i] in self.raw_data:
-                df.loc[i, "Distance"] = distances[
-                    self.raw_data.index(possible_matches[i])
-                ]
-        if not verbose:
-            return df
-
-        nns = np.argsort(distances)
-        matches = [self.raw_data[i] for i in nns]
-        for i, (n, m) in enumerate(zip(nns, matches)):
-            logger.info(f"{i+1}: {m} with distance {n}")
-            if i > 4:
-                break
-        return df
+        df_distances = [
+            (
+                distances[self.raw_data.index(possible_matches[i])]
+                if possible_matches[i] in self.raw_data
+                else 10**6
+            )
+            for i in range(len(df))
+        ]
+        df.insert(0, "Distance", df_distances)
+        df = df.sort_values(by="Distance", ascending=True)
+        return df.head(n=len(df) if nn == -1 else nn)
 
     def __call__(self, *args, **kwargs):
         return self.query(*args, **kwargs)
@@ -84,4 +83,9 @@ class VectorStorage:
         )
         vectorstorage.embeddings = data["embeddings"]
         vectorstorage.raw_data = list(data["text"])
+        if len(vectorstorage.embeddings) != len(vectorstorage.raw_data):
+            raise ValueError("Unequal number of embeddings and raw data")
+        logger.debug(
+            f"Restored vectorstorage {str(data['model_name'])} shape {vectorstorage.embeddings.shape}"
+        )
         return vectorstorage
