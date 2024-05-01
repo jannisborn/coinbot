@@ -688,7 +688,7 @@ class CoinBot:
             temperature=0.6,
         )
         self.to_english_llm = LLM(
-            model="Open-Orca/Mistral-7B-OpenOrca",
+            model="meta-llama/Llama-3-70b-chat-hf",
             token=self.anyscale_token,
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
