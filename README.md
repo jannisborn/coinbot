@@ -18,7 +18,7 @@ This Telegram coinbot helps me (and enthusiastic fellows) to identify and catalo
 Text the Telegram coinbot with [@coincollectionbot](https://t.me/coincollectionbot)
 
 <div align="center">
-  <img src="assets/qr.jpg" width="30%" alt="QR Code">
+  <img src="assets/qr.png" width="25%" alt="QR Code">
 </div>
 
 
