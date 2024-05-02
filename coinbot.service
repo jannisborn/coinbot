@@ -1,0 +1,14 @@
+[Unit]
+Description=Jannis' Telegram Coin Bot
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/root/telegram-coin-bot
+ExecStart=/root/.local/bin/poetry run python /root/coinbot/app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

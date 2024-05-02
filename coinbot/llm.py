@@ -1,5 +1,6 @@
 import numpy as np
 import openai
+import re
 
 INSTRUCTION_MESSAGE = """
 I'm helping you to identify & collect **rare** EURO coins. Just ask me about a coin. I always need the value, the country and the year of the coin. I will let you know how many times the coin was minted and if it's already available in Jannis' coin collection. 
@@ -26,7 +27,10 @@ Now you're ready! Get started and happy coin collecting 😊
 def get_feature_value(output: str, feature: str) -> str:
     if feature not in output:
         return ""
-    return output.split(f"{feature}:")[-1].split("\n")[0].strip()
+    value = output.split(f"{feature}:")[-1].split("\n")[0].strip()
+    cleaned_value = re.sub(r'[!@#$%^&*()_+\-=\[\]{};\'\\:"|,.<>\/?]', '', value)
+    return value
+
 
 
 class LLM:
