@@ -15,10 +15,11 @@ Each euro coin has:
 As of mid 2024, there are 2801 coins, from which i have collected almost 1400 (~50%). 
 This Telegram coinbot helps me (and enthusiastic fellows) to identify and catalog new coins. It's perfect for numismatics enthusiasts and casual collectors alike!
 
-Text the Telegram coinbot with @coincollectionbot
+Text the Telegram coinbot with [@coincollectionbot](https://t.me/coincollectionbot)
 
-![QR](assets/qr.jpg)
-
+<div align="center">
+  <img src="assets/qr.jpg" width="30%" alt="QR Code">
+</div>
 
 
 ### Screenshots 📸
