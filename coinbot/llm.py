@@ -29,7 +29,7 @@ def get_feature_value(output: str, feature: str) -> str:
         return ""
     value = output.split(f"{feature}:")[-1].split("\n")[0].strip()
     cleaned_value = re.sub(r'[!@#$%^&*()_+\-=\[\]{};\'\\:"|,.<>\/?]', '', value)
-    return value
+    return cleaned_value
 
 
 
