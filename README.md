@@ -54,7 +54,7 @@ python app.py
 
 # Production 🌐
 
-On Linux, place the file `coinbot.service` (TODO: ADD RELATIVE LINK HERE) into your `/etc/systemd/system/`. Then run:
+On Linux, place the file `coinbot.service` into your `/etc/systemd/system/`. Then run:
 
 ```sh
 sudo systemctl daemon-reload # Reload daemon
