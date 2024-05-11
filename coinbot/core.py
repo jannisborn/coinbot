@@ -659,6 +659,7 @@ class CoinBot:
 
             if coin_status == "missing":
                 # Subsequently print status update
+                time.sleep(1)
                 self.return_message(
                     update,
                     self.db.status_delta(year=year, value=value, country=country),
