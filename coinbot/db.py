@@ -30,7 +30,7 @@ class DataBase:
         report_lines = []
         report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
         report_lines.append(
-            "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15%-->🟤\n>0% -> ⚫\n"
+            "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15% -> 🟤\n>0% -> ⚫\n0% -> ✖️"
         )
 
         # Total coins info
@@ -237,7 +237,9 @@ class DataBase:
             return "🔴"
         elif fraction >= 0.15:
             return "🟤"
-        elif fraction >= 0.0:
+        elif fraction > 0.0:
             return "⚫"
+        elif fraction == 0:
+            return "✖️"
         else:
             return "❔"
