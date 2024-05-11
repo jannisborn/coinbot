@@ -581,6 +581,7 @@ class CoinBot:
 
             if contains_germany(message, threshold=99):
                 output = self.ger_llm(message).lower()
+                logger.debug(f"German model says {output}")
                 if any([x in output for x in missing_hints]) or any(
                     [x not in output for x in ["source", "year", "country", "value"]]
                 ):
@@ -594,6 +595,7 @@ class CoinBot:
                 source = get_feature_value(output, "source").lower()
             else:
                 output = self.eu_llm(message).lower()
+                logger.debug(f"EU model says {output}")
                 if any([x in output for x in missing_hints]) or any(
                     [x not in output for x in ["year", "country", "value"]]
                 ):
@@ -668,14 +670,14 @@ class CoinBot:
         self.eu_llm = LLM(
             model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value and year. Use a colon (:) before each feature value. Name the unit of the value (cent or euro). If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
             model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, coin value, year and source. Name the unit of the value (euro or cent). The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
             temperature=0.0,
