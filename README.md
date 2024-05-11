@@ -3,7 +3,6 @@
 ![GitHub last commit](https://img.shields.io/github/last-commit/jannisborn/coinbot)
 ![GitHub issues](https://img.shields.io/github/issues/jannisborn/coinbot)
 ![Python version](https://img.shields.io/badge/python-3.8+-blue.svg)
-![License](https://img.shields.io/github/license/jannisborn/coinbot)
 
 I am building one of the largest collection of different euro coins collected from free currency circulation.
 Each euro coin has:
@@ -54,7 +53,7 @@ python app.py
 
 # Production 🌐
 
-On Linux, place the file `coinbot.service` (TODO: ADD RELATIVE LINK HERE) into your `/etc/systemd/system/`. Then run:
+On Linux, place the file `coinbot.service` into your `/etc/systemd/system/`. Then run:
 
 ```sh
 sudo systemctl daemon-reload # Reload daemon
