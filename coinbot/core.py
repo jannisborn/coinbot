@@ -654,6 +654,13 @@ class CoinBot:
             res = response.split("\n")[0]
             self.return_message(update, response, amount=amount)
 
+            if coin_status == "missing":
+                # Subsequently print status update
+                self.return_message(
+                    update,
+                    self.db.status_delta(year=year, value=value, country=country),
+                )
+
         # except Exception as e:
         #     self.return_message(update, f"An error occurred: {e}")
 

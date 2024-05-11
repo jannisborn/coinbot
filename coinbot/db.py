@@ -88,6 +88,28 @@ class DataBase:
         logger.info(report)
         return report
 
+    def status_delta(self, year: int, value: str, country: str):
+
+        report_lines = ["📈Here's how your find updates the stats\📈n"]
+        df = self.df[self.df["Status"] != "unavailable"]
+
+        def add_change(df: pd.DataFrame, msg: str):
+            total_coins = len(df)
+            collected = len(df[df["Status"] == "collected"])
+            tro, trn = (collected / total_coins), (collected + 1 / total_coins)
+            report_lines.append(f"{msg}: From {tro:.3%}% to {trn:.3f}%")
+
+        # 1. Overall change
+        add_change(df, msg="Total coins")
+        # 2. Country change
+        add_change(df[df.Country == country], msg=f"Country {country}")
+        # 3. Year change
+        add_change(df[df.Year == year], msg=f"Year {year}")
+        # 4. Coin value change
+        add_change(df[df["Coin Value"] == value], msg=f"Value {value}")
+        report = "\n".join(report_lines)
+        return report
+
     def cell_status(self, cell):
         """Determine the collection status based on the cell color."""
         # Assuming default colors for collected, uncollected, and unavailable
