@@ -417,6 +417,7 @@ class CoinBot:
         except ValueError:
             year = -1
         country = c if c == "" else self.to_english_llm(c)
+
         country = country.strip().lower()
         return country, year, value
 
@@ -665,13 +666,13 @@ class CoinBot:
 
     def set_llms(self):
         self.eu_llm = LLM(
-            model="meta-llama/Llama-3-70b-chat-hf",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract 3 features, Country, coin value and year. Use a colon (:) before each feature value. Name the unit of the value (cent or euro). If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
-            model="meta-llama/Llama-3-70b-chat-hf",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt=(
                 "You are a feature extractor! Extract 4 features, Country, coin value, year and source. Name the unit of the value (euro or cent). The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
@@ -680,7 +681,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.joke_llm = LLM(
-            model="meta-llama/Llama-3-70b-chat-hf",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
@@ -688,7 +689,7 @@ class CoinBot:
             temperature=0.6,
         )
         self.to_english_llm = LLM(
-            model="meta-llama/Llama-3-70b-chat-hf",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
@@ -696,7 +697,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.special_llm = LLM(
-            model="meta-llama/Llama-3-70b-chat-hf",
+            model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,
