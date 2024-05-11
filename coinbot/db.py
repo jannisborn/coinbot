@@ -85,7 +85,6 @@ class DataBase:
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
-        logger.info(report)
         return report
 
     def cell_status(self, cell):

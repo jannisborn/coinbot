@@ -651,7 +651,7 @@ class CoinBot:
             else:
                 response = "❓Coin not found."
 
-            res = response.split("\n")[0]
+            response = response.split("\n")[0]
             self.return_message(update, response, amount=amount)
 
         # except Exception as e:
