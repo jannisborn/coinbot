@@ -108,7 +108,7 @@ class DataBase:
                 year_row = rows[i + 1]
                 years = []
                 for cell in year_row[1:]:
-                    if isinstance(cell.value, int) and 1999 <= cell.value <= 2023:
+                    if isinstance(cell.value, int) and 1999 <= cell.value <= 2030:
                         years.append(cell.value)
                     elif cell.value is None:
                         break  # Stop if the year is None
