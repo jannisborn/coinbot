@@ -371,11 +371,11 @@ class CoinBot:
                     row.Country, row.Year, row["Source"], value=row["Coin Value"]
                 )
 
-            if status != "unavailable":
-                amount = large_int_to_readable(row["Amount"] * 1000)
-                response = f"{match}:\n{icon}{status.upper()}{icon} (Mints: {amount})"
+            if status != "unavailable" and row["Amount"] > 0:
+                amount = " (Mints: " + large_int_to_readable(*1000)
             else:
-                response = f"{match}:\n{icon}{status.upper()}{icon}"
+                amount = ""
+            response = f"{match}:\n{icon}{status.upper()}{icon}{amount}"
 
             if special:
                 if image is None:
@@ -420,23 +420,6 @@ class CoinBot:
 
         country = country.strip().lower()
         return country, year, value
-
-    def format_coin_result(self, row) -> str:
-        amount = large_int_to_readable(row["Amount"] * 1000)
-        header = f"Title: {row['Name']}"
-        if row["IsFederalStateSeries"]:
-            header += f" {row['Year']} {row['Source'].capitalize()}"
-            further = f"(Country = {row['Country'].capitalize()};"
-        elif row["Country-specific"]:
-            header += f" {row['Country'].capitalize()}"
-            further = f"(Year: {row['Year']};"
-            if row.Country == "germany":
-                header += f" {row['Source'].upper()}"
-        else:
-            further = f"(Country: {row['Country'].capitalize()}, Year: {row['Year']};"
-
-        further += f" Total coin count: {amount})"
-        return f"{header}\n{further}"
 
     def get_year(self, update, text: str) -> int:
         years = []
@@ -656,6 +639,14 @@ class CoinBot:
 
             response = response.split("\n")[0]
             self.return_message(update, response, amount=amount)
+
+            if coin_status == "missing":
+                # Subsequently print status update
+                time.sleep(1)
+                self.return_message(
+                    update,
+                    self.db.status_delta(year=year, value=value, country=country),
+                )
 
         # except Exception as e:
         #     self.return_message(update, f"An error occurred: {e}")
