@@ -88,6 +88,10 @@ class DataBase:
         return report
 
     def status_delta(self, year: int, value: str, country: str):
+        """
+        Sends a collection status update message to the user based on the
+        information of the just-collected coin.
+        """
 
         report_lines = ["📈Updated Stats📈\n"]
         df = self.df[self.df["Status"] != "unavailable"]
