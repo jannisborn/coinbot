@@ -156,12 +156,24 @@ def sane_no_country(text: str) -> bool:
         bool
     """
     # Check for coin size (assuming sizes are the same in any language)
-    coin_found = re.search(r"\b(1|2|5|10|20|50)\b", text) is not None
+    coin_size_patterns = [
+        r"\b(1|one|uno|eins|un)\b",  # English, Spanish, German, French for 1
+        r"\b(2|two|dos|zwei|deux)\b",  # English, Spanish, German, French for 2
+        r"\b(5|five|cinco|fünf|cinq)\b",  # English, Spanish, German, French for 5
+        r"\b(10|ten|diez|zehn|dix)\b",  # English, Spanish, German, French for 10
+        r"\b(20|twenty|veinte|zwanzig|vingt)\b",  # English, Spanish, German, French for 20
+        r"\b(50|fifty|cincuenta|fünfzig|cinquante)\b",  # English, Spanish, German, French for 50
+    ]
+    coin_pattern = r"|".join(coin_size_patterns)
+    coin_found = re.search(coin_pattern, text, re.IGNORECASE) is not None
     year_found = re.search(r"\b\d{4}\b", text) is not None
     source_found = re.search(r"\b(A|D|F|G|J)\b", text, re.IGNORECASE) is not None
     text_after_removal = re.sub(
-        r"\b(1|2|5|10|20|50)\b|\b\d{4}\b|\b(A|D|F|G|J|a|d|f|g|j)\b", "", text
-    )
+        r"\b(1|2|5|10|20|50)\b|\b\d{4}\b|\b(A|D|F|G|J|a|d|f|g|j)\b|\beuro\b|\bcent\b|€",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    ).strip()
     no_country_assumed = len(text_after_removal.strip()) <= 5
 
     return coin_found and year_found and source_found and no_country_assumed

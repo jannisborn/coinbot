@@ -372,7 +372,7 @@ class CoinBot:
                 )
 
             if status != "unavailable" and row["Amount"] > 0:
-                amount = " (Mints: " + large_int_to_readable(*1000)
+                amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000)
             else:
                 amount = ""
             response = f"{match}:\n{icon}{status.upper()}{icon}{amount}"
@@ -416,12 +416,12 @@ class CoinBot:
             year = int(year)
         except ValueError:
             year = -1
-        country = c if c == "" else self.to_english_llm(c)
 
-        country = country.strip().lower()
+        country = c if c == "" else self.to_english_llm(c)
+        country = country.strip().lower().replace(".", "")
         return country, year, value
 
-    def get_year(self, update, text: str) -> int:
+    def get_year_from_full(self, update, text: str) -> int:
         years = []
         for word in text.split(" "):
             y = get_year(word)
@@ -440,7 +440,7 @@ class CoinBot:
         text = message.split("Special")[1].strip()
 
         # Extract basic features
-        year = self.get_year(update, text)
+        year = self.get_year_from_full(update, text)
         country, matched = fuzzy_search_country(text)
         logger.debug(f"Special coin: {text}, Country: {country}, Year: {year}")
 
@@ -590,7 +590,6 @@ class CoinBot:
                     return
                 source = None
             country, year, value = self.extract_features(output)
-            logger.debug(f"Feature extraction LLM says {output}")
             logger.debug(f"Features for lookup: {country, year, value, source}")
 
             # Search in the dataframe
@@ -661,14 +660,14 @@ class CoinBot:
         self.eu_llm = LLM(
             model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
             model="meta-llama/Meta-Llama-3-8B-Instruct",
             token=self.anyscale_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
             temperature=0.0,
@@ -687,11 +686,5 @@ class CoinBot:
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word."
             ),
-            temperature=0.0,
-        )
-        self.special_llm = LLM(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
-            token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract up to three (3) features; Country, year and name. The name can be the name of a state, city, a celebrity or any other text, BUT it must NOT be a country and it must NOT be a single character! Use a colon (:) before each feature value. Ignore missing features. Do NOT invent information, only EXTRACT.",
             temperature=0.0,
         )

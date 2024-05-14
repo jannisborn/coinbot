@@ -106,7 +106,7 @@ class DataBase:
         # 1. Overall change
         add_change(df, msg="Total")
         # 2. Country change
-        add_change(df[df.Country == country], msg=f"{country.upper()}")
+        add_change(df[df.Country == country], msg=f"{country.capitalize()}")
         # 3. Year change
         add_change(df[df.Year == year], msg=f"{year}")
         # 4. Coin value change
