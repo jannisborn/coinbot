@@ -372,7 +372,7 @@ class CoinBot:
                 )
 
             if status != "unavailable" and row["Amount"] > 0:
-                amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000)
+                amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000) + ")"
             else:
                 amount = ""
             response = f"{match}:\n{icon}{status.upper()}{icon}{amount}"
