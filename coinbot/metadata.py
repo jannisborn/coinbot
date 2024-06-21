@@ -37,14 +37,16 @@ eurozone = [
     "Netherlands",
     "Austria",
     "Portugal",
+    "San Marino",
     "Slovakia",
     "Slovenia",
     "Spain",
     "Cyprus",
+    "Vatican",
 ]
 
 # To include countries that use the Euro but are not part of the Eurozone, you might add:
-euro_users = ["Monaco", "Vatican", "Andorra"]
+euro_users = ["Monaco", "Andorra"]
 country_eng2ger = {
     "Andorra": "Andorra",
     "Belgium": "Belgien",

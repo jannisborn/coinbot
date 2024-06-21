@@ -53,7 +53,7 @@ class CoinBot:
         anyscale_token: str,
         slack_token: str,
         vectorstorage_path: str,
-        base_llm: str="meta-llama/Meta-Llama-3-8B-Instruct"
+        base_llm: str = "meta-llama/Meta-Llama-3-8B-Instruct",
     ):
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
@@ -84,7 +84,6 @@ class CoinBot:
         self.public_link = public_link
         self.fetch_file(link=public_link)
         self.db = DataBase(self.filepath)
-
         self.vectorstorage_path = vectorstorage_path
         self.vectorstorage = VectorStorage.load(vectorstorage_path)
 
@@ -414,6 +413,7 @@ class CoinBot:
                 value += " cent"
 
         year = get_feature_value(llm_output, "year")
+        logger.debug(f"Raw features {c}, {value}, {year}")
         try:
             year = int(year)
         except ValueError:
@@ -685,8 +685,6 @@ class CoinBot:
         self.to_english_llm = LLM(
             model=self.base_llm,
             token=self.anyscale_token,
-            task_prompt=(
-                "Give me the ENGLISH name of this country. Be concise, only one word."
-            ),
+            task_prompt=("Give me the ENGLISH name of this country. Be concise!"),
             temperature=0.0,
         )
