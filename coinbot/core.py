@@ -53,10 +53,12 @@ class CoinBot:
         anyscale_token: str,
         slack_token: str,
         vectorstorage_path: str,
+        base_llm: str = "meta-llama/Meta-Llama-3-8B-Instruct",
     ):
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
         self.anyscale_token = anyscale_token
+        self.base_llm = base_llm
 
         # Initialize language preferences dictionary
         self.user_prefs = defaultdict(dict)
@@ -82,7 +84,6 @@ class CoinBot:
         self.public_link = public_link
         self.fetch_file(link=public_link)
         self.db = DataBase(self.filepath)
-
         self.vectorstorage_path = vectorstorage_path
         self.vectorstorage = VectorStorage.load(vectorstorage_path)
 
@@ -412,6 +413,7 @@ class CoinBot:
                 value += " cent"
 
         year = get_feature_value(llm_output, "year")
+        logger.debug(f"Raw features {c}, {value}, {year}")
         try:
             year = int(year)
         except ValueError:
@@ -658,13 +660,13 @@ class CoinBot:
 
     def set_llms(self):
         self.eu_llm = LLM(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
+            model=self.base_llm,
             token=self.anyscale_token,
             task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
+            model=self.base_llm,
             token=self.anyscale_token,
             task_prompt=(
                 "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
@@ -673,7 +675,7 @@ class CoinBot:
             temperature=0.0,
         )
         self.joke_llm = LLM(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
+            model=self.base_llm,
             token=self.anyscale_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
@@ -681,10 +683,8 @@ class CoinBot:
             temperature=0.6,
         )
         self.to_english_llm = LLM(
-            model="meta-llama/Meta-Llama-3-8B-Instruct",
+            model=self.base_llm,
             token=self.anyscale_token,
-            task_prompt=(
-                "Give me the ENGLISH name of this country. Be concise, only one word."
-            ),
+            task_prompt=("Give me the ENGLISH name of this country. Be concise!"),
             temperature=0.0,
         )
