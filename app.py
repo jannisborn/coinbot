@@ -20,7 +20,7 @@ def main():
         vectorstorage_path=os.path.join(
             os.path.dirname(__file__), "data", "special_coins.npz"
         ),
-        base_llm="mlabonne/NeuralHermes-2.5-Mistral-7B"
+        base_llm="meta-llama/Meta-Llama-3-70B-Instruct"
     )
     bot.run()
 
