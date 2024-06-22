@@ -1,6 +1,7 @@
+import re
+
 import numpy as np
 import openai
-import re
 
 INSTRUCTION_MESSAGE = """
 I'm helping you to identify & collect **rare** EURO coins. Just ask me about a coin. I always need the value, the country and the year of the coin. I will let you know how many times the coin was minted and if it's already available in Jannis' coin collection. 
@@ -70,17 +71,12 @@ class LLM:
 
         # Process and stream the response.
         response_content = ""
-        first_token = True
         self.counter += 1
 
         for token in response:
             delta = token.choices[0].delta.content
-            if first_token:
-                # Skip first token to unblock response.
-                first_token = False
-                continue
-            elif not delta:
-                # End token indicating the end of the response.
+            # End token indicating the end of the response.
+            if token.choices[0].finish_reason:
                 self._add_to_message_history("assistant", response_content)
                 break
             else:
