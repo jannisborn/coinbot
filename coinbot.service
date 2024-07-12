@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 Group=root
-WorkingDirectory=/root/telegram-coin-bot
+WorkingDirectory=/root/coinbot
 ExecStart=/root/.local/bin/poetry run python /root/coinbot/app.py
 Restart=always
 RestartSec=10
