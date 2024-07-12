@@ -9,6 +9,7 @@ WorkingDirectory=/root/telegram-coin-bot
 ExecStart=/root/.local/bin/poetry run python /root/coinbot/app.py
 Restart=always
 RestartSec=10
+Environment="LOGLEVEL=DEBUG"
 
 [Install]
 WantedBy=multi-user.target
