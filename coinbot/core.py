@@ -36,7 +36,7 @@ from coinbot.utils import (
 )
 from coinbot.vectorstorage import VectorStorage
 
-log_level = os.getenv("LOGLEVEL", "INFO")
+log_level = os.getenv("LOGLEVEL", "DEBUG")
 logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
 logger.debug("Starting script")
 
