@@ -36,7 +36,7 @@ from coinbot.utils import (
 )
 from coinbot.vectorstorage import VectorStorage
 
-log_level = os.getenv("LOGLEVEL", "INFO")
+log_level = os.getenv("LOGLEVEL", "DEBUG")
 logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
 logger.debug("Starting script")
 
@@ -77,6 +77,7 @@ class CoinBot:
             MessageHandler(Filters.text & (~Filters.command), self.handle_text_message)
         )
         self.dp.add_handler(CallbackQueryHandler(self.callback_query_handler))
+        self.dp.add_error_handler(self.error_handler)
 
         self.filepath = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "coins.xlsm"
@@ -89,6 +90,15 @@ class CoinBot:
 
         self.set_llms()
         self.slackbot = SlackClient(slack_token)
+
+    def error_handler(self, update, context):
+        def shutdown():
+            self.updater.stop()
+            self.updater.is_idle = False
+
+        logger.error(f'Update "{update}" caused error "{context.error}"')
+        threading.Thread(target=shutdown).start()
+        time.sleep(3)
 
     def fetch_file(self, link: str):
         """
