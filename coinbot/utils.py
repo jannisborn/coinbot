@@ -7,7 +7,6 @@ import numpy as np
 import requests
 from Levenshtein import distance as levenshtein
 from loguru import logger
-from requests.auth import HTTPBasicAuth
 from thefuzz import process as fuzzysearch
 
 from coinbot.metadata import countries_all_languages, country_to_english, germany
