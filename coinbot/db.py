@@ -31,7 +31,7 @@ class DataBase:
         )
         self.df = self.df.fillna(pd.NA).reset_index()
         self.align()
-        self.df.to_csv("tmp.csv")
+        self.df.to_csv("../data/latest_collection.csv")
 
     def align(self):
         """
