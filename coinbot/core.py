@@ -52,13 +52,25 @@ class CoinBot:
         telegram_token: str,
         anyscale_token: str,
         slack_token: str,
+        latest_csv_path: str,
         vectorstorage_path: str,
         base_llm: str = "meta-llama/Meta-Llama-3-8B-Instruct",
     ):
+        """
+        Args:
+            public_link: Public link (Dropbox) to the database (xlsm)
+            telegram_token: Token to post to Telegram
+            anyscale_token: Token to submit queries to Anyscale
+            slack_token: Token to post on Slack
+            latest_csv_path: Path to the CSV used in the last execution of the bot
+            vectorstorage_path: Post to a npz file with embeddings for special coins
+            base_llm: Which LLM should be used. Defaults to "meta-llama/Meta-Llama-3-8B-Instruct".
+        """
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
         self.anyscale_token = anyscale_token
         self.base_llm = base_llm
+        self.latest_csv_path = latest_csv_path
 
         # Initialize language preferences dictionary
         self.user_prefs = defaultdict(dict)
@@ -82,9 +94,10 @@ class CoinBot:
         self.filepath = os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "coins.xlsm"
         )
+        self.file_etag = None
         self.public_link = public_link
         self.fetch_file(link=public_link)
-        self.db = DataBase(self.filepath)
+        self.db = DataBase(self.filepath, latest_csv_path=latest_csv_path)
         self.vectorstorage_path = vectorstorage_path
         self.vectorstorage = VectorStorage.load(vectorstorage_path)
 
@@ -107,22 +120,17 @@ class CoinBot:
         Args:
             link: The public link from which to download the file
         """
-        if os.path.exists(self.filepath):
-            last_modified_time = datetime.fromtimestamp(os.path.getmtime(self.filepath))
-            if datetime.now() - last_modified_time < timedelta(hours=12):
-                logger.info(
-                    f"File at {self.filepath} is up-to-date. Skipping download."
-                )
-                return
-
-        logger.debug("Downloading data...")
+        logger.debug("(Re)downloading data...")
         response = requests.get(link)
         # Check if the request was successful
-        if response.status_code == 200:
+        if response.status_code == 200 and response.headers["Etag"] != self.file_etag:
+            self.file_etag = response.headers["Etag"]
             # Write the content of the response to a file
             with open(self.filepath, "wb") as f:
                 f.write(response.content)
             logger.info(f"File downloaded successfully from {link}")
+        elif response.headers["Etag"] == self.file_etag:
+            logger.info(f"{self.filepath} is up-to-date. Skipping download.")
         else:
             logger.warning(f"Failed to download file from {link}")
 
