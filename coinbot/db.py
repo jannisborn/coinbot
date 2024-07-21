@@ -1,14 +1,20 @@
+from datetime import date
+
 import openpyxl
 import pandas as pd
 from loguru import logger
+from tqdm import tqdm
 
 from coinbot.metadata import coin_values, colors, countries
 from coinbot.utils import convert_to_thousands
 
 
 class DataBase:
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, latest_csv_path: str):
         """Constructor that reads the Excel file and sets up sheets."""
+        self.file_path = file_path
+        self.latest_csv_path = latest_csv_path
+
         self.wb = openpyxl.load_workbook(file_path, data_only=True)
         self.deutschland_sheet = self.wb["Deutschland"]
         self.eu_sheet = self.wb["EU"]
@@ -23,7 +29,47 @@ class DataBase:
                 lambda x: x.lower() if isinstance(x, str) else x
             )
         )
+        self.df = self.df.fillna(pd.NA).reset_index()
+        self.align()
         self.df.to_csv("tmp.csv")
+
+    def align(self):
+        """
+        Align the XLSM from Dropbox with the latest CSV used for this bot. This is useful
+        to keep track which coin was collected when.
+        """
+        self.df.insert(6, "Added", pd.NA)
+        self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
+        # Compare last version of DB with the one loaded from server
+        for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data"):
+            tdf = self.latest_df
+            tdf = tdf[
+                (tdf.Country == r.Country)
+                & (tdf.Year == r.Year)
+                & (tdf["Coin Value"] == r["Coin Value"])
+                & (tdf["Special"] == r.Special)
+                & (
+                    (tdf["Source"].isna() & pd.isna(r.Source))
+                    | (tdf["Source"] == r.Source)
+                )
+                & ((tdf["Name"].isna() & pd.isna(r.Name)) | (tdf["Name"] == r.Name))
+            ]
+            assert len(tdf) == 1, f"Zero or multiple occurrences found: {tdf}"
+
+            # Check whether status has changed
+            matched_old_row = tdf.iloc[0]
+            if r.Status == "collected" and matched_old_row.Status != "collected":
+                logger.info(
+                    f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
+                )
+                self.df.at[i, "Added"] = str(date.today())
+            elif r.Status != matched_old_row.Status:
+                logger.error(
+                    f"Status divergence for old: {matched_old_row} vs. new: {r}"
+                )
+                self.df.at[i, "Added"] = matched_old_row.Added
+            else:
+                self.df.at[i, "Added"] = matched_old_row.Added
 
     def get_status(self):
 
