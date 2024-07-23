@@ -54,7 +54,15 @@ class DataBase:
                 )
                 & ((tdf["Name"].isna() & pd.isna(r.Name)) | (tdf["Name"] == r.Name))
             ]
-            assert len(tdf) == 1, f"Zero or multiple occurrences found: {tdf}"
+            if len(tdf) > 1:
+                logger.error(f"Multiple occurrences found: {tdf}")
+                continue
+            elif len(tdf) == 0:
+                logger.warning(
+                    f"Seems that coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
+                )
+                self.df.at[i, "Created"] = str(date.today())
+                continue
 
             # Check whether status has changed
             matched_old_row = tdf.iloc[0]
@@ -65,11 +73,8 @@ class DataBase:
                 self.df.at[i, "Added"] = str(date.today())
             elif r.Status != matched_old_row.Status:
                 logger.error(
-                    f"Status divergence for old: {matched_old_row} vs. new: {r}"
+                    f"Status divergence for old: {matched_old_row} vs. new: {r}, taking new"
                 )
-                self.df.at[i, "Added"] = matched_old_row.Added
-            else:
-                self.df.at[i, "Added"] = matched_old_row.Added
 
     def get_status(self):
 
