@@ -1,4 +1,4 @@
-,Country,Year,Coin Value,Amount,Created,Status,Added,Special,Source,Name,Country-specific,Description,Link
+,Country,Year,Coin Value,Amount,Created,Status,Collected,Special,Source,Name,Country-specific,Description,Link
 0,belgium,1999,1 cent,235200,01.01.2024,collected,01.01.2024,FALSE,,,,,
 1,belgium,1999,2 cent,0,01.01.2024,unavailable,,FALSE,,,,,
 2,belgium,1999,5 cent,300000,01.01.2024,collected,01.01.2024,FALSE,,,,,
