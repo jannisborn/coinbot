@@ -165,7 +165,7 @@ class CoinBot:
         ) or text.lower().startswith("name:")
 
         if text.lower().startswith("status"):
-            self.return_message(update, self.db.get_status())
+            self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
 
         if overwrite_username:
