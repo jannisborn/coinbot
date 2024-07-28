@@ -33,6 +33,8 @@ class DataBase:
             )
         )
         self.df = self.df.fillna(pd.NA).reset_index()
+        if "index" in self.df.columns:
+            self.df.drop(columns=["index"], inplace=True)
         self.align()
         fp = os.path.join(
             os.path.dirname(__file__), os.pardir, "data", "latest_collection.csv"
@@ -45,6 +47,7 @@ class DataBase:
         to keep track which coin was collected when.
         """
         self.df.insert(6, "Collected", pd.NA)
+        self.df.insert(7, "Collector", pd.NA)
         self.df.insert(5, "Created", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
         # Compare last version of DB with the one loaded from server
@@ -95,12 +98,8 @@ class DataBase:
 
         report_lines = []
 
-        report_lines.append(
-            "**🤑🪙 Collection Improvement Status (between two dates) 🤑🪙**\n"
-        )
-        report_lines.append(
-            "Color code: Increase -> 🟢\n Static -> 🟡\n Decrease -> 🔴"
-        )
+        report_lines.append("🤑🪙Collection Change Status🤑🪙\n")
+        report_lines.append("Color code:\n🟢Increase🟢\n🟡Static🟡\n🔴Decrease🔴\n\n")
 
         # Total coins info
         data = Box()
@@ -163,44 +162,45 @@ class DataBase:
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emojid(trd)}Total coins: {trd:.2%}: {data.start.total_ratio:.2%} -> {data.end.total_ratio:.2%} ({data.start.coins} -> {data.end.coins}, Collected: {data.start.collected:.2%} -> {data.end.collected:.2%})**"
+            f"Total coins: {self._emojid(trd)}{trd:.2%}{self._emojid(trd)}: {data.start.total_ratio:.1%}➡️{data.end.total_ratio:.1%} ({data.start.coins}/{data.start.collected} > {data.end.coins}/{data.end.collected})\n"
         )
         report_lines.append(
-            f"**{self._emojid(srd)}Special coins: {srd:.2%}: {data.start.special_ratio:.2%} -> {data.end.special_ratio:.2%} ({data.start.special} -> {data.end.special}, Collected: {data.start.special_collected:.2%} -> {data.end.special_collected:.2%})**"
+            f"Special coins: {self._emojid(srd)}{srd:.2%}{self._emojid(srd)}: {data.start.special_ratio:.1%}➡️{data.end.special_ratio:.1%} ({data.start.special}/{data.start.special_collected} > {data.end.special}/{data.end.special_collected})\n"
         )
 
-        report_lines.append("\Years:")
+        report_lines.append("Years:")
         for year in sorted(end_df["Year"].unique()):
             year = str(year)
             yrd = data.end[year].ratio - data.start[year].ratio
 
             report_lines.append(
-                f"**{self._emojid(yrd)} {year}: {yrd:.2%}: {data.start[year].ratio:.2%} -> {data.end[year].ratio:.2%} ({data.start[year].total} -> {data.end[year].total}, Collected: {data.start[year].collected:.2%} -> {data.end[year].collected:.2%})**"
+                f"{year}: {self._emojid(yrd)}{yrd:.2%}{self._emojid(yrd)}\n\t({data.start[year].ratio:.1%}➡️{data.end[year].ratio:.1%}, {data.start[year].collected}/{data.end[year].total}➡️{data.end[year].collected}/{data.end[year].total})"
             )
 
         report_lines.append("\nCountries:")
         for country in end_df["Country"].unique():
             crd = data.end[country].ratio - data.start[country].ratio
             report_lines.append(
-                f"**{self._emojid(crd)} {country.capitalize()}: {crd:.2%}: {data.start[country].ratio:.2%} -> {data.end[country].ratio:.2%} ({data.start[country].total} -> {data.end[country].total}, Collected: {data.start[country].collected:.2%} -> {data.end[country].collected:.2%})**"
+                f"{country.capitalize()}: {self._emojid(crd)}{crd:.2%}{self._emojid(crd)}\n\t({data.start[country].ratio:.1%}➡️{data.end[country].ratio:.1%}, {data.start[country].collected}/{data.start[country].total}➡️{data.end[country].collected}/{data.end[country].total})"
             )
 
         # Generating report by Coin value
-        report_lines.append("\nCoin Value:")  # Add a newline for separation
+        report_lines.append("\nCoins:")  # Add a newline for separation
         for value in [f"{x} cent" for x in [1, 2, 5, 10, 20, 50]] + [
             f"{x} euro" for x in [1, 2]
         ]:
             vrd = data.end[value].ratio - data.start[value].ratio
             report_lines.append(
-                f"**{self._emojid(vrd)} {value}: {vrd:.2%}: {data.start[value].ratio:.2%} -> {data.end[value].ratio:.2%} ({data.start[value].total} -> {data.end[value].total}, Collected: {data.start[value].collected:.2%} -> {data.end[value].collected:.2%})**"
+                f"{value}: {self._emojid(vrd)}{vrd:.2%}{self._emojid(vrd)}\n\t({data.start[value].ratio:.1%}➡️{data.end[value].ratio:.1%}, {data.start[value].collected}/{data.start[value].total}➡️{data.end[value].collected}/{data.end[value].total})"
             )
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
+        print("LEN", len(report))
         return report
 
     def get_db_for_date(self, date: Optional[datetime] = None):
-        df = self.df[self.df["Status"] != "unavailable"]
+        df = self.df[self.df["Status"] != "unavailable"].copy()
         df["CreatedDate"] = pd.to_datetime(df["Created"], errors="coerce")
         df["CollectedDate"] = pd.to_datetime(df["Collected"], errors="coerce")
         if date is None:
@@ -261,10 +261,10 @@ class DataBase:
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emoji(tr)}Total coins: {total_coins}, Collected: {collected} ({tr:.2%})**"
+            f"**{self._emoji(tr)}Total coins: {total_coins}, done: {collected} ({tr:.2%})**"
         )
         report_lines.append(
-            f"**{self._emoji(sr)}Special coins: {special}, Collected: {speccol} ({sr:.2%})**\n"
+            f"**{self._emoji(sr)}Special coins: {special}, done: {speccol} ({sr:.2%})**\n"
         )
 
         # Generating report by Year
@@ -302,6 +302,7 @@ class DataBase:
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
+        print("LEN", len(report))
         return report
 
     def status_delta(self, year: int, value: str, country: str):
