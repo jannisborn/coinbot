@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from box import Box
+import os
 
 import openpyxl
 import pandas as pd
@@ -33,7 +34,10 @@ class DataBase:
         )
         self.df = self.df.fillna(pd.NA).reset_index()
         self.align()
-        self.df.to_csv("../data/latest_collection.csv")
+        fp = os.path.join(
+            os.path.dirname(__file__), os.pardir, "data", "latest_collection.csv"
+        )
+        self.df.to_csv(fp)
 
     def align(self):
         """
@@ -41,6 +45,7 @@ class DataBase:
         to keep track which coin was collected when.
         """
         self.df.insert(6, "Collected", pd.NA)
+        self.df.insert(5, "Created", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
         # Compare last version of DB with the one loaded from server
         for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data"):
@@ -65,12 +70,14 @@ class DataBase:
                 )
                 self.df.at[i, "Created"] = str(date.today())
                 continue
+            else:
+                self.df.at[i, "Created"] = tdf.iloc[0].Created
 
             # Check whether status has changed
             matched_old_row = tdf.iloc[0]
             if r.Status == matched_old_row.Status:
                 # Status did not change so we can copy over the old update date
-                self.df.at[i, "Collected"] = matched_old_row.Added
+                self.df.at[i, "Collected"] = matched_old_row.Collected
             elif r.Status == "collected" and matched_old_row.Status != "collected":
                 logger.info(
                     f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
@@ -91,7 +98,9 @@ class DataBase:
         report_lines.append(
             "**🤑🪙 Collection Improvement Status (between two dates) 🤑🪙**\n"
         )
-        report_lines.append("Color code: Increase -> 🟢\n Static -> 🟡\n Decrease -> 🔴")
+        report_lines.append(
+            "Color code: Increase -> 🟢\n Static -> 🟡\n Decrease -> 🔴"
+        )
 
         # Total coins info
         data = Box()
@@ -154,25 +163,26 @@ class DataBase:
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emojid(trd)}Total coins: {trd:.2%}: {data.start.total_ratio} -> {data.end.total_ratio} ({data.start.coins} -> {data.end.coins}, Collected: {data.start.collected} -> {data.end.collected})**"
+            f"**{self._emojid(trd)}Total coins: {trd:.2%}: {data.start.total_ratio:.2%} -> {data.end.total_ratio:.2%} ({data.start.coins} -> {data.end.coins}, Collected: {data.start.collected:.2%} -> {data.end.collected:.2%})**"
         )
         report_lines.append(
-            f"**{self._emojid(srd)}Special coins: {srd:.2%}: {data.start.special_ratio} -> {data.end.special_ratio} ({data.start.special} -> {data.end.special}, Collected: {data.start.special_collected} -> {data.end.special_collected})**"
+            f"**{self._emojid(srd)}Special coins: {srd:.2%}: {data.start.special_ratio:.2%} -> {data.end.special_ratio:.2%} ({data.start.special} -> {data.end.special}, Collected: {data.start.special_collected:.2%} -> {data.end.special_collected:.2%})**"
         )
 
         report_lines.append("\Years:")
         for year in sorted(end_df["Year"].unique()):
             year = str(year)
-            yrd = data.end[year].ratio - data.start["year"].ratio
+            yrd = data.end[year].ratio - data.start[year].ratio
+
             report_lines.append(
-                f"**{self._emojid(yrd)} {year}: {yrd:.2%}: {data.start['year'].ratio} -> {data.end['year'].ratio} ({data.start['year'].total} -> {data.end['year'].total}, Collected: {data.start['year'].collected} -> {data.end['year'].collected})**"
+                f"**{self._emojid(yrd)} {year}: {yrd:.2%}: {data.start[year].ratio:.2%} -> {data.end[year].ratio:.2%} ({data.start[year].total} -> {data.end[year].total}, Collected: {data.start[year].collected:.2%} -> {data.end[year].collected:.2%})**"
             )
 
         report_lines.append("\nCountries:")
         for country in end_df["Country"].unique():
-            crd = data.end["country"].ratio - data.start["country"].ratio
+            crd = data.end[country].ratio - data.start[country].ratio
             report_lines.append(
-                f"**{self._emojid(crd)} {country.capitalize()}: {crd:.2%}: {data.start['country'].ratio} -> {data.end['country'].ratio} ({data.start['country'].total} -> {data.end['country'].total}, Collected: {data.start['country'].collected} -> {data.end['country'].collected})**"
+                f"**{self._emojid(crd)} {country.capitalize()}: {crd:.2%}: {data.start[country].ratio:.2%} -> {data.end[country].ratio:.2%} ({data.start[country].total} -> {data.end[country].total}, Collected: {data.start[country].collected:.2%} -> {data.end[country].collected:.2%})**"
             )
 
         # Generating report by Coin value
@@ -180,9 +190,9 @@ class DataBase:
         for value in [f"{x} cent" for x in [1, 2, 5, 10, 20, 50]] + [
             f"{x} euro" for x in [1, 2]
         ]:
-            vrd = data.end.value
+            vrd = data.end[value].ratio - data.start[value].ratio
             report_lines.append(
-                f"**{self._emojid(vrd)} {value}: {vrd:.2%}: {data.start['value'].ratio} -> {data.end['value'].ratio} ({data.start['value'].total} -> {data.end['value'].total}, Collected: {data.start['value'].collected} -> {data.end['value'].collected})**"
+                f"**{self._emojid(vrd)} {value}: {vrd:.2%}: {data.start[value].ratio:.2%} -> {data.end[value].ratio:.2%} ({data.start[value].total} -> {data.end[value].total}, Collected: {data.start[value].collected:.2%} -> {data.end[value].collected:.2%})**"
             )
 
         # Joining report lines into a single string
@@ -191,13 +201,15 @@ class DataBase:
 
     def get_db_for_date(self, date: Optional[datetime] = None):
         df = self.df[self.df["Status"] != "unavailable"]
+        df["CreatedDate"] = pd.to_datetime(df["Created"], errors="coerce")
+        df["CollectedDate"] = pd.to_datetime(df["Collected"], errors="coerce")
         if date is None:
             return df
 
         # Remove coins that were added to DB after the date
-        df = df[df["Created"] <= date]
+        df = df[df["CreatedDate"] <= date]
         # Coins that were collected after that date are changed to missing
-        df.loc[df["Collected"] > date, "Status"] = "missing"
+        df.loc[df["CollectedDate"] > date, "Status"] = "missing"
         return df
 
     def get_status(self, msg: str):
@@ -213,7 +225,7 @@ class DataBase:
         Returns:
             A report describing the status. Or a error msg
         """
-        words = msg.split(" ")
+        words = msg.strip().split(" ")
         if msg.startswith("status diff"):
             # Case 3
             if not len(words) == 4:
@@ -230,13 +242,17 @@ class DataBase:
             df = self.get_db_for_date(date=given_date)
 
         report_lines = []
-        report_lines.append("**🤑🪙 Collection Status 🤑🪙**\n")
+        date_str = "Today" if len(words) == 1 else given_date
+        report_lines.append(f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n")
         report_lines.append(
             "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15% -> 🟤\n>0% -> ⚫\n0% -> ✖️"
         )
 
         # Total coins info
         total_coins = len(df)
+        if total_coins == 0:
+            report_lines.append("No data for this date. Pick a newer date")
+            return "\n".join(report_lines)
         collected = len(df[df["Status"] == "collected"])
         special = len(df[df["Special"]])
         speccol = len(df[(df["Status"] == "collected") & (df["Special"])])
