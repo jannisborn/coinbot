@@ -20,6 +20,8 @@ To search a 2 Euro special coin (the official term is "commemorative coin"), use
 `Special Germany Hamburg 2023` ➡️ Lists all German special coins from 2023 related to Hamburg.
 
 Last, to get a report about the current collection status write: `Status`
+Write `Status 02.01.2024` to see the DB collection status as of that date.
+Write `Status Diff 02.01.2024 26.07.2024` to see the delta in the status between those dates.
 
 Now you're ready! Get started and happy coin collecting 😊
 """
