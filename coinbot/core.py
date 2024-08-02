@@ -263,7 +263,9 @@ class CoinBot:
             update.message.reply_text("No language recognized, consider setting it")
             return False
 
-    def return_message(self, update: Update, text: str, amount: int = 0) -> Message:
+    def return_message(
+        self, update: Update, text: str, amount: int = 0, reply_markup=None
+    ) -> Message:
         user_id = update.message.from_user.id
         if amount > 0:
             number_text = large_int_to_readable(amount * 1000)
@@ -274,7 +276,9 @@ class CoinBot:
         else:
             language = self.user_prefs[user_id].get("language", "English")
         if language == "English":
-            response_message = update.message.reply_text(text, parse_mode="Markdown")
+            response_message = update.message.reply_text(
+                text, parse_mode="Markdown", reply_markup=reply_markup
+            )
         else:
             # # Uncommented until a better LM is available
             # self.translate_llm = LLM(
@@ -306,7 +310,9 @@ class CoinBot:
             update.message.reply_text(
                 f"Language set to {language}. Currently only `English` is supported. Set by typing `Language: english`."
             )
-            response_message = update.message.reply_text(text)
+            response_message = update.message.reply_text(
+                text, reply_markup=reply_markup
+            )
 
         log_to_csv(update.message.text, text)
         return response_message
@@ -560,12 +566,26 @@ class CoinBot:
         user_id = query.from_user.id
 
         # Extract the index from the callback data
-        _, start_index = query.data.split("_")
-        start_index = int(start_index)
-        logger.debug(f"Continue displaying from entry {start_index} for user {user_id}")
+        msg = query.data
 
-        # Continue displaying special coins starting from the next index
-        self.keep_displaying_special(query, user_id=user_id, start_index=start_index)
+        if msg.startswith("showmore_"):
+            _, start_index = query.data.split("_")
+            start_index = int(start_index)
+            logger.debug(
+                f"Continue displaying from entry {start_index} for user {user_id}"
+            )
+
+            # Continue displaying special coins starting from the next index
+            self.keep_displaying_special(
+                query, user_id=user_id, start_index=start_index
+            )
+        elif msg.startswith("stage"):
+            self.stage_coin(update=query)
+        else:
+            logger.error(f"Unknown query for callback handler {msg}")
+
+    def stage_coin(self, update):
+        print(update)
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
@@ -639,6 +659,7 @@ class CoinBot:
                 return
 
             coin_status = coin_df["Status"].values[0]
+            stage_markup = None
             if coin_status == "unavailable":
                 response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
@@ -650,6 +671,15 @@ class CoinBot:
                 self.slackbot(
                     f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
                 )
+                stage_button = [
+                    [
+                        InlineKeyboardButton(
+                            "Stage coin for collection!", callback_data="stage"
+                        )
+                    ]
+                ]
+                stage_markup = InlineKeyboardMarkup(stage_button)
+
             elif coin_status == "collected":
                 response = f"😢 No luck! The coin {match} was already collected 😢"
                 amount = coin_df["Amount"].values[0]
@@ -657,7 +687,9 @@ class CoinBot:
                 response = "❓Coin not found."
 
             response = response.split("\n")[0]
-            self.return_message(update, response, amount=amount)
+            self.return_message(
+                update, response, amount=amount, reply_markup=stage_markup
+            )
 
             if coin_status == "missing":
                 # Subsequently print status update

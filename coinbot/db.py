@@ -49,6 +49,7 @@ class DataBase:
         self.df.insert(6, "Collected", pd.NA)
         self.df.insert(7, "Collector", pd.NA)
         self.df.insert(5, "Created", pd.NA)
+        self.df.insert(8, "Staged", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
         # Compare last version of DB with the one loaded from server
         for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data"):
