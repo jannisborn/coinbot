@@ -509,6 +509,7 @@ class CoinBot:
             )
             coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
+            update.message.reply_text("Those were all related special coins 🙂")
             return
 
         self.return_message(update, f"Results for your special coin query:\n{query}")
