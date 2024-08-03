@@ -196,7 +196,6 @@ class DataBase:
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
-        print("LEN", len(report))
         return report
 
     def get_db_for_date(self, date: Optional[datetime] = None):
@@ -302,7 +301,6 @@ class DataBase:
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
-        print("LEN", len(report))
         return report
 
     def status_delta(self, year: int, value: str, country: str):
