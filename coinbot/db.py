@@ -248,27 +248,37 @@ class DataBase:
             given_date = datetime.strptime(words[-1], "%d.%m.%Y")
             df = self.get_db_for_date(date=given_date)
 
+        assert (
+            len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
+        ), "Some coin is collected AND staged"
+
         report_lines = []
         date_str = "Today" if len(words) == 1 else given_date
-        report_lines.append(f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n")
+        report_lines.append(
+            f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n(Results including staged coins in brackets)\n"
+        )
         report_lines.append(
             "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15% -> 🟤\n>0% -> ⚫\n0% -> ✖️"
         )
 
         # Total coins info
         total_coins = len(df)
+        special = len(df[df["Special"]])
         if total_coins == 0:
             report_lines.append("No data for this date. Pick a newer date")
             return "\n".join(report_lines)
+
         collected = len(df[df["Status"] == "collected"])
-        special = len(df[df["Special"]])
+        staged = len(df[df["Staged"] == True])
+
         speccol = len(df[(df["Status"] == "collected") & (df["Special"])])
         tr = collected / total_coins
+        trs = (collected + staged) / total_coins
         sr = speccol / special
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emoji(tr)}Total coins: {total_coins}, done: {collected} ({tr:.2%})**"
+            f"**{self._emoji(tr)}({self._emoji(trs)}) Total coins: {total_coins}, done: {collected}({collected+staged}) {tr:.2%} ({trs:.2%})**"
         )
         report_lines.append(
             f"**{self._emoji(sr)}Special coins: {special}, done: {speccol} ({sr:.2%})**\n"
@@ -280,8 +290,13 @@ class DataBase:
             year_df = df[df["Year"] == year]
             tot = len(year_df)
             col = len(year_df[year_df["Status"] == "collected"])
+            stag = len(year_df[year_df.Staged == True])
+
             fra = col / tot if tot > 0 else 0
-            report_lines.append(f"{self._emoji(fra)} {year}: {fra:.2%} ({col}/{tot})")
+            fras = (col + stag) / tot if tot > 0 else 0
+            report_lines.append(
+                f"{self._emoji(fra)}({self._emoji(fras)}) {year}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
+            )
 
         # Generating report by Country
         report_lines.append("\nCountries:")
@@ -289,9 +304,12 @@ class DataBase:
             country_df = df[df["Country"] == country]
             tot = len(country_df)
             col = len(country_df[country_df["Status"] == "collected"])
+            stag = len(country_df[country_df.Staged == True])
+
             fra = col / tot if tot > 0 else 0
+            fras = (col + stag) / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)} {country.capitalize()}: {fra:.2%} ({col}/{tot})"
+                f"{self._emoji(fra)}({self._emoji(fras)}) {country.capitalize()}: {fra:.2%} ({fras:.2%}) - {col}({col+staged}) / {tot}"
             )
 
         # Generating report by Coin value
@@ -302,14 +320,15 @@ class DataBase:
             value_df = df[df["Coin Value"] == value]
             tot = len(value_df)
             col = len(value_df[value_df["Status"] == "collected"])
+            stag = len(value_df[value_df.Staged == True])
             fra = col / tot if tot > 0 else 0
+            fras = (col + staged) / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)} {value}: {fra:.2%} ({col}/{tot}) collected"
+                f"{self._emoji(fra)}({self._emoji(fras)}) {value}: {fra:.2%} ({fras:.2%}) - {col}({col+staged}) / {tot}"
             )
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
-        print("LEN", len(report))
         return report
 
     def status_delta(self, year: int, value: str, country: str):
@@ -318,7 +337,7 @@ class DataBase:
         information of the just-collected coin.
         """
 
-        report_lines = ["📈Updated Stats📈\n"]
+        report_lines = ["📈Updated Stats (including staged coins!)📈\n"]
         df = self.df[self.df["Status"] != "unavailable"]
 
         def add_change(df: pd.DataFrame, msg: str):

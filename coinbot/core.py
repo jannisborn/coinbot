@@ -604,6 +604,7 @@ class CoinBot:
                 )
                 | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
             )
+            & ~self.db.df.Special
         ]
         assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
 
@@ -745,7 +746,7 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Disregard the language in which it is written. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
