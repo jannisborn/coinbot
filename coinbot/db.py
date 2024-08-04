@@ -320,7 +320,7 @@ class DataBase:
         def add_change(df: pd.DataFrame, msg: str):
             total_coins = len(df)
             collected = len(df[df["Status"] == "collected"])
-            staged = len(df[df["Staged"]])
+            staged = len(df[df["Staged"] == True])
             assert (
                 len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
             ), "Some coin is collected AND staged"
