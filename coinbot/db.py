@@ -92,6 +92,8 @@ class DataBase:
                 self.df.at[i, "Collected"] = str(date.today())
                 if matched_old_row.Staged:
                     self.df.at[i, "Collector"] = matched_old_row.Collector
+            elif matched_old_row.Status == "unavailable":
+                pass
             else:
                 raise ValueError(
                     f"Status divergence for old: {matched_old_row} vs. new: {r}"

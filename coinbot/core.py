@@ -615,7 +615,6 @@ class CoinBot:
         tpl = (value, country, year)
         if source is not None:
             tpl += (source,)
-        self.return_message(update, f"The coin {tpl} was staged.")
 
         # Subsequently print status update
         self.return_message(
