@@ -1,7 +1,7 @@
 import re
 
 import numpy as np
-import openai
+from together import Together
 
 INSTRUCTION_MESSAGE = """
 I'm helping you to identify & collect **rare** EURO coins. Just ask me about a coin. I always need the value, the country and the year of the coin. I will let you know how many times the coin was minted and if it's already available in Jannis' coin collection. 
@@ -40,7 +40,7 @@ class LLM:
         self,
         token: str,
         task_prompt: str,
-        model: str = "meta-llama/Llama-2-70b-chat-hf",
+        model: str = "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
         temperature: float = 0.7,
         remind_task: int = 10,
     ):
@@ -50,16 +50,14 @@ class LLM:
         self.task = task_prompt
         self.message_history = [{"role": "system", "content": task_prompt}]
         self.model = model
-        self.client = openai.OpenAI(
-            api_key=token, base_url="https://api.endpoints.anyscale.com/v1"
-        )
+        self.client = Together(api_key=token)
         self.reminder = remind_task
         self.counter = 0
 
     def _add_to_message_history(self, role: str, content: str):
         self.message_history.append({"role": role, "content": content})
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, history: bool = True):
         if self.counter > 0 and self.counter % self.reminder == 0:
             self._add_to_message_history("user", f"Remember the task: {self.task}")
         # Add user's message to the conversation history.
@@ -75,11 +73,15 @@ class LLM:
         response_content = ""
         self.counter += 1
 
+        if not history:
+            self.message_history = self.message_history[:-1]
+
         for token in response:
             delta = token.choices[0].delta.content
             # End token indicating the end of the response.
             if token.choices[0].finish_reason:
-                self._add_to_message_history("assistant", response_content)
+                if history:
+                    self._add_to_message_history("assistant", response_content)
                 break
             else:
                 # Append content to message and stream it.
@@ -95,10 +97,8 @@ class LLM:
 class Embedding:
     def __init__(self, token: str, model: str = "thenlper/gte-large"):
         self.token = token
-        self.api_base = "https://api.endpoints.anyscale.com/v1"
         self.model = model
-
-        self.client = openai.OpenAI(base_url=self.api_base, api_key=self.token)
+        self.client = Together(api_key=self.token)
 
     def embed(self, message: str):
         embedding = self.client.embeddings.create(model=self.model, input=message)

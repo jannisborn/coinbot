@@ -3,7 +3,6 @@ import sys
 import threading
 import time
 from collections import defaultdict
-from datetime import datetime, timedelta
 from random import random
 from typing import Tuple
 
@@ -50,7 +49,7 @@ class CoinBot:
         self,
         public_link: str,
         telegram_token: str,
-        anyscale_token: str,
+        llm_token: str,
         slack_token: str,
         latest_csv_path: str,
         vectorstorage_path: str,
@@ -60,7 +59,7 @@ class CoinBot:
         Args:
             public_link: Public link (Dropbox) to the database (xlsm)
             telegram_token: Token to post to Telegram
-            anyscale_token: Token to submit queries to Anyscale
+            llm_token: Token to submit queries to Together
             slack_token: Token to post on Slack
             latest_csv_path: Path to the CSV used in the last execution of the bot
             vectorstorage_path: Post to a npz file with embeddings for special coins
@@ -68,7 +67,7 @@ class CoinBot:
         """
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
-        self.anyscale_token = anyscale_token
+        self.llm_token = llm_token
         self.base_llm = base_llm
         self.latest_csv_path = latest_csv_path
 
@@ -99,7 +98,7 @@ class CoinBot:
         self.fetch_file(link=public_link)
         self.db = DataBase(self.filepath, latest_csv_path=latest_csv_path)
         self.vectorstorage_path = vectorstorage_path
-        self.vectorstorage = VectorStorage.load(vectorstorage_path)
+        self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
 
         self.set_llms()
         self.slackbot = SlackClient(slack_token)
@@ -283,7 +282,7 @@ class CoinBot:
             # # Uncommented until a better LM is available
             # self.translate_llm = LLM(
             #     model="meta-llama/Llama-3-70b-chat-hf",
-            #     token=self.anyscale_token,
+            #     token=self.llm_token,
             #     task_prompt=(
             #         f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments!"
             #         "Here's the text to translate:\n\n"
@@ -363,7 +362,7 @@ class CoinBot:
 
         words = message.split("series ")[1].split(" ")
         words.remove(str(year))
-        country = self.to_english_llm(" ".join(words)).strip().lower()
+        country = self.to_english_llm(" ".join(words), history=False).strip().lower()
 
         # Search in the dataframe
         coin_df = self.db.df[
@@ -382,12 +381,17 @@ class CoinBot:
         Report the search status of a series of results.
         """
         dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
-        for i, row in coin_df.iterrows():
+        for j, (i, row) in enumerate(coin_df.iterrows()):
             status = row["Status"]
             icon = dict_mapper[status]
 
             if special:
-                image = get_file_content(row.Link) if row.Link else None
+                if pd.isna(row.Link):
+                    image = None
+                elif row.Link:
+                    image = get_file_content(row.Link)
+                else:
+                    image = None
                 match = get_tuple(
                     row.Country, row.Year, row["Source"], name=row.Name, isspecial=True
                 )
@@ -443,7 +447,7 @@ class CoinBot:
         except ValueError:
             year = -1
 
-        country = c if c == "" else self.to_english_llm(c)
+        country = c if c == "" else self.to_english_llm(c, history=False)
         country = country.strip().lower().replace(".", "")
         return country, year, value
 
@@ -482,9 +486,9 @@ class CoinBot:
             query += f"`Country: {country.capitalize()}`, "
             logger.debug(f"After country {country}: {len(coin_df)} entries remain")
 
-        text = text.replace(str(year), "").replace(matched, "").strip()
+        text = text.replace(str(year), "").replace(matched, "").replace(" ", "").strip()
         logger.debug(f"Remaining text: {text}")
-        if len(text.split(" ")) > 0:
+        if len(text.split(" ")) > 0 and len(text) > 0 and len(coin_df) > 0:
             # The query contains more information. Pass this to the vectorstorage
             coin_df = self.vectorstorage.query(text, coin_df)
             query += f"`Description: {text}`"
@@ -511,6 +515,7 @@ class CoinBot:
             )
             coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
+            update.message.reply_text("Those were all related special coins 🙂")
             return
 
         self.return_message(update, f"Results for your special coin query:\n{query}")
@@ -590,7 +595,7 @@ class CoinBot:
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
 
-        if True:
+        try:
             user_id = update.message.from_user.id
             # Parse the message
             message = update.message.text
@@ -699,8 +704,8 @@ class CoinBot:
                     self.db.status_delta(year=year, value=value, country=country),
                 )
 
-        # except Exception as e:
-        #     self.return_message(update, f"An error occurred: {e}")
+        except Exception as e:
+            self.return_message(update, f"An error occurred: {e}")
 
     def run(self):
         logger.info("Starting bot")
@@ -711,13 +716,13 @@ class CoinBot:
     def set_llms(self):
         self.eu_llm = LLM(
             model=self.base_llm,
-            token=self.anyscale_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            token=self.llm_token,
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
-            token=self.anyscale_token,
+            token=self.llm_token,
             task_prompt=(
                 "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
@@ -726,7 +731,7 @@ class CoinBot:
         )
         self.joke_llm = LLM(
             model=self.base_llm,
-            token=self.anyscale_token,
+            token=self.llm_token,
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
@@ -734,7 +739,9 @@ class CoinBot:
         )
         self.to_english_llm = LLM(
             model=self.base_llm,
-            token=self.anyscale_token,
-            task_prompt=("Give me the ENGLISH name of this country. Be concise!"),
+            token=self.llm_token,
+            task_prompt=(
+                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation!"
+            ),
             temperature=0.0,
         )
