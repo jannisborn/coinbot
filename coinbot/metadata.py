@@ -82,7 +82,7 @@ countries = eurozone + euro_users
 translation_file = os.path.join(
     os.path.dirname(os.path.dirname(__file__)), "data", "translations.json"
 )
-with open(translation_file, "r") as f:
+with open(translation_file, "r", encoding="utf8") as f:
     country_to_translations = json.load(f)
 
 countries_all_languages = []
