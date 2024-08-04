@@ -356,7 +356,7 @@ class CoinBot:
 
         words = message.split("series ")[1].split(" ")
         words.remove(str(year))
-        country = self.to_english_llm(" ".join(words)).strip().lower()
+        country = self.to_english_llm(" ".join(words), history=False).strip().lower()
 
         # Search in the dataframe
         coin_df = self.db.df[
@@ -441,7 +441,7 @@ class CoinBot:
         except ValueError:
             year = -1
 
-        country = c if c == "" else self.to_english_llm(c)
+        country = c if c == "" else self.to_english_llm(c, history=False)
         country = country.strip().lower().replace(".", "")
         return country, year, value
 
@@ -685,7 +685,7 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Be concise and efficient!",
             temperature=0.0,
         )
         self.ger_llm = LLM(

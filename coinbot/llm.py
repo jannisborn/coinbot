@@ -57,7 +57,7 @@ class LLM:
     def _add_to_message_history(self, role: str, content: str):
         self.message_history.append({"role": role, "content": content})
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, history: bool = True):
         if self.counter > 0 and self.counter % self.reminder == 0:
             self._add_to_message_history("user", f"Remember the task: {self.task}")
         # Add user's message to the conversation history.
@@ -73,11 +73,15 @@ class LLM:
         response_content = ""
         self.counter += 1
 
+        if not history:
+            self.message_history = self.message_history[:-1]
+
         for token in response:
             delta = token.choices[0].delta.content
             # End token indicating the end of the response.
             if token.choices[0].finish_reason:
-                self._add_to_message_history("assistant", response_content)
+                if history:
+                    self._add_to_message_history("assistant", response_content)
                 break
             else:
                 # Append content to message and stream it.
