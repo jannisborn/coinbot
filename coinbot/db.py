@@ -269,16 +269,16 @@ class DataBase:
             return "\n".join(report_lines)
 
         collected = len(df[df["Status"] == "collected"])
-        staged = len(df[df["Staged"] == True])
+        stag = len(df[df["Staged"] == True])
 
         speccol = len(df[(df["Status"] == "collected") & (df["Special"])])
         tr = collected / total_coins
-        trs = (collected + staged) / total_coins
+        trs = (collected + stag) / total_coins
         sr = speccol / special
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emoji(tr)}({self._emoji(trs)}) Total coins: {total_coins}, done: {collected}({collected+staged}) {tr:.2%} ({trs:.2%})**"
+            f"**{self._emoji(tr)}({self._emoji(trs)}) Total coins: {total_coins}, done: {collected}({collected+stag}) {tr:.2%} ({trs:.2%})**"
         )
         report_lines.append(
             f"**{self._emoji(sr)}Special coins: {special}, done: {speccol} ({sr:.2%})**\n"
@@ -309,7 +309,7 @@ class DataBase:
             fra = col / tot if tot > 0 else 0
             fras = (col + stag) / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)}({self._emoji(fras)}) {country.capitalize()}: {fra:.2%} ({fras:.2%}) - {col}({col+staged}) / {tot}"
+                f"{self._emoji(fra)}({self._emoji(fras)}) {country.capitalize()}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
             )
 
         # Generating report by Coin value
@@ -322,9 +322,9 @@ class DataBase:
             col = len(value_df[value_df["Status"] == "collected"])
             stag = len(value_df[value_df.Staged == True])
             fra = col / tot if tot > 0 else 0
-            fras = (col + staged) / tot if tot > 0 else 0
+            fras = (col + stag) / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)}({self._emoji(fras)}) {value}: {fra:.2%} ({fras:.2%}) - {col}({col+staged}) / {tot}"
+                f"{self._emoji(fra)}({self._emoji(fras)}) {value}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
             )
 
         # Joining report lines into a single string
