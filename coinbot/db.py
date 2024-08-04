@@ -90,6 +90,8 @@ class DataBase:
                     f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
                 )
                 self.df.at[i, "Collected"] = str(date.today())
+                if matched_old_row.Staged:
+                    self.df.at[i, "Collector"] = matched_old_row.Collector
             else:
                 raise ValueError(
                     f"Status divergence for old: {matched_old_row} vs. new: {r}"
