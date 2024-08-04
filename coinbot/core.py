@@ -585,12 +585,43 @@ class CoinBot:
                 query, user_id=user_id, start_index=start_index
             )
         elif msg.startswith("stage"):
-            self.stage_coin(update=query)
+            self.stage_coin(update=query, user_id=user_id)
         else:
             logger.error(f"Unknown query for callback handler {msg}")
 
-    def stage_coin(self, update):
-        print(update)
+    def stage_coin(self, update, user_id):
+        # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
+        country, year, value, source = self.user_prefs[user_id]["last_found_coin"]
+
+        row_indexes = self.db.df.index[
+            (self.db.df["Country"] == country)
+            & (self.db.df["Coin Value"] == value)
+            & (self.db.df["Year"] == year)
+            & (
+                (
+                    (self.db.df["Country"] == "germany")
+                    & (self.db.df["Source"] == source)
+                )
+                | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
+            )
+        ]
+        assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
+
+        self.db.df.at[row_indexes[0], "Staged"] = True
+        self.db.df.at[row_indexes[0], "Collector"] = self.user_prefs[user_id][
+            "username"
+        ]
+        self.db.save_df()
+        tpl = (value, country, year)
+        if source is not None:
+            tpl += (source,)
+        self.return_message(update, f"The coin {tpl} was staged.")
+
+        # Subsequently print status update
+        self.return_message(
+            update,
+            self.db.status_delta(year=year, value=value, country=country),
+        )
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
@@ -622,7 +653,7 @@ class CoinBot:
 
                 source = get_feature_value(output, "source").lower()
             else:
-                output = self.eu_llm(message).lower()
+                output = self.eu_llm(message, history=False).lower()
                 logger.debug(f"EU model says {output}")
                 if any([x in output for x in missing_hints]) or any(
                     [x not in output for x in ["year", "country", "value"]]
@@ -676,6 +707,12 @@ class CoinBot:
                 self.slackbot(
                     f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
                 )
+                self.user_prefs[user_id]["last_found_coin"] = (
+                    country,
+                    year,
+                    value,
+                    source,
+                )
                 stage_button = [
                     [
                         InlineKeyboardButton(
@@ -695,14 +732,6 @@ class CoinBot:
             self.return_message(
                 update, response, amount=amount, reply_markup=stage_markup
             )
-
-            if coin_status == "missing":
-                # Subsequently print status update
-                time.sleep(1)
-                self.return_message(
-                    update,
-                    self.db.status_delta(year=year, value=value, country=country),
-                )
 
         except Exception as e:
             self.return_message(update, f"An error occurred: {e}")

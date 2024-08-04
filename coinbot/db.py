@@ -36,6 +36,9 @@ class DataBase:
         if "index" in self.df.columns:
             self.df.drop(columns=["index"], inplace=True)
         self.align()
+        self.save_df()
+
+    def save_df(self):
         fp = os.path.join(
             os.path.dirname(__file__), os.pardir, "data", "latest_collection.csv"
         )
@@ -317,7 +320,13 @@ class DataBase:
         def add_change(df: pd.DataFrame, msg: str):
             total_coins = len(df)
             collected = len(df[df["Status"] == "collected"])
-            tro, trn = (collected / total_coins), ((collected + 1) / total_coins)
+            staged = len(df[df["Staged"]])
+            assert (
+                len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
+            ), "Some coin is collected AND staged"
+            tro, trn = ((collected + staged) / total_coins), (
+                (collected + staged + 1) / total_coins
+            )
             emo, emn = self._emoji(tro), self._emoji(trn)
             report_lines.append(f"{msg}: From {emo}{tro:.3%} ➡️ {emn}{trn:.3%}")
 
