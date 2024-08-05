@@ -74,12 +74,17 @@ class DataBase:
             if len(tdf) > 1:
                 logger.error(f"Multiple occurrences found: {tdf}")
                 continue
-            elif len(tdf) == 0:
+            elif len(tdf) == 0 or (
+                tdf.iloc[0].Status in ["missing", "collected"]
+                and r.Status == "unavailable"
+            ):
                 logger.warning(
                     f"Seems that coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
                 )
                 self.df.at[i, "Created"] = str(date.today())
-                continue
+                if len(tdf) == 0:
+                    self.df.at[i, "Collected"] = str(date.today())
+                    continue
             else:
                 self.df.at[i, "Created"] = tdf.iloc[0].Created
 
