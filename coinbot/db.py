@@ -3,6 +3,7 @@ from box import Box
 import os
 
 import openpyxl
+import numpy as np
 import pandas as pd
 from typing import Optional
 from loguru import logger
@@ -54,6 +55,8 @@ class DataBase:
         self.df.insert(5, "Created", pd.NA)
         self.df.insert(10, "Staged", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
+
+        added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
         for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data"):
             tdf = self.latest_df
@@ -90,6 +93,7 @@ class DataBase:
                     f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
                 )
                 self.df.at[i, "Collected"] = str(date.today())
+                added_coins = True
                 if matched_old_row.Staged:
                     self.df.at[i, "Collector"] = matched_old_row.Collector
             elif matched_old_row.Status == "unavailable":
@@ -98,6 +102,12 @@ class DataBase:
                 raise ValueError(
                     f"Status divergence for old: {matched_old_row} vs. new: {r}"
                 )
+
+            self.df.at[i, "Staged"] = matched_old_row.Staged
+
+        # Reset staged values if new coins were added to DB
+        if added_coins:
+            self.df["Staged"] = np.nan
 
     def get_status_diff(self, start: datetime, end: datetime):
 

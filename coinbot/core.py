@@ -695,8 +695,12 @@ class CoinBot:
                 return
 
             coin_status = coin_df["Status"].values[0]
+            coin_staged = coin_df["Staged"].values[0]
             stage_markup = None
-            if coin_status == "unavailable":
+            if coin_staged:
+                collector = coin_df["Collector"].values[0]
+                response = f"Cool!😎 Coin not yet in collection, BUT already staged by {collector}!"
+            elif coin_status == "unavailable":
                 response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
             elif coin_status == "missing":
