@@ -696,6 +696,7 @@ class CoinBot:
 
             coin_status = coin_df["Status"].values[0]
             coin_staged = coin_df["Staged"].values[0]
+            amount = coin_df["Amount"].values[0]
             stage_markup = None
             if coin_staged:
                 collector = coin_df["Collector"].values[0]
@@ -707,7 +708,6 @@ class CoinBot:
                 response = (
                     f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
                 )
-                amount = coin_df["Amount"].values[0]
                 self.slackbot(
                     f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
                 )
@@ -728,7 +728,6 @@ class CoinBot:
 
             elif coin_status == "collected":
                 response = f"😢 No luck! The coin {match} was already collected 😢"
-                amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."
 
