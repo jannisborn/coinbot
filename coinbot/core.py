@@ -698,7 +698,7 @@ class CoinBot:
             coin_staged = coin_df["Staged"].values[0]
             amount = coin_df["Amount"].values[0]
             stage_markup = None
-            if coin_staged:
+            if coin_staged is True:
                 collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable":
@@ -749,8 +749,8 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Disregard the language in which it is written. Be concise and efficient!",
-            temperature=0.0,
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the name of the COUNTRY in English (NOT the name of the language). Be concise and efficient!",
+            temperature=0.7,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
