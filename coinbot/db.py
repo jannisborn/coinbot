@@ -94,7 +94,7 @@ class DataBase:
                 # Status did not change so we can copy over the old update date
                 self.df.at[i, "Collected"] = matched_old_row.Collected
                 # Copy over Collector from previous version, unless coin was staged but now status did not change
-                if not matched_old_row.Staged:
+                if matched_old_row.Staged is not True:
                     self.df.at[i, "Collector"] = matched_old_row.Collector
             elif r.Status == "collected" and matched_old_row.Status != "collected":
                 logger.info(
