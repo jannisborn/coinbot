@@ -55,6 +55,7 @@ class DataBase:
         self.df.insert(5, "Created", pd.NA)
         self.df.insert(10, "Staged", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
+        self.latest_df["Staged"] = self.latest_df["Staged"].fillna(False)
 
         added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
@@ -94,7 +95,7 @@ class DataBase:
                 # Status did not change so we can copy over the old update date
                 self.df.at[i, "Collected"] = matched_old_row.Collected
                 # Copy over Collector from previous version, unless coin was staged but now status did not change
-                if matched_old_row.Staged is not True:
+                if not matched_old_row.Staged:
                     self.df.at[i, "Collector"] = matched_old_row.Collector
             elif r.Status == "collected" and matched_old_row.Status != "collected":
                 logger.info(
