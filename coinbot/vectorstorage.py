@@ -75,11 +75,11 @@ class VectorStorage:
         )
 
     @staticmethod
-    def load(path: str):
+    def load(path: str, token: str):
         # Load embedding, embedding model and raw data with numpy
         data = np.load(path, allow_pickle=True)
         vectorstorage = VectorStorage(
-            token=str(data["token"]), embedding_model=str(data["model_name"])
+            token=token, embedding_model=str(data["model_name"])
         )
         vectorstorage.embeddings = data["embeddings"]
         vectorstorage.raw_data = list(data["text"])
