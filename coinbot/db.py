@@ -1,11 +1,11 @@
-from datetime import date, datetime
-from box import Box
 import os
-
-import openpyxl
-import numpy as np
-import pandas as pd
+from datetime import date, datetime
 from typing import Optional
+
+import numpy as np
+import openpyxl
+import pandas as pd
+from box import Box
 from loguru import logger
 from tqdm import tqdm
 
@@ -358,7 +358,7 @@ class DataBase:
         """
 
         report_lines = ["📈Updated Stats (including staged coins!)📈\n"]
-        df = self.df[self.df["Status"] != "unavailable"]
+        df = self.get_db_for_date()
 
         def add_change(df: pd.DataFrame, msg: str):
             total_coins = len(df)
@@ -367,8 +367,8 @@ class DataBase:
             assert (
                 len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
             ), "Some coin is collected AND staged"
-            tro, trn = ((collected + staged) / total_coins), (
-                (collected + staged + 1) / total_coins
+            tro, trn = ((collected + staged - 1) / total_coins), (
+                (collected + staged) / total_coins
             )
             emo, emn = self._emoji(tro), self._emoji(trn)
             report_lines.append(f"{msg}: From {emo}{tro:.3%} ➡️ {emn}{trn:.3%}")
