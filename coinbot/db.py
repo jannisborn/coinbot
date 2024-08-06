@@ -94,9 +94,7 @@ class DataBase:
             if r.Status == matched_old_row.Status:
                 # Status did not change so we can copy over the old update date
                 self.df.at[i, "Collected"] = matched_old_row.Collected
-                # Copy over Collector from previous version, unless coin was staged but now status did not change
-                if not matched_old_row.Staged:
-                    self.df.at[i, "Collector"] = matched_old_row.Collector
+                self.df.at[i, "Collector"] = matched_old_row.Collector
             elif r.Status == "collected" and matched_old_row.Status != "collected":
                 logger.info(
                     f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
@@ -117,6 +115,7 @@ class DataBase:
 
         # Reset staged values if new coins were added to DB
         if added_coins:
+            self.df.at[self.df.Staged, "Collector"] = np.nan
             self.df["Staged"] = np.nan
 
     def get_status_diff(self, start: datetime, end: datetime):
