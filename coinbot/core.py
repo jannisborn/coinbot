@@ -346,6 +346,7 @@ class CoinBot:
             self.extract_and_report_series(update, msg)
         elif msg.startswith("staged"):
             self.report_staged(update)
+        else:
             # Query the DB with a specific coin
             self.search_coin_in_db(update, context)
 
