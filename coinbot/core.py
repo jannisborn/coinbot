@@ -344,9 +344,21 @@ class CoinBot:
         msg = update.message.text.lower().strip()
         if msg.startswith("series"):
             self.extract_and_report_series(update, msg)
-        else:
+        elif msg.startswith("staged"):
+            self.report_staged(update)
             # Query the DB with a specific coin
             self.search_coin_in_db(update, context)
+
+    def report_staged(self, update):
+
+        tdf = self.db.df[self.db.df.Staged]
+
+        for i, r in tdf.iterrows():
+
+            match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
+
+            response = f"{match} - by {r.Collector}"
+            update.message.reply_text(response, parse_mode="Markdown")
 
     def extract_and_report_series(self, update, context):
         """
