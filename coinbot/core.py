@@ -144,7 +144,7 @@ class CoinBot:
         """Fetches the file and re-initializes the database."""
         try:
             self.fetch_file(link=self.public_link)
-            self.db = DataBase(self.filepath)
+            self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
             logger.debug("Data reloaded successfully.")
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
