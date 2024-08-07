@@ -60,7 +60,7 @@ class CoinBot:
             public_link: Public link (Dropbox) to the database (xlsm)
             telegram_token: Token to post to Telegram
             llm_token: Token to submit queries to Together
-            slack_token: Token to post on Slack
+            slack_token: Token to post on Slack. If None, no slack is used.
             latest_csv_path: Path to the CSV used in the last execution of the bot
             vectorstorage_path: Post to a npz file with embeddings for special coins
             base_llm: Which LLM should be used. Defaults to "meta-llama/Meta-Llama-3-8B-Instruct".
@@ -101,7 +101,9 @@ class CoinBot:
         self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
 
         self.set_llms()
-        self.slackbot = SlackClient(slack_token)
+        self.slack = slack_token is not None
+        if self.slack:
+            self.slackbot = SlackClient(slack_token)
 
     def error_handler(self, update, context):
         def shutdown():
@@ -708,9 +710,10 @@ class CoinBot:
                 response = (
                     f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
                 )
-                self.slackbot(
-                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
-                )
+                if self.slack:
+                    self.slackbot(
+                        f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+                    )
                 self.user_prefs[user_id]["last_found_coin"] = (
                     country,
                     year,
