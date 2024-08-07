@@ -697,10 +697,10 @@ class CoinBot:
                 return
 
             coin_status = coin_df["Status"].values[0]
-            coin_staged = coin_df["Staged"].values[0]
+            coin_staged = bool(coin_df["Staged"].values[0])
             amount = coin_df["Amount"].values[0]
             stage_markup = None
-            if coin_staged is True:
+            if coin_staged:
                 collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable":
