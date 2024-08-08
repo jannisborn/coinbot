@@ -13,6 +13,7 @@ def main():
     telegram_token = secrets["telegram-token"]
     llm_token = secrets["together"]
     file_link = secrets["file_link"]
+    slack_token = secrets.get('slack')
 
     while True:
         try:
@@ -20,7 +21,7 @@ def main():
                 public_link=file_link,
                 telegram_token=telegram_token,
                 llm_token=llm_token,
-                slack_token=secrets["slack"],
+                slack_token=slack_token,
                 latest_csv_path=os.path.join(
                     os.path.dirname(__file__), "data", "latest_collection.csv"
                 ),

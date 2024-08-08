@@ -99,7 +99,7 @@ def get_tuple(
     name: str = "",
     value: str = "2 euro",
     isspecial: bool = False,
-):
+) -> str:
     if country == "germany":
         if isspecial:
             return f"({country.capitalize()}, {year}, {name}, SOURCE: {source.upper()})"
