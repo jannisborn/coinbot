@@ -60,7 +60,7 @@ class CoinBot:
             public_link: Public link (Dropbox) to the database (xlsm)
             telegram_token: Token to post to Telegram
             llm_token: Token to submit queries to Together
-            slack_token: Token to post on Slack
+            slack_token: Token to post on Slack. If None, no slack is used.
             latest_csv_path: Path to the CSV used in the last execution of the bot
             vectorstorage_path: Post to a npz file with embeddings for special coins
             base_llm: Which LLM should be used. Defaults to "meta-llama/Meta-Llama-3-8B-Instruct".
@@ -101,7 +101,9 @@ class CoinBot:
         self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
 
         self.set_llms()
-        self.slackbot = SlackClient(slack_token)
+        self.slack = slack_token is not None
+        if self.slack:
+            self.slackbot = SlackClient(slack_token)
 
     def error_handler(self, update, context):
         def shutdown():
@@ -142,7 +144,7 @@ class CoinBot:
         """Fetches the file and re-initializes the database."""
         try:
             self.fetch_file(link=self.public_link)
-            self.db = DataBase(self.filepath)
+            self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
             logger.debug("Data reloaded successfully.")
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
@@ -262,7 +264,9 @@ class CoinBot:
             update.message.reply_text("No language recognized, consider setting it")
             return False
 
-    def return_message(self, update: Update, text: str, amount: int = 0) -> Message:
+    def return_message(
+        self, update: Update, text: str, amount: int = 0, reply_markup=None
+    ) -> Message:
         user_id = update.message.from_user.id
         if amount > 0:
             number_text = large_int_to_readable(amount * 1000)
@@ -273,7 +277,9 @@ class CoinBot:
         else:
             language = self.user_prefs[user_id].get("language", "English")
         if language == "English":
-            response_message = update.message.reply_text(text, parse_mode="Markdown")
+            response_message = update.message.reply_text(
+                text, parse_mode="Markdown", reply_markup=reply_markup
+            )
         else:
             # # Uncommented until a better LM is available
             # self.translate_llm = LLM(
@@ -305,7 +311,9 @@ class CoinBot:
             update.message.reply_text(
                 f"Language set to {language}. Currently only `English` is supported. Set by typing `Language: english`."
             )
-            response_message = update.message.reply_text(text)
+            response_message = update.message.reply_text(
+                text, reply_markup=reply_markup
+            )
 
         log_to_csv(update.message.text, text)
         return response_message
@@ -336,9 +344,22 @@ class CoinBot:
         msg = update.message.text.lower().strip()
         if msg.startswith("series"):
             self.extract_and_report_series(update, msg)
+        elif msg.startswith("staged"):
+            self.report_staged(update)
         else:
             # Query the DB with a specific coin
             self.search_coin_in_db(update, context)
+
+    def report_staged(self, update):
+
+        tdf = self.db.df[self.db.df.Staged]
+
+        for i, r in tdf.iterrows():
+
+            match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
+
+            response = f"{match} - by {r.Collector}"
+            update.message.reply_text(response, parse_mode="Markdown")
 
     def extract_and_report_series(self, update, context):
         """
@@ -565,12 +586,57 @@ class CoinBot:
         user_id = query.from_user.id
 
         # Extract the index from the callback data
-        _, start_index = query.data.split("_")
-        start_index = int(start_index)
-        logger.debug(f"Continue displaying from entry {start_index} for user {user_id}")
+        msg = query.data
 
-        # Continue displaying special coins starting from the next index
-        self.keep_displaying_special(query, user_id=user_id, start_index=start_index)
+        if msg.startswith("showmore_"):
+            _, start_index = query.data.split("_")
+            start_index = int(start_index)
+            logger.debug(
+                f"Continue displaying from entry {start_index} for user {user_id}"
+            )
+
+            # Continue displaying special coins starting from the next index
+            self.keep_displaying_special(
+                query, user_id=user_id, start_index=start_index
+            )
+        elif msg.startswith("stage"):
+            self.stage_coin(update=query, user_id=user_id)
+        else:
+            logger.error(f"Unknown query for callback handler {msg}")
+
+    def stage_coin(self, update, user_id):
+        # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
+        country, year, value, source = self.user_prefs[user_id]["last_found_coin"]
+
+        row_indexes = self.db.df.index[
+            (self.db.df["Country"] == country)
+            & (self.db.df["Coin Value"] == value)
+            & (self.db.df["Year"] == year)
+            & (
+                (
+                    (self.db.df["Country"] == "germany")
+                    & (self.db.df["Source"] == source)
+                )
+                | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
+            )
+            & ~self.db.df.Special
+        ]
+        assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
+
+        self.db.df.at[row_indexes[0], "Staged"] = True
+        self.db.df.at[row_indexes[0], "Collector"] = self.user_prefs[user_id][
+            "username"
+        ]
+        self.db.save_df()
+        tpl = (value, country, year)
+        if source is not None:
+            tpl += (source,)
+
+        # Subsequently print status update
+        self.return_message(
+            update,
+            self.db.status_delta(year=year, value=value, country=country),
+        )
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
@@ -602,7 +668,7 @@ class CoinBot:
 
                 source = get_feature_value(output, "source").lower()
             else:
-                output = self.eu_llm(message).lower()
+                output = self.eu_llm(message, history=False).lower()
                 logger.debug(f"EU model says {output}")
                 if any([x in output for x in missing_hints]) or any(
                     [x not in output for x in ["year", "country", "value"]]
@@ -644,33 +710,47 @@ class CoinBot:
                 return
 
             coin_status = coin_df["Status"].values[0]
-            if coin_status == "unavailable":
+            coin_staged = bool(coin_df["Staged"].values[0])
+            amount = coin_df["Amount"].values[0]
+            stage_markup = None
+            if coin_staged:
+                collector = coin_df["Collector"].values[0]
+                response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
+            elif coin_status == "unavailable":
                 response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
                 amount = 0
             elif coin_status == "missing":
                 response = (
                     f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
                 )
-                amount = coin_df["Amount"].values[0]
-                self.slackbot(
-                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+                if self.slack:
+                    self.slackbot(
+                        f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+                    )
+                self.user_prefs[user_id]["last_found_coin"] = (
+                    country,
+                    year,
+                    value,
+                    source,
                 )
+                stage_button = [
+                    [
+                        InlineKeyboardButton(
+                            "Stage coin for collection!", callback_data="stage"
+                        )
+                    ]
+                ]
+                stage_markup = InlineKeyboardMarkup(stage_button)
+
             elif coin_status == "collected":
                 response = f"😢 No luck! The coin {match} was already collected 😢"
-                amount = coin_df["Amount"].values[0]
             else:
                 response = "❓Coin not found."
 
             response = response.split("\n")[0]
-            self.return_message(update, response, amount=amount)
-
-            if coin_status == "missing":
-                # Subsequently print status update
-                time.sleep(1)
-                self.return_message(
-                    update,
-                    self.db.status_delta(year=year, value=value, country=country),
-                )
+            self.return_message(
+                update, response, amount=amount, reply_markup=stage_markup
+            )
 
         except Exception as e:
             self.return_message(update, f"An error occurred: {e}")
@@ -685,8 +765,8 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the country name in English. Be concise and efficient!",
-            temperature=0.0,
+            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the name of the COUNTRY in English (NOT the name of the language). Be concise and efficient!",
+            temperature=0.7,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
