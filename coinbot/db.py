@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import date, datetime
 from typing import Optional
 
@@ -59,7 +60,7 @@ class DataBase:
 
         added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
-        for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data"):
+        for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data", disable=not sys.stdout.isatty()):
             tdf = self.latest_df
             tdf = tdf[
                 (tdf.Country == r.Country)
