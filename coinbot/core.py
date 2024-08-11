@@ -419,7 +419,10 @@ class CoinBot:
                 amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000) + ")"
             else:
                 amount = ""
-            response = f"{match}:\n{icon}{status.upper()}{icon}{amount}"
+            stat_txt = status.upper()
+            stat_txt += f"(Staged by {row.Collector})" if row["Staged"] else ""
+
+            response = f"{match}:\n{icon}{stat_txt}{icon}{amount}"
 
             if special:
                 if image is None:
@@ -447,6 +450,7 @@ class CoinBot:
         value = (
             value.replace("€", " euro")
             .replace("cents", "cent")
+            .replace("euros", "euro")
             .replace("  ", " ")
             .strip()
         )
