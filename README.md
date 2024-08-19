@@ -72,7 +72,7 @@ sudo systemctl status coinbot.service
 sudo systemctl restart coinbot.service
 
 # Fetch logs
-journalctl -u coinbot.service -f
+journalctl -u coinbot.service -o cat --no-pager
 
 # Remove logs
 sudo journalctl --vacuum-time=1s
