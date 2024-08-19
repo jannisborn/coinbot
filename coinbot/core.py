@@ -702,6 +702,7 @@ class CoinBot:
                         & (self.db.df["Source"].isna())
                     )
                 )
+                & (~self.db.df.Special)
             ]
 
             match = get_tuple(country, year, source, value=value)
