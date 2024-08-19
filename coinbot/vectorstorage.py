@@ -17,7 +17,7 @@ class VectorStorage:
     def register_data(self, text: List[str]):
         self.raw_data = text
         self.embeddings = np.zeros((len(text), 1024))
-        for i, t in tqdm(enumerate(text), desc="Embedding data", total=len(text)):
+        for i, t in tqdm(enumerate(text), desc="Embedding data", total=len(text), disable=not sys.stdout.isatty()):
             self.embeddings[i] = self.model.embed(t)
 
     def fit(self, *args, **kwargs):
