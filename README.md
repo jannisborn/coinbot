@@ -76,4 +76,6 @@ journalctl -u coinbot.service -o cat --no-pager
 
 # Remove logs
 sudo journalctl --vacuum-time=1s
+# or to be aggressive
+sudo rm -rf /var/log/journal/*
 ```
