@@ -136,12 +136,12 @@ class CoinBot:
         else:
             logger.warning(f"Failed to download file from {link}")
 
-    def start_periodic_reload(self, interval: int = 3600):
+    def start_periodic_reload(self, interval: int = 3600 * 6):
         """Starts the periodic reloading of data."""
         # Set up a timer to call this method after `interval` seconds
         threading.Timer(interval, self.reload_data, [interval]).start()
 
-    def reload_data(self, interval: int = 3600):
+    def reload_data(self, interval: int = 3600 * 6):
         """Fetches the file and re-initializes the database."""
         try:
             self.fetch_file(link=self.public_link)
@@ -353,6 +353,10 @@ class CoinBot:
     def report_staged(self, update):
 
         tdf = self.db.df[self.db.df.Staged]
+        if len(tdf) == 0:
+            update.message.reply_text(
+                "No coins are currently staged", parse_mode="Markdown"
+            )
 
         for i, r in tdf.iterrows():
 
