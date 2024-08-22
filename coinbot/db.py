@@ -76,17 +76,15 @@ class DataBase:
             if len(tdf) > 1:
                 logger.error(f"Multiple occurrences found: {tdf}")
                 continue
-            elif len(tdf) == 0 or (
-                tdf.iloc[0].Status in ["missing", "collected"]
-                and r.Status == "unavailable"
-            ):
+            elif len(tdf) == 0:
                 logger.warning(
                     f"Seems that coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
                 )
-                self.df.at[i, "Created"] = str(date.today())
-                if len(tdf) == 0:
-                    self.df.at[i, "Collected"] = str(date.today())
-                    continue
+                self.df.at[i, "Created"] = str(date.today().strftime("%d.%m.%Y"))
+                if r.Status=='collected':
+                    logger.info(f"Fresh coin ({r.Country}, {r.Year}, {r['Coin Value']}) was already collected")
+                    self.df.at[i, "Collected"] = str(date.today().strftime("%d.%m.%Y"))
+                continue
             else:
                 self.df.at[i, "Created"] = tdf.iloc[0].Created
 
@@ -98,12 +96,12 @@ class DataBase:
                 self.df.at[i, "Collector"] = matched_old_row.Collector
             elif r.Status == "collected" and matched_old_row.Status != "collected":
                 logger.info(
-                    f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected"
+                    f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}, {r.Source}, {r.Name}) was now collected by {matched_old_row.Collector}"
                 )
-                self.df.at[i, "Collected"] = str(date.today())
+                self.df.at[i, "Collected"] = str(date.today().strftime("%d.%m.%Y"))
                 added_coins = True
-                if matched_old_row.Staged:
-                    self.df.at[i, "Collector"] = matched_old_row.Collector
+
+                self.df.at[i, "Collector"] = matched_old_row.Collector
             elif matched_old_row.Status == "unavailable":
                 # Status changed from unavailable to missing or sth else than collected
                 pass
@@ -116,8 +114,9 @@ class DataBase:
 
         # Reset staged values if new coins were added to DB
         if added_coins:
-            self.df.at[self.df.Staged, "Collector"] = np.nan
-            self.df["Staged"] = np.nan
+            self.df["Staged"] = self.df["Staged"].fillna(False)
+            self.df.loc[self.df['Staged'] & (self.df['Status']!='collected'), "Collector"] = np.nan
+            self.df["Staged"] = False
 
     def get_status_diff(self, start: datetime, end: datetime):
 
@@ -132,7 +131,6 @@ class DataBase:
         # Total coins info
         data = Box()
         for key, tdf in zip(["start", "end"], [start_df, end_df]):
-
             ## Global stats
             key_data = Box()
             key_data.coins = len(tdf)
@@ -184,7 +182,6 @@ class DataBase:
                 key_data[value] = key_value
 
             data[key] = key_data
-
         trd = data.end.total_ratio - data.start.total_ratio
         srd = data.end.special_ratio - data.start.special_ratio
 
