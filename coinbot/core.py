@@ -72,7 +72,9 @@ class CoinBot:
         self.latest_csv_path = latest_csv_path
 
         # Initialize language preferences dictionary
-        self.user_prefs = defaultdict(dict)
+        self.user_prefs = defaultdict(
+            lambda: {"collecting_language": False, "collecting_username": False}
+        )
 
         # Initialize the bot and dispatcher
         self.updater = Updater(self.telegram_token, use_context=True)
@@ -121,7 +123,6 @@ class CoinBot:
         Args:
             link: The public link from which to download the file
         """
-        logger.debug("(Re)downloading data...")
         response = requests.get(link)
         # Check if the request was successful
         if response.status_code == 200 and response.headers["Etag"] != self.file_etag:
@@ -131,21 +132,20 @@ class CoinBot:
                 f.write(response.content)
             logger.info(f"File downloaded successfully from {link}")
         elif response.headers["Etag"] == self.file_etag:
-            logger.info(f"{self.filepath} is up-to-date. Skipping download.")
+            logger.debug(f"{self.filepath} is up-to-date. Skipping download.")
         else:
             logger.warning(f"Failed to download file from {link}")
 
-    def start_periodic_reload(self, interval: int = 3600):
+    def start_periodic_reload(self, interval: int = 3600 * 6):
         """Starts the periodic reloading of data."""
         # Set up a timer to call this method after `interval` seconds
         threading.Timer(interval, self.reload_data, [interval]).start()
 
-    def reload_data(self, interval: int = 3600):
+    def reload_data(self, interval: int = 3600 * 6):
         """Fetches the file and re-initializes the database."""
         try:
             self.fetch_file(link=self.public_link)
             self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
-            logger.debug("Data reloaded successfully.")
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
         threading.Timer(interval, self.reload_data, [interval]).start()
@@ -353,6 +353,10 @@ class CoinBot:
     def report_staged(self, update):
 
         tdf = self.db.df[self.db.df.Staged]
+        if len(tdf) == 0:
+            update.message.reply_text(
+                "No coins are currently staged", parse_mode="Markdown"
+            )
 
         for i, r in tdf.iterrows():
 
@@ -419,7 +423,10 @@ class CoinBot:
                 amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000) + ")"
             else:
                 amount = ""
-            response = f"{match}:\n{icon}{status.upper()}{icon}{amount}"
+            stat_txt = status.upper()
+            stat_txt += f"(Staged by {row.Collector})" if row["Staged"] else ""
+
+            response = f"{match}:\n{icon}{stat_txt}{icon}{amount}"
 
             if special:
                 if image is None:
@@ -447,6 +454,7 @@ class CoinBot:
         value = (
             value.replace("€", " euro")
             .replace("cents", "cent")
+            .replace("euros", "euro")
             .replace("  ", " ")
             .strip()
         )
@@ -698,6 +706,7 @@ class CoinBot:
                         & (self.db.df["Source"].isna())
                     )
                 )
+                & (~self.db.df.Special)
             ]
 
             match = get_tuple(country, year, source, value=value)
