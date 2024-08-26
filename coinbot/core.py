@@ -774,8 +774,8 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the name of the COUNTRY in English (NOT the name of the language). Be concise and efficient!",
-            temperature=0.7,
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            temperature=0.5,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
@@ -792,7 +792,7 @@ class CoinBot:
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
-            temperature=0.6,
+            temperature=1.0,
         )
         self.to_english_llm = LLM(
             model=self.base_llm,
