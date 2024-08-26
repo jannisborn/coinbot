@@ -800,5 +800,5 @@ class CoinBot:
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation!"
             ),
-            temperature=0.0,
+            temperature=0.7,
         )
