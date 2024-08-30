@@ -358,7 +358,7 @@ class CoinBot:
                 "No coins are currently staged", parse_mode="Markdown"
             )
 
-        tdf = tdf.sort_values(by=["Country", "Year", "Value"])
+        tdf = tdf.sort_values(by=["Country", "Year", "Coin Value"])
         for _, r in tdf.iterrows():
 
             match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
