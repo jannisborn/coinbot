@@ -284,7 +284,7 @@ class DataBase:
             f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n(Results including staged coins in brackets)\n"
         )
         report_lines.append(
-            "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15% -> 🟤\n>0% -> ⚫\n0% -> ✖️"
+            "Color code: 100% -> ✅ >90% -> 🟢 >80% -> 🟣 >70% -> 🔵 >60% -> ⚪ >50% -> 🟡 >40% -> 🟠 >30% -> 🔴 >20% -> 🟤 >10% -> ⚫ >0% -> ✖️ 0% -> 0️"
         )
 
         # Total coins info
