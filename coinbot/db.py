@@ -60,7 +60,12 @@ class DataBase:
 
         added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
-        for i, r in tqdm(self.df.iterrows(), total=len(self.df), desc="Aligning data", disable=not sys.stdout.isatty()):
+        for i, r in tqdm(
+            self.df.iterrows(),
+            total=len(self.df),
+            desc="Aligning data",
+            disable=not sys.stdout.isatty(),
+        ):
             tdf = self.latest_df
             tdf = tdf[
                 (tdf.Country == r.Country)
@@ -81,8 +86,10 @@ class DataBase:
                     f"Seems that coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
                 )
                 self.df.at[i, "Created"] = str(date.today().strftime("%d.%m.%Y"))
-                if r.Status=='collected':
-                    logger.info(f"Fresh coin ({r.Country}, {r.Year}, {r['Coin Value']}) was already collected")
+                if r.Status == "collected":
+                    logger.info(
+                        f"Fresh coin ({r.Country}, {r.Year}, {r['Coin Value']}) was already collected"
+                    )
                     self.df.at[i, "Collected"] = str(date.today().strftime("%d.%m.%Y"))
                 continue
             else:
@@ -115,7 +122,9 @@ class DataBase:
         # Reset staged values if new coins were added to DB
         if added_coins:
             self.df["Staged"] = self.df["Staged"].fillna(False)
-            self.df.loc[self.df['Staged'] & (self.df['Status']!='collected'), "Collector"] = np.nan
+            self.df.loc[
+                self.df["Staged"] & (self.df["Status"] != "collected"), "Collector"
+            ] = np.nan
             self.df["Staged"] = False
 
     def get_status_diff(self, start: datetime, end: datetime):
@@ -275,7 +284,7 @@ class DataBase:
             f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n(Results including staged coins in brackets)\n"
         )
         report_lines.append(
-            "Color code:\n100% -> ✅\n>75% -> 🟢\n>60% -> 🟡\n>45% -> 🟠\n>30% -> 🔴\n>15% -> 🟤\n>0% -> ⚫\n0% -> ✖️"
+            "Color code: 100% -> ✅ >90% -> 🟢 >80% -> 🟣 >70% -> 🔵 >60% -> ⚪ >50% -> 🟡 >40% -> 🟠 >30% -> 🔴 >20% -> 🟤 >10% -> ⚫ >0% -> ✖️ 0% -> 0️"
         )
 
         # Total coins info
@@ -529,19 +538,27 @@ class DataBase:
             return "❔"
         elif fraction == 1:
             return "✅"
-        elif fraction >= 0.75:
+        elif fraction >= 0.9:
             return "🟢"
+        elif fraction >= 0.8:
+            return "🟣"
+        elif fraction >= 0.7:
+            return "🔵"
         elif fraction >= 0.6:
+            return "⚪"
+        elif fraction >= 0.5:
             return "🟡"
-        elif fraction >= 0.45:
+        elif fraction >= 0.4:
             return "🟠"
         elif fraction >= 0.3:
             return "🔴"
-        elif fraction >= 0.15:
+        elif fraction >= 0.2:
             return "🟤"
-        elif fraction > 0.0:
+        elif fraction >= 0.1:
             return "⚫"
-        elif fraction == 0:
+        elif fraction > 0.0:
             return "✖️"
+        elif fraction == 0:
+            return "0️"
         else:
             return "❔"

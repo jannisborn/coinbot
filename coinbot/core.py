@@ -358,7 +358,8 @@ class CoinBot:
                 "No coins are currently staged", parse_mode="Markdown"
             )
 
-        for i, r in tdf.iterrows():
+        tdf = tdf.sort_values(by=["Country", "Year", "Coin Value"])
+        for _, r in tdf.iterrows():
 
             match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
 
@@ -439,7 +440,9 @@ class CoinBot:
             else:
                 update.message.reply_text(response, parse_mode="Markdown")
 
-    def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
+    def extract_features(
+        self, llm_output: str, cast_country: bool = True
+    ) -> Tuple[str, int, str]:
         """
         Extracts the country, year, value, and source from the LLM output.
 
@@ -470,7 +473,10 @@ class CoinBot:
         except ValueError:
             year = -1
 
-        country = c if c == "" else self.to_english_llm(c, history=False)
+        if c == "" or not cast_country:
+            country = c
+        else:
+            country = self.to_english_llm(c, history=False)
         country = country.strip().lower().replace(".", "")
         return country, year, value
 
@@ -658,7 +664,8 @@ class CoinBot:
             if message.lower().startswith("special"):
                 return self.search_special_coin(update, message)
 
-            if sane_no_country(message):
+            no_country = sane_no_country(message)
+            if no_country:
                 message += " Germany "
 
             if contains_germany(message, threshold=99):
@@ -688,7 +695,9 @@ class CoinBot:
                     )
                     return
                 source = None
-            country, year, value = self.extract_features(output)
+            country, year, value = self.extract_features(
+                output, cast_country=not no_country
+            )
             logger.debug(f"Features for lookup: {country, year, value, source}")
 
             # Search in the dataframe
@@ -774,8 +783,8 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, Country, coin value (in euro or cents) and year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Give me the name of the COUNTRY in English (NOT the name of the language). Be concise and efficient!",
-            temperature=0.7,
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            temperature=0.5,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
@@ -784,7 +793,7 @@ class CoinBot:
                 "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
-            temperature=0.0,
+            temperature=0.5,
         )
         self.joke_llm = LLM(
             model=self.base_llm,
@@ -792,7 +801,7 @@ class CoinBot:
             task_prompt=(
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
-            temperature=0.6,
+            temperature=1.0,
         )
         self.to_english_llm = LLM(
             model=self.base_llm,
@@ -800,5 +809,5 @@ class CoinBot:
             task_prompt=(
                 "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation!"
             ),
-            temperature=0.0,
+            temperature=0.7,
         )
