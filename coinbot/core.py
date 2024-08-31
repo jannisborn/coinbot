@@ -40,7 +40,7 @@ logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
 logger.debug("Starting script")
 
 
-missing_hints = ["miss", "provided", "not"]
+missing_hints = ["miss", "provided", "not", "none"]
 username_message = " Only one more thing: What's your name? 🤗"
 
 
@@ -372,24 +372,28 @@ class CoinBot:
         """
         message = update.message.text.lower().strip()
 
-        year = get_year(message)
-        if year == -1:
-            self.return_message(
-                update,
-                "No year or multiple year found, please provide single year with four digits.",
-            )
-            return
+        output = self.eu_llm(message).lower()
+        logger.debug(f"EU model says {output}")
 
-        words = message.split("series ")[1].split(" ")
-        words.remove(str(year))
-        country = self.to_english_llm(" ".join(words), history=False).strip().lower()
-
-        # Search in the dataframe
-        coin_df = self.db.df[
-            (self.db.df["Country"] == country)
-            & (self.db.df["Year"] == year)
-            & (~self.db.df["Special"])
-        ]
+        country, year, value = self.extract_features(output, cast_country=False)
+        coin_df = self.db.df[~self.db.df["Special"]]
+        has_country = "missing" not in country
+        if has_country:
+            coin_df = coin_df[coin_df["Country"] == country]
+        has_year = year > 1990 and year < 2100
+        if has_year:
+            coin_df = coin_df[coin_df["Year"] == year]
+        has_value = not any([x in value for x in missing_hints]) and value.strip() != ""
+        if has_value:
+            coin_df = coin_df[coin_df["Coin Value"] == value]
+        if has_country and not has_value and not has_year:
+            av_idx = 0
+            while (
+                av_idx < len(coin_df)
+                and coin_df["Status"].iloc[av_idx] == "unavailable"
+            ):
+                av_idx += 1
+            coin_df = coin_df.iloc[av_idx:]
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             self.return_message(update, response)
@@ -439,6 +443,7 @@ class CoinBot:
                     )
             else:
                 update.message.reply_text(response, parse_mode="Markdown")
+            time.sleep(0.1)
 
     def extract_features(
         self, llm_output: str, cast_country: bool = True
@@ -462,7 +467,12 @@ class CoinBot:
             .strip()
         )
 
-        if "cent" not in value and "euro" not in value:
+        if (
+            "cent" not in value
+            and "euro" not in value
+            and not any([x in value for x in missing_hints])
+            and value.strip() != ""
+        ):
             if int(value) in [5, 10, 20, 50]:
                 value += " cent"
 
@@ -784,7 +794,7 @@ class CoinBot:
             model=self.base_llm,
             token=self.llm_token,
             task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
-            temperature=0.5,
+            temperature=0.6,
         )
         self.ger_llm = LLM(
             model=self.base_llm,

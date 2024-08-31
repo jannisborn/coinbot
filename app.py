@@ -13,7 +13,7 @@ def main():
     telegram_token = secrets["telegram-token"]
     llm_token = secrets["together"]
     file_link = secrets["file_link"]
-    slack_token = secrets.get('slack')
+    slack_token = secrets.get("slack")
 
     while True:
         try:
