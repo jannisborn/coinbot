@@ -128,7 +128,6 @@ class DataBase:
             self.df["Staged"] = False
 
     def get_status_diff(self, start: datetime, end: datetime):
-
         start_df = self.get_db_for_date(date=start)
         end_df = self.get_db_for_date(date=end)
 
@@ -278,6 +277,14 @@ class DataBase:
             len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
         ), "Some coin is collected AND staged"
 
+        def format_line_staged(fra, fras, col, stag, tot, name):
+            return f"{self._emoji(fra)}({self._emoji(fras)}) {name}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
+
+        def format_line(fra, fras, col, stag, tot, name):
+            return f"{self._emoji(fras)} {name}: {fras:.2%}  - {col+stag} / {tot}"
+
+        line_formatter = format_line_staged if "staged" in words else format_line
+
         report_lines = []
         date_str = "Today" if len(words) == 1 else given_date
         report_lines.append(
@@ -302,12 +309,11 @@ class DataBase:
         trs = (collected + stag) / total_coins
         sr = speccol / special
 
-        # Formatting the total and special coins information
         report_lines.append(
-            f"**{self._emoji(tr)}({self._emoji(trs)}) Total coins: {total_coins}, done: {collected}({collected+stag}) {tr:.2%} ({trs:.2%})**"
+            line_formatter(tr, trs, collected, stag, total_coins, name="Total coins")
         )
         report_lines.append(
-            f"**{self._emoji(sr)}Special coins: {special}, done: {speccol} ({sr:.2%})**\n"
+            line_formatter(sr, sr, collected, 0, special, name="Special coins")
         )
 
         # Generating report by Year
@@ -320,9 +326,7 @@ class DataBase:
 
             fra = col / tot if tot > 0 else 0
             fras = (col + stag) / tot if tot > 0 else 0
-            report_lines.append(
-                f"{self._emoji(fra)}({self._emoji(fras)}) {year}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
-            )
+            report_lines.append(line_formatter(fra, fras, col, stag, tot, name=year))
 
         # Generating report by Country
         report_lines.append("\nCountries:")
@@ -335,7 +339,7 @@ class DataBase:
             fra = col / tot if tot > 0 else 0
             fras = (col + stag) / tot if tot > 0 else 0
             report_lines.append(
-                f"{self._emoji(fra)}({self._emoji(fras)}) {country.capitalize()}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
+                line_formatter(fra, fras, col, stag, tot, name=country.capitalize())
             )
 
         # Generating report by Coin value
@@ -349,9 +353,7 @@ class DataBase:
             stag = len(value_df[value_df.Staged == True])
             fra = col / tot if tot > 0 else 0
             fras = (col + stag) / tot if tot > 0 else 0
-            report_lines.append(
-                f"{self._emoji(fra)}({self._emoji(fras)}) {value}: {fra:.2%} ({fras:.2%}) - {col}({col+stag}) / {tot}"
-            )
+            report_lines.append(line_formatter(fra, fras, col, stag, tot, name=value))
 
         # Joining report lines into a single string
         report = "\n".join(report_lines)
@@ -373,8 +375,9 @@ class DataBase:
             assert (
                 len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
             ), "Some coin is collected AND staged"
-            tro, trn = ((collected + staged - 1) / total_coins), (
-                (collected + staged) / total_coins
+            tro, trn = (
+                ((collected + staged - 1) / total_coins),
+                ((collected + staged) / total_coins),
             )
             emo, emn = self._emoji(tro), self._emoji(trn)
             report_lines.append(f"{msg}: From {emo}{tro:.3%} ➡️ {emn}{trn:.3%}")
