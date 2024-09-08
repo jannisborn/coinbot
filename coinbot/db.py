@@ -270,12 +270,15 @@ class DataBase:
         elif msg.startswith("status staged"):
             # Case 3
             df = self.get_db_for_date()
+            date_str ='Today'
         elif len(words) != 2:
             # Case 1 (default)
             df = self.get_db_for_date()
+            date_str ='Today'
         else:
             given_date = datetime.strptime(words[-1], "%d.%m.%Y")
             df = self.get_db_for_date(date=given_date)
+            date_str =given_date
 
         assert (
             len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
@@ -290,7 +293,6 @@ class DataBase:
         line_formatter = format_line_staged if "staged" in words else format_line
 
         report_lines = []
-        date_str = "Today" if len(words) == 1 else given_date
         report_lines.append(
             f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n(Results including staged coins in brackets)\n"
         )
