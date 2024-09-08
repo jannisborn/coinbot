@@ -251,9 +251,10 @@ class DataBase:
         Args:
             msg: The user message, can be Case 1, Case 2 or Case 3:
 
-                Case 1: `Status` just gives the current status of DB
+                Case 1: `Status` just gives the current status of DB, including staged coins
                 Case 2: `Status DATE` gives the DB status at a specific date
                 Case 3: `Status Diff DATE DATE` gives the delta across two timepoints
+                Case 4:: `Status Staged` gives the DB status as a diff between current and staged.
         Returns:
             A report describing the status. Or a error msg
         """
@@ -266,6 +267,9 @@ class DataBase:
             end = datetime.strptime(words[-1], "%d.%m.%Y")
             report = self.get_status_diff(start=start, end=end)
             return report
+        elif msg.startswith("status staged"):
+            # Case 3
+            df = self.get_db_for_date()
         elif len(words) != 2:
             # Case 1 (default)
             df = self.get_db_for_date()
