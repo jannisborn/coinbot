@@ -328,7 +328,6 @@ class CoinBot:
         return True
 
     def handle_text_message(self, update, context):
-
         if random() < 0.005:
             output = self.joke_llm(update.message.text)
             self.return_message(update, output)
@@ -351,7 +350,6 @@ class CoinBot:
             self.search_coin_in_db(update, context)
 
     def report_staged(self, update):
-
         tdf = self.db.df[self.db.df.Staged]
         if len(tdf) == 0:
             update.message.reply_text(
@@ -360,7 +358,6 @@ class CoinBot:
 
         tdf = tdf.sort_values(by=["Country", "Year", "Coin Value"])
         for _, r in tdf.iterrows():
-
             match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
 
             response = f"{match} - by {r.Collector}"
