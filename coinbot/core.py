@@ -37,8 +37,6 @@ from coinbot.vectorstorage import VectorStorage
 
 log_level = os.getenv("LOGLEVEL", "DEBUG")
 logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
-logger.debug("Starting script")
-
 
 missing_hints = ["miss", "provided", "not", "none"]
 username_message = " Only one more thing: What's your name? 🤗"
@@ -108,13 +106,7 @@ class CoinBot:
             self.slackbot = SlackClient(slack_token)
 
     def error_handler(self, update, context):
-        def shutdown():
-            self.updater.stop()
-            self.updater.is_idle = False
-
-        logger.error(f'Update "{update}" caused error "{context.error}"')
-        threading.Thread(target=shutdown).start()
-        time.sleep(3)
+        logger.error(f'Update "{update}" caused error "{context.error}"', exc_info=True)
 
     def fetch_file(self, link: str):
         """
@@ -814,7 +806,7 @@ class CoinBot:
             model=self.base_llm,
             token=self.llm_token,
             task_prompt=(
-                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation!"
+                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation! Holland is not a country, it's Netherlands"
             ),
             temperature=0.7,
         )
