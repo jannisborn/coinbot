@@ -108,12 +108,15 @@ class CoinBot:
     def error_handler(self, update, context):
         logger.error(f'Update "{update}" caused error "{context.error}"', exc_info=True)
 
-    def fetch_file(self, link: str):
+    def fetch_file(self, link: str) -> bool:
         """
         Download a file from a given path and save to `self.filepath`.
 
         Args:
             link: The public link from which to download the file
+
+        Returns:
+            Whether a new file was fetched
         """
         response = requests.get(link)
         # Check if the request was successful
@@ -123,10 +126,12 @@ class CoinBot:
             with open(self.filepath, "wb") as f:
                 f.write(response.content)
             logger.info(f"File downloaded successfully from {link}")
+            return True
         elif response.headers["Etag"] == self.file_etag:
             logger.debug(f"{self.filepath} is up-to-date. Skipping download.")
         else:
             logger.warning(f"Failed to download file from {link}")
+        return False
 
     def start_periodic_reload(self, interval: int = 3600 * 6):
         """Starts the periodic reloading of data."""
@@ -136,10 +141,11 @@ class CoinBot:
     def reload_data(self, interval: int = 3600 * 6):
         """Fetches the file and re-initializes the database."""
         try:
-            self.fetch_file(link=self.public_link)
-            self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
+            updated = self.fetch_file(link=self.public_link)
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
+        if updated:
+            self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
         threading.Timer(interval, self.reload_data, [interval]).start()
 
     def setup(self, update, context) -> bool:
