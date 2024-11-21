@@ -56,7 +56,7 @@ class DataBase:
         self.df.insert(5, "Created", pd.NA)
         self.df.insert(10, "Staged", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
-        self.latest_df["Staged"] = self.latest_df["Staged"].fillna(False)
+        self.latest_df["Staged"] = self.latest_df["Staged"].fillna(False).infer_objects(copy=False)
 
         added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
@@ -121,7 +121,7 @@ class DataBase:
 
         # Reset staged values if new coins were added to DB
         if added_coins:
-            self.df["Staged"] = self.df["Staged"].fillna(False)
+            self.df["Staged"] = self.df["Staged"].fillna(False).infer_objects(copy=False)
             self.df.loc[
                 self.df["Staged"] & (self.df["Status"] != "collected"), "Collector"
             ] = np.nan
@@ -130,6 +130,10 @@ class DataBase:
     def get_status_diff(self, start: datetime, end: datetime):
         start_df = self.get_db_for_date(date=start)
         end_df = self.get_db_for_date(date=end)
+        if len(start_df) == 0:
+            return f"No results found. Pick a later start than {start}"
+        elif len(end_df) == 0:
+            return f"No results found. Pick an earlier end than {end}"
 
         report_lines = []
 
@@ -233,8 +237,8 @@ class DataBase:
 
     def get_db_for_date(self, date: Optional[datetime] = None):
         df = self.df[self.df["Status"] != "unavailable"].copy()
-        df["CreatedDate"] = pd.to_datetime(df["Created"], errors="coerce")
-        df["CollectedDate"] = pd.to_datetime(df["Collected"], errors="coerce")
+        df["CreatedDate"] = pd.to_datetime(df["Created"], errors="coerce", dayfirst=True)
+        df["CollectedDate"] = pd.to_datetime(df["Collected"], errors="coerce", dayfirst=True)
         if date is None:
             return df
 
