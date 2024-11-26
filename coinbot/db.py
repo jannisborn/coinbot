@@ -295,10 +295,11 @@ class DataBase:
             return f"{self._emoji(fras)} {name}: {fras:.2%}  - {col+stag} / {tot}"
 
         line_formatter = format_line_staged if "staged" in words else format_line
+        brack = " in brackets" if 'staged' in words else ""
 
         report_lines = []
         report_lines.append(
-            f"**🤑🪙 Collection Status as of {date_str} 🤑🪙**\n(Results including staged coins in brackets)\n"
+            f"**🤑 Collection Status - {date_str} 🤑**\n(Results include staged coins{brack})\n"
         )
         report_lines.append(
             "Color code: 100% -> ✅ >90% -> 🟢 >80% -> 🟣 >70% -> 🔵 >60% -> ⚪ >50% -> 🟡 >40% -> 🟠 >30% -> 🔴 >20% -> 🟤 >10% -> ⚫ >0% -> ✖️ 0% -> 0️"
