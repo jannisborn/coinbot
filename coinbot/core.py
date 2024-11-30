@@ -4,7 +4,7 @@ import threading
 import time
 from collections import defaultdict
 from random import random
-from typing import Tuple
+from typing import Literal, Tuple
 
 import pandas as pd
 import requests
@@ -29,7 +29,6 @@ from coinbot.utils import (
     get_file_content,
     get_tuple,
     get_year,
-    has_coin_value,
     large_int_to_readable,
     log_to_csv,
     sane_no_country,
@@ -39,8 +38,8 @@ from coinbot.vectorstorage import VectorStorage
 log_level = os.getenv("LOGLEVEL", "DEBUG")
 logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
 
-missing_hints = ["miss", "provided", "not", "none"]
-username_message = " Only one more thing: What's your name? 🤗"
+MISS_HINTS = Literal["miss", "provided", "not", "none"]
+USER_MSG: str = " Only one more thing: What's your name? 🤗"
 
 
 class CoinBot:
@@ -193,7 +192,7 @@ class CoinBot:
             self.user_prefs[user_id]["language"] = new_language
             if self.user_prefs[user_id]["collecting_username"]:
                 time.sleep(0.5)
-                self.return_message(update, username_message)
+                self.return_message(update, USER_MSG)
             elif not self.user_prefs[user_id]["collecting_language"]:
                 time.sleep(0.5)
                 response += "\nHere are the instructions again:\n"
@@ -224,7 +223,7 @@ class CoinBot:
             response = f"Language was set to {text}. You can always change it by writing\n`Language: YOUR_LANGUAGE`."
             if text.capitalize() == "English":
                 time.sleep(0.2)
-            self.return_message(update, response + username_message)
+            self.return_message(update, response + USER_MSG)
             self.user_prefs[user_id]["collecting_language"] = False
             self.user_prefs[user_id]["collecting_username"] = True
             return True
@@ -381,12 +380,15 @@ class CoinBot:
         # print(rest, has_value)
 
         coin_df = self.db.df[~self.db.df["Special"]]
-        if has_country := "" != country:
+        if (
+            has_country := not any([x in value for x in MISS_HINTS])
+            and country.stip() != ""
+        ):
             coin_df = coin_df[coin_df["Country"] == country]
         if has_year := year > 1990 and year < 2100:
             coin_df = coin_df[coin_df["Year"] == year]
         if (
-            has_value := not any([x in value for x in missing_hints])
+            has_value := not any([x in value for x in MISS_HINTS])
             and value.strip() != ""
         ):
             coin_df = coin_df[coin_df["Coin Value"] == value]
@@ -408,6 +410,7 @@ class CoinBot:
         """
         Report the search status of a series of results.
         """
+        msg_counter = 0
         dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
         for j, (i, row) in enumerate(coin_df.iterrows()):
             status = row["Status"]
@@ -447,7 +450,10 @@ class CoinBot:
                     )
             else:
                 update.message.reply_text(response, parse_mode="Markdown")
+            msg_counter += 1
             time.sleep(0.2)
+            if msg_counter % 10 == 0:
+                time.sleep(1)
 
     def extract_features(
         self, llm_output: str, cast_country: bool = True
@@ -474,7 +480,7 @@ class CoinBot:
         if (
             "cent" not in value
             and "euro" not in value
-            and not any([x in value for x in missing_hints])
+            and not any([x in value for x in MISS_HINTS])
             and value.strip() != ""
         ):
             if int(value) in [5, 10, 20, 50]:
@@ -685,7 +691,7 @@ class CoinBot:
             if contains_germany(message, threshold=99):
                 output = self.ger_llm(message).lower()
                 logger.debug(f"German model says {output}")
-                if any([x in output for x in missing_hints]) or any(
+                if any([x in output for x in MISS_HINTS]) or any(
                     [x not in output for x in ["source", "year", "country", "value"]]
                 ):
                     self.return_message(
@@ -699,7 +705,7 @@ class CoinBot:
             else:
                 output = self.eu_llm(message, history=False).lower()
                 logger.debug(f"EU model says {output}")
-                if any([x in output for x in missing_hints]) or any(
+                if any([x in output for x in MISS_HINTS]) or any(
                     [x not in output for x in ["year", "country", "value"]]
                 ):
                     self.return_message(
