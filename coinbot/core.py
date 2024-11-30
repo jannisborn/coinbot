@@ -4,7 +4,7 @@ import threading
 import time
 from collections import defaultdict
 from random import random
-from typing import Literal, Tuple
+from typing import List, Tuple
 
 import pandas as pd
 import requests
@@ -38,7 +38,7 @@ from coinbot.vectorstorage import VectorStorage
 log_level = os.getenv("LOGLEVEL", "DEBUG")
 logger.configure(handlers=[{"sink": sys.stdout, "level": log_level}])
 
-MISS_HINTS = Literal["miss", "provided", "not", "none"]
+MISS_HINTS: List[str] = ["miss", "provided", "not", "none"]
 USER_MSG: str = " Only one more thing: What's your name? 🤗"
 
 
