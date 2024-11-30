@@ -169,7 +169,7 @@ def has_coin_value(text: str) -> bool:
     # Check for coin size (assuming sizes are the same in any language)
     coin_pattern = r"|".join(COIN_SIZE_PATTERNS)
     num_found = re.search(coin_pattern, text, re.IGNORECASE) is not None
-    order_found = any([x in text.lower.strip() for x in ["euro", "cent", "€"]])
+    order_found = any([x in text.lower().strip() for x in ["euro", "cent", "€"]])
     return num_found and order_found
 
 
