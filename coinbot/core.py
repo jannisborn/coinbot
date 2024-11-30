@@ -367,7 +367,7 @@ class CoinBot:
         Report the status of a series (year, country)-tuple of coins.
         """
 
-        output = self.eu_llm(text)
+        output = self.eu_llm(text).lower()
         logger.debug(f"EU model says {output}")
         country, year, value = self.extract_features(output, cast_country=False)
 
@@ -447,7 +447,7 @@ class CoinBot:
                     )
             else:
                 update.message.reply_text(response, parse_mode="Markdown")
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def extract_features(
         self, llm_output: str, cast_country: bool = True
