@@ -369,16 +369,6 @@ class CoinBot:
         output = self.eu_llm(text).lower()
         logger.debug(f"EU model says {output}")
         country, year, value = self.extract_features(output, cast_country=False)
-
-        # year = self.get_year_from_full(update, text)
-        # country, matched = fuzzy_search_country(text)
-
-        # print("exact search", year, country, matched)
-
-        # rest = text.replace("series", "").replace(matched, "").replace(str(year), "")
-        # has_value = has_coin_value(rest)
-        # print(rest, has_value)
-
         coin_df = self.db.df[~self.db.df["Special"]]
         if (
             has_country := not any([x in country for x in MISS_HINTS])
