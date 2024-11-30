@@ -361,25 +361,23 @@ class CoinBot:
             response = f"{match} - by {r.Collector}"
             update.message.reply_text(response, parse_mode="Markdown")
 
-    def extract_and_report_series(self, update, context):
+    def extract_and_report_series(self, update, msg):
         """
         Report the status of a series (year, country)-tuple of coins.
         """
-        message = update.message.text.lower().strip()
-
-        output = self.eu_llm(message).lower()
+        output = self.eu_llm(msg).lower()
         logger.debug(f"EU model says {output}")
 
         country, year, value = self.extract_features(output, cast_country=False)
         coin_df = self.db.df[~self.db.df["Special"]]
-        has_country = "missing" not in country
-        if has_country:
+        if has_country := "" != country:
             coin_df = coin_df[coin_df["Country"] == country]
-        has_year = year > 1990 and year < 2100
-        if has_year:
+        if has_year := year > 1990 and year < 2100:
             coin_df = coin_df[coin_df["Year"] == year]
-        has_value = not any([x in value for x in missing_hints]) and value.strip() != ""
-        if has_value:
+        if (
+            has_value := not any([x in value for x in missing_hints])
+            and value.strip() != ""
+        ):
             coin_df = coin_df[coin_df["Coin Value"] == value]
         if has_country and not has_value and not has_year:
             av_idx = 0
