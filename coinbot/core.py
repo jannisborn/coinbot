@@ -381,8 +381,8 @@ class CoinBot:
 
         coin_df = self.db.df[~self.db.df["Special"]]
         if (
-            has_country := not any([x in value for x in MISS_HINTS])
-            and country.stip() != ""
+            has_country := not any([x in country for x in MISS_HINTS])
+            and country.strip() != ""
         ):
             coin_df = coin_df[coin_df["Country"] == country]
         if has_year := year > 1990 and year < 2100:
