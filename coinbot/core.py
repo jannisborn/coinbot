@@ -29,6 +29,7 @@ from coinbot.utils import (
     get_file_content,
     get_tuple,
     get_year,
+    has_coin_value,
     large_int_to_readable,
     log_to_csv,
     sane_no_country,
@@ -361,14 +362,20 @@ class CoinBot:
             response = f"{match} - by {r.Collector}"
             update.message.reply_text(response, parse_mode="Markdown")
 
-    def extract_and_report_series(self, update, msg):
+    def extract_and_report_series(self, update, text):
         """
         Report the status of a series (year, country)-tuple of coins.
         """
-        output = self.eu_llm(msg).lower()
-        logger.debug(f"EU model says {output}")
 
-        country, year, value = self.extract_features(output, cast_country=False)
+        output = self.eu_llm(text)
+        print("EU model says", output)
+
+        year = self.get_year_from_full(text)
+        country, matched = fuzzy_search_country(text)
+
+        rest = text.replace("series", "").replace(matched, "").replace(str(year), "")
+        has_value = has_coin_value(rest)
+
         coin_df = self.db.df[~self.db.df["Special"]]
         if has_country := "" != country:
             coin_df = coin_df[coin_df["Country"] == country]
@@ -786,7 +793,7 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. If one of the three features is missing reply simply with `Missing feature`. Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Belgium`.  Be concise and efficient!",
             temperature=0.6,
         )
         self.ger_llm = LLM(
