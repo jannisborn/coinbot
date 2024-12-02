@@ -2,6 +2,7 @@ import csv
 import os
 import re
 from datetime import date, datetime
+from typing import List, Tuple
 
 import numpy as np
 import requests
@@ -145,6 +146,33 @@ def get_year(text: str) -> int:
     return int(years[0])
 
 
+COIN_SIZE_PATTERNS: List[str] = [
+    r"\b(1|one|uno|eins|un)\b",  # English, Spanish, German, French for 1
+    r"\b(2|two|dos|zwei|deux)\b",  # English, Spanish, German, French for 2
+    r"\b(5|five|cinco|fünf|cinq)\b",  # English, Spanish, German, French for 5
+    r"\b(10|ten|diez|zehn|dix)\b",  # English, Spanish, German, French for 10
+    r"\b(20|twenty|veinte|zwanzig|vingt)\b",  # English, Spanish, German, French for 20
+    r"\b(50|fifty|cincuenta|fünfzig|cinquante)\b",  # English, Spanish, German, French for 50
+]
+
+
+def has_coin_value(text: str) -> bool:
+    """
+    Checks whether a string contains a coin value
+
+    Args:
+        text: String to check.
+
+    Returns:
+        bool: Whether the string contains a coin value or not.
+    """
+    # Check for coin size (assuming sizes are the same in any language)
+    coin_pattern = r"|".join(COIN_SIZE_PATTERNS)
+    num_found = re.search(coin_pattern, text, re.IGNORECASE) is not None
+    order_found = any([x in text.lower().strip() for x in ["euro", "cent", "€"]])
+    return num_found and order_found
+
+
 def sane_no_country(text: str) -> bool:
     """
     Checks whether an input contains a coin size, a year and a source
@@ -154,17 +182,7 @@ def sane_no_country(text: str) -> bool:
     Returns:
         bool
     """
-    # Check for coin size (assuming sizes are the same in any language)
-    coin_size_patterns = [
-        r"\b(1|one|uno|eins|un)\b",  # English, Spanish, German, French for 1
-        r"\b(2|two|dos|zwei|deux)\b",  # English, Spanish, German, French for 2
-        r"\b(5|five|cinco|fünf|cinq)\b",  # English, Spanish, German, French for 5
-        r"\b(10|ten|diez|zehn|dix)\b",  # English, Spanish, German, French for 10
-        r"\b(20|twenty|veinte|zwanzig|vingt)\b",  # English, Spanish, German, French for 20
-        r"\b(50|fifty|cincuenta|fünfzig|cinquante)\b",  # English, Spanish, German, French for 50
-    ]
-    coin_pattern = r"|".join(coin_size_patterns)
-    coin_found = re.search(coin_pattern, text, re.IGNORECASE) is not None
+    coin_found = has_coin_value(text)
     year_found = re.search(r"\b\d{4}\b", text) is not None
     source_found = re.search(r"\b(A|D|F|G|J)\b", text, re.IGNORECASE) is not None
     text_after_removal = re.sub(
@@ -178,7 +196,17 @@ def sane_no_country(text: str) -> bool:
     return coin_found and year_found and source_found and no_country_assumed
 
 
-def fuzzy_search_country(text: str, threshold: int = 95) -> str:
+def fuzzy_search_country(text: str, threshold: int = 95) -> Tuple[str, str]:
+    """
+    Fuzzy search for a country name in a long string
+
+    Args:
+        text: String to search for country.
+        threshold: Threshold to consider a match in fuzzy search. Defaults to 95.
+
+    Returns:
+        Tuple consisting of (english_country_name, matched_country_name).
+    """
     for word in text.split():
         dists = [levenshtein(c, word) for c in countries_all_languages]
         if np.min(dists) <= 2:
