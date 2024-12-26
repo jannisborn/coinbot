@@ -395,7 +395,11 @@ class CoinBot:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             self.return_message(update, response)
         if missing:
-            coin_df = coin_df[coin_df.Status == "missing"]
+            tdf = coin_df[coin_df.Status == "missing"]
+            if len(coin_df) == 0:
+                response = f"🚀 Great! All those {len(coin_df)} coins were collected"
+                self.return_message(update, response)
+            coin_df = tdf
 
         self.report_series(update, coin_df)
 
