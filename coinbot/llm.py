@@ -12,6 +12,7 @@ Remember that for German coins you also need to enter the minting site which is 
 
 You can also request a list of coins, just start your message with `Series`, for example:
 `Series France 2010` ➡️ Lists all coins from France from 2010.
+`Series missing 2001` ➡️ Lists all coins from 2001 that are still missing in the collection.
 
 To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
 `Special Austria` ➡️ Lists all special coins from Austria.
@@ -45,7 +46,6 @@ class LLM:
         temperature: float = 0.7,
         remind_task: int = 10,
     ):
-
         self.token = token
         self.temperature = temperature
         self.task = task_prompt

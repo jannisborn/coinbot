@@ -365,7 +365,8 @@ class CoinBot:
         """
         Report the status of a series (year, country)-tuple of coins.
         """
-
+        if missing := "missing" in text.lower():
+            text = text.replace("missing", "")
         output = self.eu_llm(text).lower()
         logger.debug(f"EU model says {output}")
         country, year, value = self.extract_features(output, cast_country=False)
@@ -393,6 +394,12 @@ class CoinBot:
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             self.return_message(update, response)
+        if missing:
+            tdf = coin_df[coin_df.Status == "missing"]
+            if len(coin_df) == 0:
+                response = f"🚀 Great! All those {len(coin_df)} coins were collected"
+                self.return_message(update, response)
+            coin_df = tdf
 
         self.report_series(update, coin_df)
 
