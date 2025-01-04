@@ -110,12 +110,14 @@ class DataBase:
 
                 self.df.at[i, "Collector"] = matched_old_row.Collector
             elif matched_old_row.Status == "unavailable":
-                # Status changed from unavailable to missing or sth else than collected
+                # Status changed from unavailable to sth else
                 pass
-            else:
-                raise ValueError(
-                    f"Status divergence for old: {matched_old_row} vs. new: {r}"
+            elif matched_old_row.Status == "missing" and r.Status == "unavailable":
+                logger.error(
+                    f"Row {matched_old_row} changed from missing to unavailable. Verify that this was correct!"
                 )
+            else:
+                raise ValueError(f"Old row {matched_old_row} diverges from new row {r}")
 
             self.df.at[i, "Staged"] = matched_old_row.Staged
 

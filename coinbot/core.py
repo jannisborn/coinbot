@@ -396,7 +396,7 @@ class CoinBot:
             self.return_message(update, response)
         if missing:
             tdf = coin_df[coin_df.Status == "missing"]
-            if len(coin_df) == 0:
+            if len(tdf) == 0:
                 response = f"🚀 Great! All those {len(coin_df)} coins were collected"
                 self.return_message(update, response)
             coin_df = tdf
