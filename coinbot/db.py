@@ -56,7 +56,9 @@ class DataBase:
         self.df.insert(5, "Created", pd.NA)
         self.df.insert(10, "Staged", pd.NA)
         self.latest_df = pd.read_csv(self.latest_csv_path).fillna(pd.NA)
-        self.latest_df["Staged"] = self.latest_df["Staged"].fillna(False).infer_objects(copy=False)
+        self.latest_df["Staged"] = (
+            self.latest_df["Staged"].fillna(False).infer_objects(copy=False)
+        )
 
         added_coins = False  # tracks whether DF has new coins
         # Compare last version of DB with the one loaded from server
@@ -83,7 +85,7 @@ class DataBase:
                 continue
             elif len(tdf) == 0:
                 logger.warning(
-                    f"Seems that coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
+                    f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}) was freshly added"
                 )
                 self.df.at[i, "Created"] = str(date.today().strftime("%d.%m.%Y"))
                 if r.Status == "collected":
@@ -92,6 +94,12 @@ class DataBase:
                     )
                     self.df.at[i, "Collected"] = str(date.today().strftime("%d.%m.%Y"))
                 continue
+            elif tdf.iloc[0].Status == "unavailable" and r.Status == "missing":
+                logger.warning(
+                    f"Coin ({r.Country}, {r.Year}, {r['Coin Value']}) seems to exist (marked missing rather than unavailable)"
+                )
+                self.df.at[i, "Created"] = str(date.today().strftime("%d.%m.%Y"))
+
             else:
                 self.df.at[i, "Created"] = tdf.iloc[0].Created
 
@@ -123,7 +131,9 @@ class DataBase:
 
         # Reset staged values if new coins were added to DB
         if added_coins:
-            self.df["Staged"] = self.df["Staged"].fillna(False).infer_objects(copy=False)
+            self.df["Staged"] = (
+                self.df["Staged"].fillna(False).infer_objects(copy=False)
+            )
             self.df.loc[
                 self.df["Staged"] & (self.df["Status"] != "collected"), "Collector"
             ] = np.nan
@@ -201,10 +211,10 @@ class DataBase:
 
         # Formatting the total and special coins information
         report_lines.append(
-            f"Total coins: {self._emojid(trd)}{trd:.2%}{self._emojid(trd)}: {data.start.total_ratio:.1%}➡️{data.end.total_ratio:.1%} ({data.start.coins}/{data.start.collected} > {data.end.coins}/{data.end.collected})\n"
+            f"Total coins: {self._emojid(trd)}{trd:.2%}{self._emojid(trd)}: {data.start.total_ratio:.1%}➡️{data.end.total_ratio:.1%} ({data.start.collected}/{data.start.coins} > {data.end.collected}/{data.end.coins})\n"
         )
         report_lines.append(
-            f"Special coins: {self._emojid(srd)}{srd:.2%}{self._emojid(srd)}: {data.start.special_ratio:.1%}➡️{data.end.special_ratio:.1%} ({data.start.special}/{data.start.special_collected} > {data.end.special}/{data.end.special_collected})\n"
+            f"Special coins: {self._emojid(srd)}{srd:.2%}{self._emojid(srd)}: {data.start.special_ratio:.1%}➡️{data.end.special_ratio:.1%} ({data.start.special_collected}/{data.start.special} > {data.end.special_collected}/{data.end.special})\n"
         )
 
         report_lines.append("Years:")
@@ -213,7 +223,7 @@ class DataBase:
             yrd = data.end[year].ratio - data.start[year].ratio
 
             report_lines.append(
-                f"{year}: {self._emojid(yrd)}{yrd:.2%}{self._emojid(yrd)}\n\t({data.start[year].ratio:.1%}➡️{data.end[year].ratio:.1%}, {data.start[year].collected}/{data.end[year].total}➡️{data.end[year].collected}/{data.end[year].total})"
+                f"{year}: {self._emojid(yrd)}{yrd:.2%}{self._emojid(yrd)}\n\t({data.start[year].ratio:.1%}➡️{data.end[year].ratio:.1%}, {data.start[year].collected}/{data.start[year].total}➡️{data.end[year].collected}/{data.end[year].total})"
             )
 
         report_lines.append("\nCountries:")
@@ -239,8 +249,12 @@ class DataBase:
 
     def get_db_for_date(self, date: Optional[datetime] = None):
         df = self.df[self.df["Status"] != "unavailable"].copy()
-        df["CreatedDate"] = pd.to_datetime(df["Created"], errors="coerce", dayfirst=True)
-        df["CollectedDate"] = pd.to_datetime(df["Collected"], errors="coerce", dayfirst=True)
+        df["CreatedDate"] = pd.to_datetime(
+            df["Created"], errors="coerce", dayfirst=True
+        )
+        df["CollectedDate"] = pd.to_datetime(
+            df["Collected"], errors="coerce", dayfirst=True
+        )
         if date is None:
             return df
 
@@ -276,15 +290,15 @@ class DataBase:
         elif msg.startswith("status staged"):
             # Case 3
             df = self.get_db_for_date()
-            date_str ='Today'
+            date_str = "Today"
         elif len(words) != 2:
             # Case 1 (default)
             df = self.get_db_for_date()
-            date_str ='Today'
+            date_str = "Today"
         else:
             given_date = datetime.strptime(words[-1], "%d.%m.%Y")
             df = self.get_db_for_date(date=given_date)
-            date_str =given_date
+            date_str = given_date
 
         assert (
             len(df[(df.Status == "collected") & (df.Staged == True)]) == 0
@@ -297,7 +311,7 @@ class DataBase:
             return f"{self._emoji(fras)} {name}: {fras:.2%}  - {col+stag} / {tot}"
 
         line_formatter = format_line_staged if "staged" in words else format_line
-        brack = " in brackets" if 'staged' in words else ""
+        brack = " in brackets" if "staged" in words else ""
 
         report_lines = []
         report_lines.append(
