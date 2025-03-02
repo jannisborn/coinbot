@@ -279,35 +279,22 @@ class CoinBot:
                 text, parse_mode="Markdown", reply_markup=reply_markup
             )
         else:
-            # # Uncommented until a better LM is available
-            # self.translate_llm = LLM(
-            #     model="meta-llama/Llama-3-70b-chat-hf",
-            #     token=self.llm_token,
-            #     task_prompt=(
-            #         f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments!"
-            #         "Here's the text to translate:\n\n"
-            #     ),
-            #     temperature=0.5,
-            #     remind_task=1,
-            # )
-            # if "`Special" in text:
-            #     # Split by each occurrence of "`Special", translate snippets and then fuse with "`Special"
-            #     snippets = text.split("`Special")
-            #     t_snips = [self.translate_llm(snippet) for snippet in snippets]
-            #     t_snips = [
-            #         t.split("➡️")[0] + "` ➡️ " + t.split("➡️")[1] if "➡️" in t else t
-            #         for t in t_snips
-            #     ]
-            #     text = "\n`Special".join(t_snips)
-            # else:
-            #     text = self.translate_llm(text)
-            #     text = (
-            #         text
-            #         if text != ""
-            #         else "A translation error occurred. Please set language to English"
-            #     )
-            update.message.reply_text(
-                f"Language set to {language}. Currently only `English` is supported. Set by typing `Language: english`."
+            self.translate_llm = LLM(
+                model="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
+                token=self.llm_token,
+                task_prompt=(
+                    f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
+                    "This is the most important. Keep everything enclosed in backtick (or grave accent) as is. "
+                    "Here's the text to translate:\n\n"
+                ),
+                temperature=0,
+                remind_task=1,
+            )
+            text = self.translate_llm(text)
+            text = (
+                text
+                if text != ""
+                else "A translation error occurred. Please set language to English"
             )
             response_message = update.message.reply_text(
                 text, reply_markup=reply_markup

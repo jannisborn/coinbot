@@ -28,7 +28,7 @@ def main():
                 vectorstorage_path=os.path.join(
                     os.path.dirname(__file__), "data", "special_coins.npz"
                 ),
-                base_llm="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+                base_llm="meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
             )
             bot.run()
         except Exception as e:
