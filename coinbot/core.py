@@ -155,15 +155,15 @@ class CoinBot:
         """
 
         user_id = update.message.from_user.id
-        text = update.message.text.strip().lower()
-        overwrite_language = text.startswith(
+        text = update.message.text.strip()
+        overwrite_language = text.lower().startswith(
             "language:"
-        ) or text.startswith("sprache:")
+        ) or text.lower().startswith("sprache:")
         overwrite_username = text.startswith(
             "username:"
-        ) or text.startswith("name:")
+        ) or text.lower().startswith("name:")
 
-        if text.startswith("status"):
+        if text.lower().startswith("status"):
             self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
 
@@ -211,7 +211,7 @@ class CoinBot:
                 )
             return True
 
-        elif text.startswith('help'):
+        elif text.lower().startswith('help'):
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
