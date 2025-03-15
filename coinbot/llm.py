@@ -25,6 +25,7 @@ Write `Status 02.01.2024` to see the DB collection status as of that date.
 Write `Status Diff 02.01.2024 26.07.2024` to see the delta in the status between those dates.
 Write `Status Staged` to see the delta between the DB with and without staged coins.
 
+If you need to see this message again, just type `help`.
 Now you're ready! Get started and happy coin collecting 😊
 """
 

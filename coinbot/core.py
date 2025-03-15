@@ -155,15 +155,15 @@ class CoinBot:
         """
 
         user_id = update.message.from_user.id
-        text = update.message.text.strip()
-        overwrite_language = text.lower().startswith(
+        text = update.message.text.strip().lower()
+        overwrite_language = text.startswith(
             "language:"
-        ) or text.lower().startswith("sprache:")
-        overwrite_username = text.lower().startswith(
+        ) or text.startswith("sprache:")
+        overwrite_username = text.startswith(
             "username:"
-        ) or text.lower().startswith("name:")
+        ) or text.startswith("name:")
 
-        if text.lower().startswith("status"):
+        if text.startswith("status"):
             self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
 
@@ -210,6 +210,21 @@ class CoinBot:
                     disable_notification=False,
                 )
             return True
+
+        elif text.startswith('help'):
+            context.bot.send_chat_action(
+                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+            )
+            response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+            time.sleep(1)
+
+            # Pin instructions
+            context.bot.pin_chat_message(
+                chat_id=update.message.chat_id,
+                message_id=response_message.message_id,
+                disable_notification=False,
+            )
+
         # Check if the user's language preference is already set
         elif user_id not in self.user_prefs:
             update.message.reply_text(
