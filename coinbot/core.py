@@ -224,6 +224,7 @@ class CoinBot:
                 message_id=response_message.message_id,
                 disable_notification=False,
             )
+            return True
 
         # Check if the user's language preference is already set
         elif user_id not in self.user_prefs:
