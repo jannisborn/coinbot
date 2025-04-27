@@ -471,6 +471,7 @@ class CoinBot:
             value.replace("€", " euro")
             .replace("cents", "cent")
             .replace("euros", "euro")
+            .replace("euro cent", "cent")
             .replace("  ", " ")
             .strip()
         )
