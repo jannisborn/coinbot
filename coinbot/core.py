@@ -716,7 +716,7 @@ class CoinBot:
                     return
                 source = None
             country, year, value = self.extract_features(
-                output, cast_country=not no_country
+                output, cast_country=False
             )
             logger.debug(f"Features for lookup: {country, year, value, source}")
 
@@ -803,7 +803,7 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Belgium`.  Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Finland`.  Be concise and efficient!",
             temperature=0.6,
         )
         self.ger_llm = LLM(
@@ -827,7 +827,7 @@ class CoinBot:
             model=self.base_llm,
             token=self.llm_token,
             task_prompt=(
-                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation! Holland is not a country, it's Netherlands"
+                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation!"
             ),
-            temperature=0.7,
+            temperature=0.5,
         )
