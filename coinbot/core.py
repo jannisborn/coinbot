@@ -372,7 +372,7 @@ class CoinBot:
             text = text.replace("missing", "")
         output = self.eu_llm(text).lower()
         logger.debug(f"EU model says {output}")
-        country, year, value = self.extract_features(output, cast_country=False)
+        country, year, value = self.extract_features(output)
         coin_df = self.db.df[~self.db.df["Special"]]
         if (
             has_country := not any([x in country for x in MISS_HINTS])
@@ -455,9 +455,7 @@ class CoinBot:
             if msg_counter % 10 == 0:
                 time.sleep(1)
 
-    def extract_features(
-        self, llm_output: str, cast_country: bool = True
-    ) -> Tuple[str, int, str]:
+    def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
         """
         Extracts the country, year, value, and source from the LLM output.
 
@@ -473,6 +471,7 @@ class CoinBot:
             value.replace("€", " euro")
             .replace("cents", "cent")
             .replace("euros", "euro")
+            .replace("euro cent", "cent")
             .replace("  ", " ")
             .strip()
         )
@@ -493,11 +492,7 @@ class CoinBot:
         except ValueError:
             year = -1
 
-        if c == "" or not cast_country:
-            country = c
-        else:
-            country = self.to_english_llm(c, history=False)
-        country = country.strip().lower().replace(".", "")
+        country = c.strip().lower().replace(".", "")
         return country, year, value
 
     def get_year_from_full(self, update, text: str) -> int:
@@ -715,9 +710,7 @@ class CoinBot:
                     )
                     return
                 source = None
-            country, year, value = self.extract_features(
-                output, cast_country=not no_country
-            )
+            country, year, value = self.extract_features(output)
             logger.debug(f"Features for lookup: {country, year, value, source}")
 
             # Search in the dataframe
@@ -803,7 +796,7 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Belgium`.  Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Finland`.  Be concise and efficient!",
             temperature=0.6,
         )
         self.ger_llm = LLM(
@@ -822,12 +815,4 @@ class CoinBot:
                 "Tell me a very short joke about the following coin. Start with `Here's a funny story about your coin:`"
             ),
             temperature=1.0,
-        )
-        self.to_english_llm = LLM(
-            model=self.base_llm,
-            token=self.llm_token,
-            task_prompt=(
-                "Give me the ENGLISH name of this country. Be concise, only one word, no punctuation! Holland is not a country, it's Netherlands"
-            ),
-            temperature=0.7,
         )
