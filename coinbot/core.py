@@ -398,11 +398,14 @@ class CoinBot:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             self.return_message(update, response)
         if missing:
-            tdf = coin_df[coin_df.Status == "missing"]
-            if len(tdf) == 0:
-                response = f"🚀 Great! All those {len(coin_df)} coins were collected"
-                self.return_message(update, response)
-            coin_df = tdf
+            miss_df = coin_df[coin_df.Status == "missing"]
+            counts = coin_df.Status.value_counts().to_dict()
+            if len(miss_df) == 0:
+                response = f"🚀 Great! All those {counts['collected']} coins were collected"
+            else:
+                response = f"{counts['collected']}/{counts['collected']+counts['missing']} were collected ({100*(counts['collected']/(counts['collected']+counts['missing'])):.2f}%)!"
+            self.return_message(update, response)
+            coin_df = miss_df
 
         self.report_series(update, coin_df)
 
