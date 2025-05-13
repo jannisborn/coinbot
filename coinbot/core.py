@@ -20,7 +20,7 @@ from telegram.ext import (
 )
 
 from coinbot.db import DataBase
-from coinbot.llm import INSTRUCTION_MESSAGE, LLM, get_feature_value
+from coinbot.llm import INSTRUCTION_MESSAGE_1, INSTRUCTION_MESSAGE_2, LLM, get_feature_value
 from coinbot.slack import SlackClient
 from coinbot.utils import (
     CURRENT_YEAR,
@@ -260,8 +260,9 @@ class CoinBot:
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
-            response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+            response_message = self.return_message(update, INSTRUCTION_MESSAGE_1)
             time.sleep(1)
+            response_message_2 = self.return_message(update, INSTRUCTION_MESSAGE_2)
 
             # Pin instructions
             context.bot.pin_chat_message(

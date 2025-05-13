@@ -3,7 +3,7 @@ import re
 import numpy as np
 from together import Together
 
-INSTRUCTION_MESSAGE = """
+INSTRUCTION_MESSAGE_1 = """
 I'm helping you to identify & collect **rare** EURO coins. Just ask me about a coin. I always need the value, the country and the year of the coin. I will let you know how many times the coin was minted and if it's already available in Jannis' coin collection. 
 If it's not in the collection, please keep it and give it to Jannis soon, I'm sure he will be happy 🤩 \n
 For example, if you write: \n\n`Spain 2010 1 Euro`\n\n I will tell you that the coin was minted 40 million times but that it's already in Jannis' collection.
@@ -13,7 +13,8 @@ Remember that for German coins you also need to enter the minting site which is 
 You can also request a list of coins, just start your message with `Series`, for example:
 `Series France 2010` ➡️ Lists all coins from France from 2010.
 `Series missing 2001` ➡️ Lists all coins from 2001 that are still missing in the collection.
-
+"""
+INSTRUCTION_MESSAGE_2 = """
 To search a 2 Euro special coin (the official term is "commemorative coin"), use the "Special" keyword:
 `Special Austria` ➡️ Lists all special coins from Austria.
 `Special Germany 2015` ➡️ Lists all special coins from Germany from 2015.
