@@ -200,8 +200,11 @@ class CoinBot:
                     chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
                 )
                 response_message = self.return_message(
-                    update, response + INSTRUCTION_MESSAGE
+                    update, response + INSTRUCTION_MESSAGE_1
                 )
+                time.sleep(1)
+                self.return_message(update, response + INSTRUCTION_MESSAGE_2)
+
                 # Pinning the message
                 context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
                 context.bot.pin_chat_message(
@@ -215,8 +218,9 @@ class CoinBot:
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
-            response_message = self.return_message(update, INSTRUCTION_MESSAGE)
+            response_message = self.return_message(update, INSTRUCTION_MESSAGE_1)
             time.sleep(1)
+            self.return_message(update, response + INSTRUCTION_MESSAGE_2)
 
             # Pin instructions
             context.bot.pin_chat_message(
