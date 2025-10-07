@@ -218,12 +218,15 @@ class DataBase:
         )
 
         report_lines.append("Years:")
-        for year in sorted(end_df["Year"].unique()):
-            year = str(year)
-            yrd = data.end[year].ratio - data.start[year].ratio
+        for year_str in sorted(end_df["Year"].unique()):
+            year = str(year_str)
+            start_ratio = data.start[year].ratio if year_str in start_df['Year'].values else 0.0
+            start_collected = data.start[year].collected if year_str in start_df['Year'].values else 0
+            start_total = data.start[year].total if year_str in start_df['Year'].values else 0
+            yrd = data.end[year].ratio - start_ratio
 
             report_lines.append(
-                f"{year}: {self._emojid(yrd)}{yrd:.2%}{self._emojid(yrd)}\n\t({data.start[year].ratio:.1%}➡️{data.end[year].ratio:.1%}, {data.start[year].collected}/{data.start[year].total}➡️{data.end[year].collected}/{data.end[year].total})"
+                f"{year}: {self._emojid(yrd)}{yrd:.2%}{self._emojid(yrd)}\n\t({start_ratio:.1%}➡️{data.end[year].ratio:.1%}, {start_collected}/{start_total}➡️{data.end[year].collected}/{data.end[year].total})"
             )
 
         report_lines.append("\nCountries:")
