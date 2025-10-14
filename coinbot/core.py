@@ -760,7 +760,7 @@ class CoinBot:
                 collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable" and year == CURRENT_YEAR:
-                response = f"🔮 Hooray! You coin is so NEW that it is not even tracked in the database! Please keep it!"
+                response = f"🔮 Hooray! Your coin {match} is so NEW that it is not even tracked in the database. Keep it!"
                 amount = 0
             elif coin_status == "unavailable":
                 response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!🦄"
