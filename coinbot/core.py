@@ -412,6 +412,10 @@ class CoinBot:
             self.return_message(update, response)
             coin_df = miss_df
 
+        # Remove years before the first year
+        first_year = coin_df[coin_df.Status != "unavailable"].sort_values(by="Year", ascending=True).Year.values[0]
+        coin_df = coin_df[coin_df.Year>=first_year]
+
         self.report_series(update, coin_df)
 
     def report_series(self, update, coin_df: pd.DataFrame, special: bool = False):
@@ -444,7 +448,7 @@ class CoinBot:
             else:
                 amount = ""
             stat_txt = status.upper()
-            stat_txt += f"(Staged by {row.Collector})" if row["Staged"] else ""
+            stat_txt += f" (Staged by {row.Collector})" if row["Staged"] else ""
 
             response = f"{match}:\n{icon}{stat_txt}{icon}{amount}"
 
@@ -755,8 +759,11 @@ class CoinBot:
             if coin_staged:
                 collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
+            elif coin_status == "unavailable" and year == CURRENT_YEAR:
+                response = f"🔮 Hooray! You coin is so NEW that it is not even tracked in the database! Please keep it!"
+                amount = 0
             elif coin_status == "unavailable":
-                response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!"
+                response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!🦄"
                 amount = 0
             elif coin_status == "missing":
                 response = (
