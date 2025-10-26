@@ -668,6 +668,8 @@ class CoinBot:
         self.db.df.at[row_indexes[0], "Collector"] = self.user_prefs[user_id][
             "username"
         ]
+        # NOTE: In case coin was previously unavailable (e.g., because it is new), now set to missing, otherwise stats are wrong
+        self.db.df.at[row_indexes[0], "Status"] = 'missing'
         self.db.save_df()
         tpl = (value, country, year)
         if source is not None:
@@ -677,7 +679,7 @@ class CoinBot:
         self.return_message(
             update,
             self.db.status_delta(year=year, value=value, country=country),
-        )
+            )
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
