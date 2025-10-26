@@ -407,11 +407,11 @@ class CoinBot:
             counts = coin_df.Status.value_counts().to_dict()
             if "collected" not in counts.keys():
                 response = f"🤷 These coins are likely so new that they are not even tracked in the source DB yet."
+                return self.return_message(update, response)
             elif len(miss_df) == 0:
                 response = f"🚀 Great! All those {counts['collected']} coins were collected"
             else:
                 response = f"{counts['collected']}/{counts['collected']+counts['missing']} were collected ({100*(counts['collected']/(counts['collected']+counts['missing'])):.2f}%)!"
-            self.return_message(update, response)
             coin_df = miss_df
 
         # Remove years before the first year
