@@ -756,19 +756,30 @@ class CoinBot:
             coin_staged = bool(coin_df["Staged"].values[0])
             amount = coin_df["Amount"].values[0]
             stage_markup = None
+            found_new = False
             if coin_staged:
                 collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable" and year == CURRENT_YEAR:
-                response = f"🔮 Hooray! Your coin {match} is so NEW that it is not even tracked in the database. Keep it!"
+                response = f"🔮 Hooray! Your coin {match} is so NEW that it is not even tracked in the database!"
                 amount = 0
+                found_new = True
             elif coin_status == "unavailable":
                 response = f"🤯 Are you sure? The coin {match} should not exist. If you indeed have it, it's a SUPER rare find!🦄"
                 amount = 0
+                found_new = True
             elif coin_status == "missing":
                 response = (
                     f"🚀🎉 Hooray! The coin {match} is not yet in the collection 🤩"
                 )
+                found_new = True
+
+            elif coin_status == "collected":
+                response = f"😢 No luck! The coin {match} was already collected 😢"
+            else:
+                response = "❓Coin not found."
+
+            if found_new:
                 if self.slack:
                     self.slackbot(
                         f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
@@ -787,11 +798,6 @@ class CoinBot:
                     ]
                 ]
                 stage_markup = InlineKeyboardMarkup(stage_button)
-
-            elif coin_status == "collected":
-                response = f"😢 No luck! The coin {match} was already collected 😢"
-            else:
-                response = "❓Coin not found."
 
             response = response.split("\n")[0]
             self.return_message(
