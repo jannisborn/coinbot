@@ -526,6 +526,7 @@ class CoinBot:
     def search_special_coin(self, update, message: str):
         # User asked for a special/commemorative coin
         text = message.split("Special")[1].strip()
+        user_id = update.message.from_user.id
 
         # Extract basic features
         year = self.get_year_from_full(update, text)
@@ -572,13 +573,30 @@ class CoinBot:
                 f"Found {len(coin_df)} special coins for your query:\n{query}",
             )
             coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
+
             self.report_series(update, coin_df, special=True)
+
+            # TODO: How to identify special coins uniquely (name?). Do they have Source?
+            first_coin = coin_df.head(1)
+            self.user_prefs[user_id]["last_found_coin"] = (
+                    coin_df.Country.values[0],
+                    coin_df.Year.values[0],
+                    coin_df.Value.values[0],
+                    coin_df.Source.values[0],
+                )
+            stage_button = [
+                [
+                    InlineKeyboardButton(
+                        "Stage first special coin for collection!", callback_data="stage"
+                    )
+                ]
+            ]
+            stage_markup = InlineKeyboardMarkup(stage_button)
             update.message.reply_text("Those were all related special coins 🙂")
             return
 
-        self.return_message(update, f"Results for your special coin query:\n{query}")
+        self.return_message(update, f"Results for your special coin query:\n{query}", reply_markup=stage_markup)
         # Performed vector index lookup, so needs to enter loop to potentially display more
-        user_id = update.message.from_user.id
         self.user_prefs[user_id]["data"] = coin_df
         self.keep_displaying_special(update, user_id=user_id)
 
