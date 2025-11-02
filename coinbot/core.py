@@ -20,7 +20,12 @@ from telegram.ext import (
 )
 
 from coinbot.db import DataBase
-from coinbot.llm import INSTRUCTION_MESSAGE_1, INSTRUCTION_MESSAGE_2, LLM, get_feature_value
+from coinbot.llm import (
+    INSTRUCTION_MESSAGE_1,
+    INSTRUCTION_MESSAGE_2,
+    LLM,
+    get_feature_value,
+)
 from coinbot.slack import SlackClient
 from coinbot.utils import (
     CURRENT_YEAR,
@@ -159,9 +164,9 @@ class CoinBot:
         overwrite_language = text.lower().startswith(
             "language:"
         ) or text.lower().startswith("sprache:")
-        overwrite_username = text.startswith(
-            "username:"
-        ) or text.lower().startswith("name:")
+        overwrite_username = text.startswith("username:") or text.lower().startswith(
+            "name:"
+        )
 
         if text.lower().startswith("status"):
             self.return_message(update, self.db.get_status(msg=text.lower()))
@@ -214,7 +219,7 @@ class CoinBot:
                 )
             return True
 
-        elif text.lower().startswith('help'):
+        elif text.lower().startswith("help"):
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
@@ -364,7 +369,14 @@ class CoinBot:
 
         tdf = tdf.sort_values(by=["Country", "Year", "Coin Value"])
         for _, r in tdf.iterrows():
-            match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"], isspecial=r['Special'])
+            match = get_tuple(
+                r.Country,
+                r.Year,
+                r["Source"],
+                value=r["Coin Value"],
+                isspecial=r["Special"],
+                name=r["Name"],
+            )
             response = f"{match} - by {r.Collector}"
             update.message.reply_text(response, parse_mode="Markdown")
 
@@ -408,14 +420,20 @@ class CoinBot:
                 response = f"🤷 These coins are likely so new that they are not even tracked in the source DB yet."
                 return self.return_message(update, response)
             elif len(miss_df) == 0:
-                response = f"🚀 Great! All those {counts['collected']} coins were collected"
+                response = (
+                    f"🚀 Great! All those {counts['collected']} coins were collected"
+                )
             else:
                 response = f"{counts['collected']}/{counts['collected']+counts['missing']} were collected ({100*(counts['collected']/(counts['collected']+counts['missing'])):.2f}%)!"
             coin_df = miss_df
 
         # Remove years before the first year
-        first_year = coin_df[coin_df.Status != "unavailable"].sort_values(by="Year", ascending=True).Year.values[0]
-        coin_df = coin_df[coin_df.Year>=first_year]
+        first_year = (
+            coin_df[coin_df.Status != "unavailable"]
+            .sort_values(by="Year", ascending=True)
+            .Year.values[0]
+        )
+        coin_df = coin_df[coin_df.Year >= first_year]
 
         self.report_series(update, coin_df)
 
@@ -566,28 +584,28 @@ class CoinBot:
             )
             return
 
-        if coin_df.Status.values[0] == 'missing':
+        if coin_df.Status.values[0] == "missing":
             self.user_prefs[user_id]["last_found_coin"] = (
-                        coin_df.Country.values[0],
-                        coin_df.Year.values[0],
-                        "2 euro",
-                        coin_df.Source.values[0],
-                        True,
-                        coin_df.Name.values[0]
-                    )
+                coin_df.Country.values[0],
+                coin_df.Year.values[0],
+                "2 euro",
+                coin_df.Source.values[0],
+                True,
+                coin_df.Name.values[0],
+            )
             stage_button = [
-                    [
-                        InlineKeyboardButton(
-                            "Stage first special coin for collection!", callback_data="stage"
-                        )
-                    ]
+                [
+                    InlineKeyboardButton(
+                        "Stage first special coin for collection!",
+                        callback_data="stage",
+                    )
                 ]
+            ]
             stage_markup = InlineKeyboardMarkup(stage_button)
             stage_msg = "You can stage the *first* match"
         else:
             stage_msg = ""
             stage_markup = None
-
 
         if not index:
             self.return_message(
@@ -597,10 +615,18 @@ class CoinBot:
             # coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
 
-            self.return_message(update, f"Those were all related special coins. {stage_msg}", reply_markup=stage_markup)
+            self.return_message(
+                update,
+                f"Those were all related special coins. {stage_msg}",
+                reply_markup=stage_markup,
+            )
             return
 
-        self.return_message(update, f"Results for your special coin query:\n{query}.\n{stage_msg}", reply_markup=stage_markup)
+        self.return_message(
+            update,
+            f"Results for your special coin query:\n{query}.\n{stage_msg}",
+            reply_markup=stage_markup,
+        )
         # Performed vector index lookup, so needs to enter loop to potentially display more
         self.user_prefs[user_id]["data"] = coin_df
         self.keep_displaying_special(update, user_id=user_id)
@@ -672,7 +698,9 @@ class CoinBot:
 
     def stage_coin(self, update, user_id):
         # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
-        country, year, value, source, is_special, name = self.user_prefs[user_id]["last_found_coin"]
+        country, year, value, source, is_special, name = self.user_prefs[user_id][
+            "last_found_coin"
+        ]
 
         if not is_special:
 
@@ -685,7 +713,10 @@ class CoinBot:
                         (self.db.df["Country"] == "germany")
                         & (self.db.df["Source"] == source)
                     )
-                    | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
+                    | (
+                        (self.db.df["Country"] != "germany")
+                        & (self.db.df["Source"].isna())
+                    )
                 )
                 & ~self.db.df.Special
             ]
@@ -693,7 +724,7 @@ class CoinBot:
             row_indexes = self.db.df.index[
                 (self.db.df["Country"] == country)
                 & (self.db.df["Year"] == year)
-                & (self.db.df['Name'] == name)
+                & (self.db.df["Name"] == name)
                 & self.db.df.Special
             ]
         assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
@@ -703,14 +734,14 @@ class CoinBot:
             "username"
         ]
         # NOTE: In case coin was previously unavailable (e.g., because it is new), now set to missing, otherwise stats are wrong
-        self.db.df.at[row_indexes[0], "Status"] = 'missing'
+        self.db.df.at[row_indexes[0], "Status"] = "missing"
         self.db.save_df()
 
         # Subsequently print status update
         self.return_message(
             update,
             self.db.status_delta(year=year, value=value, country=country),
-            )
+        )
 
     def search_coin_in_db(self, update, context):
         """Search for a coin in the database when a message is received."""
@@ -823,7 +854,7 @@ class CoinBot:
                     value,
                     source,
                     False,
-                    "N.A."
+                    "N.A.",
                 )
                 stage_button = [
                     [
