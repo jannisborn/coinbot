@@ -572,17 +572,20 @@ class CoinBot:
                 update,
                 f"Found {len(coin_df)} special coins for your query:\n{query}",
             )
-            coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
-
+            # coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
 
+
             # TODO: How to identify special coins uniquely (name?). Do they have Source?
-            first_coin = coin_df.head(1)
+            print(coin_df.columns)
+            print(self.db.df.columns)
             self.user_prefs[user_id]["last_found_coin"] = (
                     coin_df.Country.values[0],
                     coin_df.Year.values[0],
                     coin_df.Value.values[0],
                     coin_df.Source.values[0],
+                    True,
+                    coin_df.Name.values[0]
                 )
             stage_button = [
                 [
@@ -667,21 +670,37 @@ class CoinBot:
 
     def stage_coin(self, update, user_id):
         # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
-        country, year, value, source = self.user_prefs[user_id]["last_found_coin"]
+        country, year, value, source, is_special, name = self.user_prefs[user_id]["last_found_coin"]
 
-        row_indexes = self.db.df.index[
-            (self.db.df["Country"] == country)
-            & (self.db.df["Coin Value"] == value)
-            & (self.db.df["Year"] == year)
-            & (
-                (
-                    (self.db.df["Country"] == "germany")
-                    & (self.db.df["Source"] == source)
+        if not is_special:
+
+            row_indexes = self.db.df.index[
+                (self.db.df["Country"] == country)
+                & (self.db.df["Coin Value"] == value)
+                & (self.db.df["Year"] == year)
+                & (
+                    (
+                        (self.db.df["Country"] == "germany")
+                        & (self.db.df["Source"] == source)
+                    )
+                    | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
                 )
-                | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
-            )
-            & ~self.db.df.Special
-        ]
+                & ~self.db.df.Special
+            ]
+        else:
+            row_indexes = self.db.df.index[
+                (self.db.df["Country"] == country)
+                & (self.db.df["Coin Value"] == value)
+                & (self.db.df["Year"] == year)
+                & (
+                    (
+                        (self.db.df["Country"] == "germany")
+                        & (self.db.df["Source"] == source)
+                    )
+                    | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
+                )
+                & self.db.df.Special
+            ]
         assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
 
         self.db.df.at[row_indexes[0], "Staged"] = True
@@ -811,6 +830,8 @@ class CoinBot:
                     year,
                     value,
                     source,
+                    False,
+                    "N.A."
                 )
                 stage_button = [
                     [
