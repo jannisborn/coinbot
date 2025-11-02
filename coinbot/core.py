@@ -364,8 +364,7 @@ class CoinBot:
 
         tdf = tdf.sort_values(by=["Country", "Year", "Coin Value"])
         for _, r in tdf.iterrows():
-            match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"])
-
+            match = get_tuple(r.Country, r.Year, r["Source"], value=r["Coin Value"], isspecial=r['Special'])
             response = f"{match} - by {r.Collector}"
             update.message.reply_text(response, parse_mode="Markdown")
 
@@ -598,8 +597,6 @@ class CoinBot:
             # coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
 
-            print(coin_df.columns)
-            print(self.db.df.columns)
             self.return_message(update, f"Those were all related special coins. {stage_msg}", reply_markup=stage_markup)
             return
 
