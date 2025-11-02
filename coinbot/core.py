@@ -567,22 +567,28 @@ class CoinBot:
             )
             return
 
-        self.user_prefs[user_id]["last_found_coin"] = (
-                    coin_df.Country.values[0],
-                    coin_df.Year.values[0],
-                    "2 Euro", # not be used downstream
-                    coin_df.Source.values[0],
-                    True,
-                    coin_df.Name.values[0]
-                )
-        stage_button = [
-                [
-                    InlineKeyboardButton(
-                        "Stage first special coin for collection!", callback_data="stage"
+        if coin_df.Status.values[0] == 'missing':
+            self.user_prefs[user_id]["last_found_coin"] = (
+                        coin_df.Country.values[0],
+                        coin_df.Year.values[0],
+                        "2 Euro", # not be used downstream
+                        coin_df.Source.values[0],
+                        True,
+                        coin_df.Name.values[0]
                     )
+            stage_button = [
+                    [
+                        InlineKeyboardButton(
+                            "Stage first special coin for collection!", callback_data="stage"
+                        )
+                    ]
                 ]
-            ]
-        stage_markup = InlineKeyboardMarkup(stage_button)
+            stage_markup = InlineKeyboardMarkup(stage_button)
+            stage_msg = "You can stage the *first* match"
+        else:
+            stage_msg = ""
+            stage_markup = None
+
 
         if not index:
             self.return_message(
@@ -594,10 +600,10 @@ class CoinBot:
 
             print(coin_df.columns)
             print(self.db.df.columns)
-            self.return_message(update, "Those were all related special coins. You can stage the *first* match", reply_markup=stage_markup)
+            self.return_message(update, f"Those were all related special coins. {stage_msg}", reply_markup=stage_markup)
             return
 
-        self.return_message(update, f"Results for your special coin query:\n{query}.\nYou can stage the *first* match", reply_markup=stage_markup)
+        self.return_message(update, f"Results for your special coin query:\n{query}.\n{stage_msg}", reply_markup=stage_markup)
         # Performed vector index lookup, so needs to enter loop to potentially display more
         self.user_prefs[user_id]["data"] = coin_df
         self.keep_displaying_special(update, user_id=user_id)
@@ -689,15 +695,8 @@ class CoinBot:
         else:
             row_indexes = self.db.df.index[
                 (self.db.df["Country"] == country)
-                & (self.db.df["Coin Value"] == value)
                 & (self.db.df["Year"] == year)
-                & (
-                    (
-                        (self.db.df["Country"] == "germany")
-                        & (self.db.df["Source"] == source)
-                    )
-                    | ((self.db.df["Country"] != "germany") & (self.db.df["Source"].isna()))
-                )
+                & (self.db.df['Name'] == name)
                 & self.db.df.Special
             ]
         assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
