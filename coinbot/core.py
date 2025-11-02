@@ -567,6 +567,23 @@ class CoinBot:
             )
             return
 
+        self.user_prefs[user_id]["last_found_coin"] = (
+                    coin_df.Country.values[0],
+                    coin_df.Year.values[0],
+                    "2 Euro", # not be used downstream
+                    coin_df.Source.values[0],
+                    True,
+                    coin_df.Name.values[0]
+                )
+        stage_button = [
+                [
+                    InlineKeyboardButton(
+                        "Stage first special coin for collection!", callback_data="stage"
+                    )
+                ]
+            ]
+        stage_markup = InlineKeyboardMarkup(stage_button)
+
         if not index:
             self.return_message(
                 update,
@@ -575,30 +592,12 @@ class CoinBot:
             # coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
             self.report_series(update, coin_df, special=True)
 
-
-            # TODO: How to identify special coins uniquely (name?). Do they have Source?
             print(coin_df.columns)
             print(self.db.df.columns)
-            self.user_prefs[user_id]["last_found_coin"] = (
-                    coin_df.Country.values[0],
-                    coin_df.Year.values[0],
-                    coin_df.Value.values[0],
-                    coin_df.Source.values[0],
-                    True,
-                    coin_df.Name.values[0]
-                )
-            stage_button = [
-                [
-                    InlineKeyboardButton(
-                        "Stage first special coin for collection!", callback_data="stage"
-                    )
-                ]
-            ]
-            stage_markup = InlineKeyboardMarkup(stage_button)
-            update.message.reply_text("Those were all related special coins 🙂")
+            self.return_message(update, "Those were all related special coins. You can stage the *first* match", reply_markup=stage_markup)
             return
 
-        self.return_message(update, f"Results for your special coin query:\n{query}", reply_markup=stage_markup)
+        self.return_message(update, f"Results for your special coin query:\n{query}.\nYou can stage the *first* match", reply_markup=stage_markup)
         # Performed vector index lookup, so needs to enter loop to potentially display more
         self.user_prefs[user_id]["data"] = coin_df
         self.keep_displaying_special(update, user_id=user_id)
