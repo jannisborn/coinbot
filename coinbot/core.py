@@ -571,7 +571,7 @@ class CoinBot:
             self.user_prefs[user_id]["last_found_coin"] = (
                         coin_df.Country.values[0],
                         coin_df.Year.values[0],
-                        "2 Euro", # not be used downstream
+                        "2 euro",
                         coin_df.Source.values[0],
                         True,
                         coin_df.Name.values[0]
@@ -708,9 +708,6 @@ class CoinBot:
         # NOTE: In case coin was previously unavailable (e.g., because it is new), now set to missing, otherwise stats are wrong
         self.db.df.at[row_indexes[0], "Status"] = 'missing'
         self.db.save_df()
-        tpl = (value, country, year)
-        if source is not None:
-            tpl += (source,)
 
         # Subsequently print status update
         self.return_message(
