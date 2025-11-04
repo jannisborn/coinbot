@@ -412,7 +412,10 @@ class CoinBot:
             coin_df = coin_df.iloc[av_idx:]
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
-            self.return_message(update, response)
+            return self.return_message(update, response)
+        elif len(coin_df[coin_df.Status != "unavailable"]) == 0:
+            response = f"🤷🏻<200d>♂️ For year {year} and country {country} ncoin was minted, so 'all' coins are collected 🥳"
+            return self.return_message(update, response)
         if missing:
             miss_df = coin_df[coin_df.Status == "missing"]
             counts = coin_df.Status.value_counts().to_dict()
