@@ -423,8 +423,10 @@ class CoinBot:
                 response = (
                     f"🚀 Great! All those {counts['collected']} coins were collected"
                 )
+                return self.return_message(update, response)
             else:
                 response = f"{counts['collected']}/{counts['collected']+counts['missing']} were collected ({100*(counts['collected']/(counts['collected']+counts['missing'])):.2f}%)!"
+            self.return_message(update, response)
             coin_df = miss_df
 
         # Remove years before the first year
