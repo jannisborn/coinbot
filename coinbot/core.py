@@ -556,7 +556,7 @@ class CoinBot:
         source = None
         for x in text.split(" "):
             if x.upper() in ["A", "D", "F", "G", "J"]:
-                source = x
+                source = x.lower()
 
         logger.debug(
             f"Special coin: {text}, Country: {country}, Year: {year}, Source: {source}"
