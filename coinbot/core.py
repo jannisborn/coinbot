@@ -553,9 +553,16 @@ class CoinBot:
         # Extract basic features
         year = self.get_year_from_full(update, text)
         country, matched = fuzzy_search_country(text)
-        logger.debug(f"Special coin: {text}, Country: {country}, Year: {year}")
+        source = None
+        for x in text.split(" "):
+            if x.upper() in ["A", "D", "F", "G", "J"]:
+                source = x
 
+        logger.debug(
+            f"Special coin: {text}, Country: {country}, Year: {year}, Source: {source}"
+        )
         coin_df = self.db.df[self.db.df["Special"]]
+
         num_specials = len(coin_df)
         query = ""
         if year != -1:
@@ -566,8 +573,11 @@ class CoinBot:
             coin_df = coin_df[coin_df["Country"] == country]
             query += f"`Country: {country.capitalize()}`, "
             logger.debug(f"After country {country}: {len(coin_df)} entries remain")
+        if source is not None:
+            coin_df = coin_df[coin_df.Source == source]
+            logger.debug(f"After source {source}: {len(coin_df)} entries remain")
 
-        text = text.replace(str(year), "").replace(matched, "").replace(" ", "").strip()
+        text = text.replace(str(year), "").replace(matched, "").strip()
         logger.debug(f"Remaining text: {text}")
         if len(text.split(" ")) > 0 and len(text) > 0 and len(coin_df) > 0:
             # The query contains more information. Pass this to the vectorstorage
