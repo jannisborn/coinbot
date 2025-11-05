@@ -607,6 +607,7 @@ class CoinBot:
                 coin_df.Source.values[0],
                 True,
                 coin_df.Name.values[0],
+                coin_df.Amount.values[0]
             )
             stage_button = [
                 [
@@ -713,7 +714,7 @@ class CoinBot:
 
     def stage_coin(self, update, user_id):
         # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
-        country, year, value, source, is_special, name = self.user_prefs[user_id][
+        country, year, value, source, is_special, name, amount = self.user_prefs[user_id][
             "last_found_coin"
         ]
 
@@ -761,6 +762,15 @@ class CoinBot:
         # NOTE: In case coin was previously unavailable (e.g., because it is new), now set to missing, otherwise stats are wrong
         self.db.df.at[row_indexes[0], "Status"] = "missing"
         self.db.save_df()
+
+        if self.slack:
+            match = get_tuple(country, year, source, value=value, is_special=is_special, name=name)
+            response = f"🚀🥳 Hooray! The coin {match} was just staged 🤩"
+            self.slackbot(
+                f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+            )
+
+
 
         # Subsequently print status update
         self.return_message(
@@ -869,10 +879,6 @@ class CoinBot:
                 response = "❓Coin not found."
 
             if found_new:
-                if self.slack:
-                    self.slackbot(
-                        f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
-                    )
                 self.user_prefs[user_id]["last_found_coin"] = (
                     country,
                     year,
@@ -880,6 +886,7 @@ class CoinBot:
                     source,
                     False,
                     "N.A.",
+                    amount
                 )
                 stage_button = [
                     [
