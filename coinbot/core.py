@@ -740,6 +740,14 @@ class CoinBot:
                 (self.db.df["Country"] == country)
                 & (self.db.df["Year"] == year)
                 & (self.db.df["Name"] == name)
+                & (
+                        (self.db.df["Country"] == "germany")
+                        & (self.db.df["Source"] == source)
+                    )
+                    | (
+                        (self.db.df["Country"] != "germany")
+                        & (self.db.df["Source"].isna())
+                    )
                 & self.db.df.Special
             ]
         assert len(row_indexes) == 1, f"More than one row {len(row_indexes)}"
