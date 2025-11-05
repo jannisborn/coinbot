@@ -764,10 +764,11 @@ class CoinBot:
         self.db.save_df()
 
         if self.slack:
-            match = get_tuple(country, year, source, value=value, is_special=is_special, name=name)
+            match = get_tuple(country, year, source, value=value, isspecial=is_special, name=name)
+            amount = amount / 1000
             response = f"🚀🥳 Hooray! The coin {match} was just staged 🤩"
             self.slackbot(
-                f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount})"
+                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount:.2f}M) million"
             )
 
 
