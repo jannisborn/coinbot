@@ -395,7 +395,7 @@ class CoinBot:
             and country.strip() != ""
         ):
             coin_df = coin_df[coin_df["Country"] == country]
-        if has_year := year > 1990 and year < 2100:
+        if has_year := year > 1990 and year < 9999:
             coin_df = coin_df[coin_df["Year"] == year]
         if (
             has_value := not any([x in value for x in MISS_HINTS])
@@ -428,7 +428,9 @@ class CoinBot:
                 )
                 return self.return_message(update, response)
             else:
-                response = f"{counts['collected']}/{counts['collected']+counts['missing']} were collected ({100*(counts['collected']/(counts['collected']+counts['missing'])):.2f}%)!"
+                fraction = counts['collected']/(counts['collected']+counts['missing'])
+                emoji = self.db.emoji(fraction)
+                response = f"{emoji} {counts['collected']}/{counts['collected']+counts['missing']} were collected ({fraction*100:.2f}%)!"
             self.return_message(update, response)
             coin_df = miss_df
 
