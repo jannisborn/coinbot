@@ -413,7 +413,7 @@ class CoinBot:
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
             return self.return_message(update, response)
-        elif len(coin_df[coin_df.Status != "unavailable"]) == 0:
+        elif len(coin_df[coin_df.Status == "unavailable"]) == len(coin_df):
             response = f"🤷 For year {year} and country {country} no coin was minted, so 'all' coins are collected 🥳"
             return self.return_message(update, response)
         if missing:
