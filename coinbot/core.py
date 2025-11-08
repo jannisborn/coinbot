@@ -429,7 +429,7 @@ class CoinBot:
                 return self.return_message(update, response)
             else:
                 fraction = counts['collected']/(counts['collected']+counts['missing'])
-                emoji = self.db.emoji(fraction)
+                emoji = self.db._emoji(fraction)
                 response = f"{emoji} {counts['collected']}/{counts['collected']+counts['missing']} were collected ({fraction*100:.2f}%)!"
             self.return_message(update, response)
             coin_df = miss_df
