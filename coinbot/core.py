@@ -770,7 +770,7 @@ class CoinBot:
             amount = amount / 1000
             response = f"🚀🥳 Hooray! The coin {match} was just staged 🤩"
             self.slackbot(
-                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount:.2f}M) million"
+                    f"User {self.user_prefs[user_id]['username']}: {response} (Amount: {amount:.2f}M)"
             )
 
 
