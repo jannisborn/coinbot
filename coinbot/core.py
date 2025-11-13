@@ -883,14 +883,14 @@ class CoinBot:
 
             elif coin_status == "collected":
                 response = f"😢 No luck! The coin {match} was already collected"
-                delimiter = "" if collector == "<NA>" and collected == "<NA>"  else " "
-                if collector != "<NA>" or collected != "<NA>":
+                delimiter = "" if pd.isna(collector) and pd.isna(collected)  else " "
+                if not pd.isna(collector) or not pd.isna(collected):
                     response += f" ("
-                if collector != "<NA>":
+                if not pd.isna(collector):
                     response += f"by {collector}{delimiter}"
-                if collected != "<NA>":
+                if not pd.isna(collected):
                     response += f"on {collected}"
-                if collector != "<NA>" or collected != "<NA>":
+                if not pd.isna(collector) or not pd.isna(collected):
                     response += ")"
                 else:
                     response += " 😢"
@@ -941,7 +941,7 @@ class CoinBot:
             model=self.base_llm,
             token=self.llm_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro, but use 2 euro, not 200 cents. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
                 "Use a colon (:) before each feature value. Be concise and efficient!"
             ),
             temperature=0.5,
