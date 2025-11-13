@@ -173,6 +173,7 @@ class CoinBot:
             return True
         elif text.lower().startswith('hoarder'):
             self.return_message(update, str(self.db.df.Collector.value_counts()).split('\nName')[0])
+            return True
 
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
