@@ -28,7 +28,7 @@ def main():
                 vectorstorage_path=os.path.join(
                     os.path.dirname(__file__), "data", "special_coins.npz"
                 ),
-                base_llm="OpenAI/gpt-oss-20B",
+                base_llm="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
             )
             bot.run()
         except Exception as e:

@@ -171,6 +171,8 @@ class CoinBot:
         if text.lower().startswith("status"):
             self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
+        elif text.lower().startswith('hoarder'):
+            self.return_message(update, str(df.Collector.value_counts()).split('\nName')[0])
 
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
@@ -306,7 +308,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="OpenAI/gpt-oss-20B",
+                model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
@@ -857,10 +859,12 @@ class CoinBot:
             coin_status = coin_df["Status"].values[0]
             coin_staged = bool(coin_df["Staged"].values[0])
             amount = coin_df["Amount"].values[0]
+            collector = coin_df["Collector"].values[0]
+            collected = coin_df['Collected'].values[0]
+
             stage_markup = None
             found_new = False
             if coin_staged:
-                collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable" and year == CURRENT_YEAR:
                 response = f"🔮 Hooray! Your coin {match} is so NEW that it is not even tracked in the database!"
@@ -877,7 +881,18 @@ class CoinBot:
                 found_new = True
 
             elif coin_status == "collected":
-                response = f"😢 No luck! The coin {match} was already collected 😢"
+                response = f"😢 No luck! The coin {match} was already collected"
+                delimiter = "" if collector is None or collected is None else " "
+                if collector is not None or collected is not None:
+                    response += f" ("
+                if collector is not None:
+                    response += f"by {collector}{delimiter}"
+                if collected is not None:
+                    response += f"on {collected}"
+                if collector is not None or collected is not None:
+                    response += ")"
+                else:
+                    response += " 😢"
             else:
                 response = "❓Coin not found."
 
