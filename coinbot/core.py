@@ -942,7 +942,7 @@ class CoinBot:
             token=self.llm_token,
             task_prompt=(
                 "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro, but use 2 euro, not 200 cents. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
-                "Use a colon (:) before each feature value. Be concise and efficient!"
+                "Use a colon (:) before each feature value and separate each feature by newlines. Be concise and efficient!"
             ),
             temperature=0.5,
         )
