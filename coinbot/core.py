@@ -172,7 +172,7 @@ class CoinBot:
             self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
         elif text.lower().startswith('hoarder'):
-            self.return_message(update, str(df.Collector.value_counts()).split('\nName')[0])
+            self.return_message(update, str(self.db.df.Collector.value_counts()).split('\nName')[0])
 
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
@@ -308,7 +308,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+                model="OpenAI/gpt-oss-20B",
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
