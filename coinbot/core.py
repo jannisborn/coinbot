@@ -888,7 +888,7 @@ class CoinBot:
                     response += f" ("
                 if collector != "<NA>":
                     response += f"by {collector}{delimiter}"
-                if collected != "<NA>"
+                if collected != "<NA>":
                     response += f"on {collected}"
                 if collector != "<NA>" or collected != "<NA>":
                     response += ")"
