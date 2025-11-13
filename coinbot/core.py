@@ -885,7 +885,8 @@ class CoinBot:
                 delimiter = "" if collector is None or collected is None else " "
                 if collector is not None or collected is not None:
                     response += f" ("
-                if collector is not None:
+                breakpoint()
+                if collector is not None and collector != '<NA>':
                     response += f"by {collector}{delimiter}"
                 if collected is not None:
                     response += f"on {collected}"
