@@ -889,7 +889,8 @@ class CoinBot:
                 if not pd.isna(collector):
                     response += f"by {collector}{delimiter}"
                 if not pd.isna(collected):
-                    response += f"on {collected}"
+                    prefix = "before" if str(collected) == '01.01.2024' else "on"
+                    response += f"{prefix} {collected}"
                 if not pd.isna(collector) or not pd.isna(collected):
                     response += ")"
                 else:
