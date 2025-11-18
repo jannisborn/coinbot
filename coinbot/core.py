@@ -309,7 +309,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="OpenAI/gpt-oss-20B",
+                model="openai/gpt-oss-20b",
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
