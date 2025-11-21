@@ -171,6 +171,9 @@ class CoinBot:
         if text.lower().startswith("status"):
             self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
+        elif text.lower().startswith('hoarder'):
+            self.return_message(update, str(self.db.df.Collector.value_counts()).split('\nName')[0])
+            return True
 
         if overwrite_username:
             if "username" in self.user_prefs[user_id].keys():
@@ -306,7 +309,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="OpenAI/gpt-oss-20B",
+                model="openai/gpt-oss-20b",
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
@@ -511,6 +514,7 @@ class CoinBot:
             .replace("euros", "euro")
             .replace("euro cent", "cent")
             .replace("  ", " ")
+            .replace(' ct', ' cent')
             .strip()
         )
 
@@ -857,10 +861,12 @@ class CoinBot:
             coin_status = coin_df["Status"].values[0]
             coin_staged = bool(coin_df["Staged"].values[0])
             amount = coin_df["Amount"].values[0]
+            collector = coin_df["Collector"].values[0]
+            collected = coin_df['Collected'].values[0]
+
             stage_markup = None
             found_new = False
             if coin_staged:
-                collector = coin_df["Collector"].values[0]
                 response = f"Cool!😎 Coin {match} not yet in collection, BUT already staged by {collector}!"
             elif coin_status == "unavailable" and year == CURRENT_YEAR:
                 response = f"🔮 Hooray! Your coin {match} is so NEW that it is not even tracked in the database!"
@@ -877,7 +883,19 @@ class CoinBot:
                 found_new = True
 
             elif coin_status == "collected":
-                response = f"😢 No luck! The coin {match} was already collected 😢"
+                response = f"😢 No luck! The coin {match} was already collected"
+                delimiter = "" if pd.isna(collector) and pd.isna(collected)  else " "
+                if not pd.isna(collector) or not pd.isna(collected):
+                    response += f" ("
+                if not pd.isna(collector):
+                    response += f"by {collector}{delimiter}"
+                if not pd.isna(collected):
+                    prefix = "before" if str(collected) == '01.01.2024' else "on"
+                    response += f"{prefix} {collected}"
+                if not pd.isna(collector) or not pd.isna(collected):
+                    response += ")"
+                else:
+                    response += " 😢"
             else:
                 response = "❓Coin not found."
 
@@ -918,17 +936,17 @@ class CoinBot:
         self.eu_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
-            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Finland`.  Be concise and efficient!",
+            task_prompt="You are a feature extractor! Extract 3 features, the english (!) country name, the coin value (in euro or cents) and the year. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro, but use 2 euro, not 200 cents.  Use a colon (:) before each feature value. Always reply with values for all three features, if one is missing reply with `Missing feature` for that feature. E.g., `year: 2020\n value: Missing feature\n Country: Finland`.  Be concise and efficient!",
             temperature=0.6,
         )
         self.ger_llm = LLM(
             model=self.base_llm,
             token=self.llm_token,
             task_prompt=(
-                "You are a feature extractor! Extract 4 features, Country, coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
-                "Use a colon (:) before each feature value. Be concise and efficient!"
+                "You are a feature extractor! Extract 4 features, Country, the coin value (in euro or cents), year and source. The source is given as single character, A, D, F, G or J. Never give the coin value in fractional values, use 10 cent rather than 0.1 euro, but use 2 euro, not 200 cents. If one of the three features is missing reply simply with `Missing feature`. Do not overlook the source!"
+                "Use a colon (:) before each feature value and separate each feature by newlines. Be concise and efficient!"
             ),
-            temperature=0.5,
+            temperature=0.6,
         )
         self.joke_llm = LLM(
             model=self.base_llm,
