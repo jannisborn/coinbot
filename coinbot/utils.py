@@ -34,15 +34,15 @@ def large_int_to_readable(n):
     if billion > 0:
         # If there are billions, round to the nearest billion
         rounded = round(n / 1000000000)
-        readable = f"{rounded} Billion"
+        readable = f"{rounded} Bil."
     elif million > 0:
         # If there are millions, round to the nearest million
         rounded = round(n / 1000000)
-        readable = f"{rounded} Million"
+        readable = f"{rounded} Mil."
     elif thousand > 0:
         # If there are thousands, round to the nearest thousand
         rounded = round(n / 1000)
-        readable = f"{rounded} Thousand"
+        readable = f"{rounded} Thous."
 
     return readable
 
