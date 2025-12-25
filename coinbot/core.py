@@ -307,7 +307,7 @@ class CoinBot:
 
         first_date = name_df.sort_values(by='Collected').head(1).Collected
         print(first_date)
-        date_df = self.db.df[self.db.df.collected >= first_date]
+        date_df = self.db.df[self.db.df.Collected >= first_date]
         relative = len(date_df[date_df.Collector == name]) / len(date_df)
 
         msg = f"You collected {len(name_df)} coins, this is {100*relative:.1f}% since your first collection on {first_date}.\n"
