@@ -305,7 +305,7 @@ class CoinBot:
         if len(name_df) == 0:
             return ""
 
-        first_date = name_df.sort_values(by='Collected').head(1).Collected
+        first_date = name_df.sort_values(by='Collected').head(1).Collected.iloc[0]
         print(first_date)
         date_df = self.db.df[self.db.df.Collected >= first_date]
         relative = len(date_df[date_df.Collector == name]) / len(date_df)
