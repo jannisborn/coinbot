@@ -104,7 +104,7 @@ class CoinBot:
         self.db = DataBase(self.filepath, latest_csv_path=latest_csv_path)
         self.vectorstorage_path = vectorstorage_path
         self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
-        self.known_users = [x.lower() for x in self.db.df.Collector.unique()]
+        self.known_users = [x.lower() for x in self.db.df.Collector.unique() if isinstance(x, str)]
 
         self.set_llms()
         self.slack = slack_token is not None
