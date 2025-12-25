@@ -186,6 +186,8 @@ class CoinBot:
             new_username = text.split(":")[-1].strip()
             response += f"Username has now been set to {new_username}."
             self.user_prefs[user_id]["username"] = new_username
+            if new_username.lower() in self.known_users:
+                response += self.get_user_statistic(new_username)
             self.return_message(update, response)
             return True
 
@@ -306,8 +308,10 @@ class CoinBot:
             return ""
 
         first_date = name_df.sort_values(by='Collected').head(1).Collected.iloc[0]
-        print(first_date)
-        date_df = self.db.df[self.db.df.Collected >= first_date]
+        if first_date == "01.01.2024":
+            date_df = self.db.df[self.db.df.Collected > first_date]
+        else:
+            date_df = self.db.df[self.db.df.Collected >= first_date]
         relative = len(date_df[date_df.Collector == name]) / len(date_df)
 
         msg = f"You collected {len(name_df)} coins, this is {100*relative:.1f}% since your first collection on {first_date}.\n"
