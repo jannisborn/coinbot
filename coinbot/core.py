@@ -184,7 +184,7 @@ class CoinBot:
             else:
                 response = ""
             new_username = text.split(":")[-1].strip()
-            response += f"Username has now been set to {new_username}."
+            response += f"Username has now been set to {new_username}.\n"
             self.user_prefs[user_id]["username"] = new_username
             if new_username.lower() in self.known_users:
                 response += self.get_user_statistic(new_username)
@@ -314,7 +314,7 @@ class CoinBot:
             date_df = self.db.df[self.db.df.Collected >= first_date]
         relative = len(date_df[date_df.Collector == name]) / len(date_df)
 
-        msg = f"You collected {len(name_df)} coins, this is {100*relative:.1f}% since your first collection on {first_date}.\n"
+        msg = f"🚀You collected {len(name_df)} coins, this is {100*relative:.1f}% since your first collection on {first_date}🚀\n"
         return msg
 
 
