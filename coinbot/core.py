@@ -260,7 +260,7 @@ class CoinBot:
             self.user_prefs[user_id]["username"] = text
             context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
             txt = f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\n"
-            if text.lower().strip() in known_users:
+            if text.lower().strip() in self.known_users:
                 txt += self.get_user_statistic(text)
 
             txt += "Here is the manual:"
