@@ -104,6 +104,7 @@ class CoinBot:
         self.db = DataBase(self.filepath, latest_csv_path=latest_csv_path)
         self.vectorstorage_path = vectorstorage_path
         self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
+        self.known_users = [x.lower() for x in self.db.df.Collector.unique() if isinstance(x, str)]
 
         self.set_llms()
         self.slack = slack_token is not None
@@ -183,8 +184,10 @@ class CoinBot:
             else:
                 response = ""
             new_username = text.split(":")[-1].strip()
-            response += f"Username has now been set to {new_username}."
+            response += f"Username has now been set to {new_username}.\n"
             self.user_prefs[user_id]["username"] = new_username
+            if new_username.lower() in self.known_users:
+                response += self.get_user_statistic(new_username)
             self.return_message(update, response)
             return True
 
@@ -258,7 +261,13 @@ class CoinBot:
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
             context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
-            txt = f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\nHere is the manual:"
+            txt = f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\n"
+            if text.lower().strip() in self.known_users:
+                txt += self.get_user_statistic(text)
+
+            txt += "Here is the manual:"
+            
+
             if self.user_prefs[user_id]["language"] != "English":
                 txt += "(Sorry translating this may take a while)"
             reponse_name = self.return_message(update, txt)
@@ -272,6 +281,7 @@ class CoinBot:
             context.bot.send_chat_action(
                 chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
             )
+            time.sleep(2)
             response_message = self.return_message(update, INSTRUCTION_MESSAGE_1)
             time.sleep(1)
             response_message_2 = self.return_message(update, INSTRUCTION_MESSAGE_2)
@@ -290,6 +300,23 @@ class CoinBot:
         else:
             update.message.reply_text("No language recognized, consider setting it")
             return False
+
+    def get_user_statistic(self, name: str) -> str:
+        name = name.capitalize()
+        name_df = self.db.df[self.db.df.Collector == name]
+        if len(name_df) == 0:
+            return ""
+
+        first_date = name_df.sort_values(by='Collected').head(1).Collected.iloc[0]
+        if first_date == "01.01.2024":
+            date_df = self.db.df[self.db.df.Collected > first_date]
+        else:
+            date_df = self.db.df[self.db.df.Collected >= first_date]
+        relative = len(date_df[date_df.Collector == name]) / len(date_df)
+
+        msg = f"🚀You collected {len(name_df)} coins, this is {100*relative:.1f}% since your first collection on {first_date}🚀\n"
+        return msg
+
 
     def return_message(
         self, update: Update, text: str, amount: int = 0, reply_markup=None
@@ -472,14 +499,29 @@ class CoinBot:
                     row.Country, row.Year, row["Source"], value=row["Coin Value"]
                 )
 
+            meta = ""
+            if special and status.lower() == 'collected':
+                # Special coins display collector and collection date
+                collector = row["Collector"]
+                collected = row['Collected']
+                delimiter = "" if pd.isna(collector) and pd.isna(collected)  else " "
+                if not pd.isna(collector) or not pd.isna(collected):
+                    meta += f" ("
+                if not pd.isna(collector):
+                    meta += f"by {collector}{delimiter}"
+                if not pd.isna(collected):
+                    prefix = "before" if str(collected) == '01.01.2024' else "on"
+                    meta += f"{prefix} {collected}"
+
             if status != "unavailable" and row["Amount"] > 0:
-                amount = " (Mints: " + large_int_to_readable(row["Amount"] * 1000) + ")"
-            else:
-                amount = ""
+                prefix = "; " if "(" in meta else " ("
+                meta += f"{prefix}Mints: " + large_int_to_readable(row["Amount"] * 1000)
+            if "(" in meta:
+                meta += ")"
             stat_txt = status.upper()
             stat_txt += f" (Staged by {row.Collector})" if row["Staged"] else ""
 
-            response = f"{match}:\n{icon}{stat_txt}{icon}{amount}"
+            response = f"{match}:\n{icon}{stat_txt}{icon}{meta}"
 
             if special:
                 if image is None:
