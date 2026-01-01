@@ -25,7 +25,8 @@ dependencies = [
   "python-box>=7.2.0,<8.0.0",
   "together>=1.2.5,<2.0.0",
   "python-telegram-bot==13.7",
-  "urllib3<2"
+  "urllib3<2",
+  "html5lib>=1.1",
 ]
 
 [build-system]
