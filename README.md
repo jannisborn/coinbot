@@ -37,8 +37,7 @@ Text the Telegram coinbot with [@coincollectionbot](https://t.me/coincollectionb
 ```sh
 git clone https://github.com/jannisborn/coinbot.git
 cd coinbot
-poetry install
-poetry shell
+uv sync
 ```
 
 ## Local deployment
@@ -47,7 +46,7 @@ NOTE: You will need the `secrets.json` file with the tokens for Telegram and Any
 
 Then run:
 ```sh
-python app.py
+uv run python app.py
 ```
 
 
