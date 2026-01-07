@@ -343,7 +343,7 @@ class DataBase:
             line_formatter(tr, trs, collected, stag, total_coins, name="Total coins")
         )
         report_lines.append(
-            line_formatter(sr, sr, collected, 0, special, name="Special coins")
+            line_formatter(sr, sr, speccol, 0, special, name="Special coins")
         )
 
         # Generating report by Year
