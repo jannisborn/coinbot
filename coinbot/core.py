@@ -112,7 +112,7 @@ class CoinBot:
             self.slackbot = SlackClient(slack_token)
 
     def error_handler(self, update, context):
-        logger.error(f'Update "{update}" caused error "{context.error}"', exc_info=True)
+        logger.error('Update "{}" caused error "{}"', update, context.error)
 
     def fetch_file(self, link: str) -> bool:
         """
@@ -966,7 +966,7 @@ class CoinBot:
             )
 
         except Exception as e:
-            self.return_message(update, f"An error occurred: {e}")
+            update.message.reply_text(f"An error occurred: {e}")
 
     def run(self):
         logger.info("Starting bot")
