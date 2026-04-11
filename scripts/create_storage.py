@@ -14,7 +14,7 @@ def main():
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets.json"), "r"
     ) as f:
         secrets = json.load(f)
-    anyscale_token = secrets["anyscale"]
+    token = secrets["together"]
     file_link = secrets["file_link"]
     response = requests.get(file_link)
     # Check if the request was successful
@@ -26,10 +26,15 @@ def main():
     else:
         logger.warning(f"Failed to download file from {file_link}")
 
-    db = DataBase("tmp.xlsm")
+    db = DataBase(
+        "tmp.xlsm",
+        latest_csv_path=os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "data", "latest_collection.csv"
+        ),
+    )
 
     vectorstorage = VectorStorage(
-        token=anyscale_token, embedding_model="BAAI/bge-large-en-v1.5"
+        token=token, embedding_model="intfloat/multilingual-e5-large-instruct"
     )
     special_texts = db.df[(db.df.Special)].Name.values
     # descs = db.df[(db.df.Special)].Description.values
