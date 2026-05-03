@@ -7,6 +7,7 @@ from random import random
 from typing import List, Tuple
 
 import pandas as pd
+import pytz
 import requests
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
@@ -16,6 +17,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     CommandHandler,
     ContextTypes,
+    Defaults,
     MessageHandler,
     filters,
 )
@@ -81,7 +83,12 @@ class CoinBot:
         )
 
         # Initialize the bot and dispatcher
-        self.application = ApplicationBuilder().token(self.telegram_token).build()
+        self.application = (
+            ApplicationBuilder()
+            .token(self.telegram_token)
+            .defaults(Defaults(tzinfo=pytz.UTC))
+            .build()
+        )
         self.dp = self.application
 
         # Register handlers
