@@ -1,22 +1,25 @@
+import asyncio
 import os
 import sys
 import threading
-import time
 from collections import defaultdict
 from random import random
 from typing import List, Tuple
 
 import pandas as pd
+import pytz
 import requests
-import telegram
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
+from telegram.constants import ChatAction
 from telegram.ext import (
+    ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
-    Filters,
+    ContextTypes,
+    Defaults,
     MessageHandler,
-    Updater,
+    filters,
 )
 
 from coinbot.db import DataBase
@@ -80,17 +83,18 @@ class CoinBot:
         )
 
         # Initialize the bot and dispatcher
-        self.updater = Updater(self.telegram_token, use_context=True)
-        self.dp = self.updater.dispatcher
+        self.application = (
+            ApplicationBuilder()
+            .token(self.telegram_token)
+            .defaults(Defaults(tzinfo=pytz.UTC))
+            .build()
+        )
+        self.dp = self.application
 
         # Register handlers
+        self.dp.add_handler(CommandHandler("start", self.start))
         self.dp.add_handler(
-            CommandHandler(
-                "start", lambda update, context: update.message.reply_text("Hi!")
-            )
-        )
-        self.dp.add_handler(
-            MessageHandler(Filters.text & (~Filters.command), self.handle_text_message)
+            MessageHandler(filters.TEXT & (~filters.COMMAND), self.handle_text_message)
         )
         self.dp.add_handler(CallbackQueryHandler(self.callback_query_handler))
         self.dp.add_error_handler(self.error_handler)
@@ -111,8 +115,31 @@ class CoinBot:
         if self.slack:
             self.slackbot = SlackClient(slack_token)
 
-    def error_handler(self, update, context):
+    async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text("Hi!")
+
+    async def error_handler(self, update: object, context: ContextTypes.DEFAULT_TYPE):
         logger.error('Update "{}" caused error "{}"', update, context.error)
+
+    @staticmethod
+    def _message(update):
+        return update.message if getattr(update, "message", None) is not None else update
+
+    @staticmethod
+    def _user_id(update) -> int:
+        if getattr(update, "callback_query", None) is not None:
+            return update.callback_query.from_user.id
+        if getattr(update, "from_user", None) is not None:
+            return update.from_user.id
+        return update.message.from_user.id
+
+    @staticmethod
+    def _text(update) -> str:
+        if getattr(update, "callback_query", None) is not None:
+            return update.callback_query.data
+        if getattr(update, "data", None) is not None:
+            return update.data
+        return update.message.text
 
     def fetch_file(self, link: str) -> bool:
         """
@@ -154,7 +181,7 @@ class CoinBot:
             self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
         threading.Timer(interval, self.reload_data, [interval]).start()
 
-    def setup(self, update, context) -> bool:
+    async def setup(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
         """
         Set up the user's language preference and collect their name.
         Returns whether the user message was part of the setup process.
@@ -170,10 +197,10 @@ class CoinBot:
         )
 
         if text.lower().startswith("status"):
-            self.return_message(update, self.db.get_status(msg=text.lower()))
+            await self.return_message(update, self.db.get_status(msg=text.lower()))
             return True
         elif text.lower().startswith('hoarder'):
-            self.return_message(update, str(self.db.df.Collector.value_counts()).split('\nName')[0])
+            await self.return_message(update, str(self.db.df.Collector.value_counts()).split('\nName')[0])
             return True
 
         if overwrite_username:
@@ -188,7 +215,7 @@ class CoinBot:
             self.user_prefs[user_id]["username"] = new_username
             if new_username.lower() in self.known_users:
                 response += self.get_user_statistic(new_username)
-            self.return_message(update, response)
+            await self.return_message(update, response)
             return True
 
         elif overwrite_language:
@@ -202,23 +229,23 @@ class CoinBot:
             response += f"Language has now been set to {new_language}."
             self.user_prefs[user_id]["language"] = new_language
             if self.user_prefs[user_id]["collecting_username"]:
-                time.sleep(0.5)
-                self.return_message(update, USER_MSG)
+                await asyncio.sleep(0.5)
+                await self.return_message(update, USER_MSG)
             elif not self.user_prefs[user_id]["collecting_language"]:
-                time.sleep(0.5)
+                await asyncio.sleep(0.5)
                 response += "\nHere are the instructions again:\n"
-                context.bot.send_chat_action(
-                    chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+                await context.bot.send_chat_action(
+                    chat_id=update.message.chat_id, action=ChatAction.TYPING
                 )
-                response_message = self.return_message(
+                response_message = await self.return_message(
                     update, response + INSTRUCTION_MESSAGE_1
                 )
-                time.sleep(1)
-                self.return_message(update, response + INSTRUCTION_MESSAGE_2)
+                await asyncio.sleep(1)
+                await self.return_message(update, response + INSTRUCTION_MESSAGE_2)
 
                 # Pinning the message
-                context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
-                context.bot.pin_chat_message(
+                await context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+                await context.bot.pin_chat_message(
                     chat_id=update.message.chat_id,
                     message_id=response_message.message_id,
                     disable_notification=False,
@@ -226,15 +253,15 @@ class CoinBot:
             return True
 
         elif text.lower().startswith("help"):
-            context.bot.send_chat_action(
-                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+            await context.bot.send_chat_action(
+                chat_id=update.message.chat_id, action=ChatAction.TYPING
             )
-            response_message = self.return_message(update, INSTRUCTION_MESSAGE_1)
-            time.sleep(1)
-            self.return_message(update, response + INSTRUCTION_MESSAGE_2)
+            response_message = await self.return_message(update, INSTRUCTION_MESSAGE_1)
+            await asyncio.sleep(1)
+            await self.return_message(update, INSTRUCTION_MESSAGE_2)
 
             # Pin instructions
-            context.bot.pin_chat_message(
+            await context.bot.pin_chat_message(
                 chat_id=update.message.chat_id,
                 message_id=response_message.message_id,
                 disable_notification=False,
@@ -243,7 +270,7 @@ class CoinBot:
 
         # Check if the user's language preference is already set
         elif user_id not in self.user_prefs:
-            update.message.reply_text(
+            await update.message.reply_text(
                 "Welcome!\nThis is Jannis' coincollector! 🪙\n\nWhich language do you want me to speak?"
             )
             self.user_prefs[user_id]["collecting_language"] = True
@@ -253,14 +280,14 @@ class CoinBot:
             self.user_prefs[user_id]["language"] = text.capitalize().strip()
             response = f"Language was set to {text}. You can always change it by writing\n`Language: YOUR_LANGUAGE`."
             if text.capitalize() == "English":
-                time.sleep(0.2)
-            self.return_message(update, response + USER_MSG)
+                await asyncio.sleep(0.2)
+            await self.return_message(update, response + USER_MSG)
             self.user_prefs[user_id]["collecting_language"] = False
             self.user_prefs[user_id]["collecting_username"] = True
             return True
         elif self.user_prefs[user_id]["collecting_username"]:
             self.user_prefs[user_id]["username"] = text
-            context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
+            await context.bot.unpin_all_chat_messages(chat_id=update.message.chat_id)
             txt = f"Nice to meet you, {text}!🤝 You can always change your username by texting\n`Name: YOUR_NAME`\n"
             if text.lower().strip() in self.known_users:
                 txt += self.get_user_statistic(text)
@@ -270,24 +297,24 @@ class CoinBot:
 
             if self.user_prefs[user_id]["language"] != "English":
                 txt += "(Sorry translating this may take a while)"
-            reponse_name = self.return_message(update, txt)
+            reponse_name = await self.return_message(update, txt)
 
             # Pinning the message to change username
-            context.bot.pin_chat_message(
+            await context.bot.pin_chat_message(
                 chat_id=update.message.chat_id,
                 message_id=reponse_name.message_id,
                 disable_notification=False,
             )
-            context.bot.send_chat_action(
-                chat_id=update.message.chat_id, action=telegram.ChatAction.TYPING
+            await context.bot.send_chat_action(
+                chat_id=update.message.chat_id, action=ChatAction.TYPING
             )
-            time.sleep(2)
-            response_message = self.return_message(update, INSTRUCTION_MESSAGE_1)
-            time.sleep(1)
-            response_message_2 = self.return_message(update, INSTRUCTION_MESSAGE_2)
+            await asyncio.sleep(2)
+            response_message = await self.return_message(update, INSTRUCTION_MESSAGE_1)
+            await asyncio.sleep(1)
+            response_message_2 = await self.return_message(update, INSTRUCTION_MESSAGE_2)
 
             # Pin instructions
-            context.bot.pin_chat_message(
+            await context.bot.pin_chat_message(
                 chat_id=update.message.chat_id,
                 message_id=response_message.message_id,
                 disable_notification=False,
@@ -298,7 +325,7 @@ class CoinBot:
             # Language was already set
             return False
         else:
-            update.message.reply_text("No language recognized, consider setting it")
+            await update.message.reply_text("No language recognized, consider setting it")
             return False
 
     def get_user_statistic(self, name: str) -> str:
@@ -318,10 +345,11 @@ class CoinBot:
         return msg
 
 
-    def return_message(
+    async def return_message(
         self, update: Update, text: str, amount: int = 0, reply_markup=None
     ) -> Message:
-        user_id = update.message.from_user.id
+        message = self._message(update)
+        user_id = self._user_id(update)
         if amount > 0:
             number_text = large_int_to_readable(amount * 1000)
             text = f"{text}\n\n(Coin was minted {number_text} times)"
@@ -331,7 +359,7 @@ class CoinBot:
         else:
             language = self.user_prefs[user_id].get("language", "English")
         if language == "English":
-            response_message = update.message.reply_text(
+            response_message = await message.reply_text(
                 text, parse_mode="Markdown", reply_markup=reply_markup
             )
         else:
@@ -352,48 +380,46 @@ class CoinBot:
                 if text != ""
                 else "A translation error occurred. Please set language to English"
             )
-            response_message = update.message.reply_text(
-                text, reply_markup=reply_markup
-            )
+            response_message = await message.reply_text(text, reply_markup=reply_markup)
 
-        log_to_csv(update.message.text, text)
+        log_to_csv(self._text(update), text)
         return response_message
 
-    def verify(self, update, context):
+    async def verify(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_id = update.message.from_user.id
         # Check if the user's language preference is set
         if user_id not in self.user_prefs:
             # Ask for the user's language preference
-            update.message.reply_text("Which language do you want me to speak?")
+            await update.message.reply_text("Which language do you want me to speak?")
             return False
         return True
 
-    def handle_text_message(self, update, context):
+    async def handle_text_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         if random() < 0.005:
             output = self.joke_llm(update.message.text)
-            self.return_message(update, output)
+            await self.return_message(update, output)
             return
-        is_setting_up = self.setup(update, context)
+        is_setting_up = await self.setup(update, context)
         if is_setting_up:
             return
 
-        if not self.verify(update, context):
+        if not await self.verify(update, context):
             return
 
         # Determine whether query is about searching a coin or querying a series
         msg = update.message.text.lower().strip()
         if msg.startswith("series"):
-            self.extract_and_report_series(update, msg)
+            await self.extract_and_report_series(update, msg)
         elif msg.startswith("staged"):
-            self.report_staged(update)
+            await self.report_staged(update)
         else:
             # Query the DB with a specific coin
-            self.search_coin_in_db(update, context)
+            await self.search_coin_in_db(update, context)
 
-    def report_staged(self, update):
+    async def report_staged(self, update: Update):
         tdf = self.db.df[self.db.df.Staged]
         if len(tdf) == 0:
-            update.message.reply_text(
+            await update.message.reply_text(
                 "No coins are currently staged", parse_mode="Markdown"
             )
 
@@ -408,9 +434,9 @@ class CoinBot:
                 name=r["Name"],
             )
             response = f"{match} - by {r.Collector}"
-            update.message.reply_text(response, parse_mode="Markdown")
+            await update.message.reply_text(response, parse_mode="Markdown")
 
-    def extract_and_report_series(self, update, text):
+    async def extract_and_report_series(self, update: Update, text):
         """
         Report the status of a series (year, country)-tuple of coins.
         """
@@ -442,26 +468,26 @@ class CoinBot:
             coin_df = coin_df.iloc[av_idx:]
         if len(coin_df) == 0:
             response = f"🤷🏻‍♂️ For year {year} and country {country} no data was found. Check your input 🧐"
-            return self.return_message(update, response)
+            return await self.return_message(update, response)
         elif len(coin_df[coin_df.Status == "unavailable"]) == len(coin_df):
             response = f"🤷 For year {year} and country {country} no coin was minted, so 'all' coins are collected 🥳"
-            return self.return_message(update, response)
+            return await self.return_message(update, response)
         if missing:
             miss_df = coin_df[coin_df.Status == "missing"]
             counts = coin_df.Status.value_counts().to_dict()
             if "collected" not in counts.keys():
                 response = f"🤷 These coins are likely so new that they are not even tracked in the source DB yet."
-                return self.return_message(update, response)
+                return await self.return_message(update, response)
             elif len(miss_df) == 0:
                 response = (
                     f"🚀 Great! All those {counts['collected']} coins were collected"
                 )
-                return self.return_message(update, response)
+                return await self.return_message(update, response)
             else:
                 fraction = counts['collected']/(counts['collected']+counts['missing'])
                 emoji = self.db._emoji(fraction)
                 response = f"{emoji} {counts['collected']}/{counts['collected']+counts['missing']} were collected ({fraction*100:.2f}%)!"
-            self.return_message(update, response)
+            await self.return_message(update, response)
             coin_df = miss_df
 
         # Remove years before the first year
@@ -472,12 +498,13 @@ class CoinBot:
         )
         coin_df = coin_df[coin_df.Year >= first_year]
 
-        self.report_series(update, coin_df)
+        await self.report_series(update, coin_df)
 
-    def report_series(self, update, coin_df: pd.DataFrame, special: bool = False):
+    async def report_series(self, update, coin_df: pd.DataFrame, special: bool = False):
         """
         Report the search status of a series of results.
         """
+        message = self._message(update)
         msg_counter = 0
         dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
         for j, (i, row) in enumerate(coin_df.iterrows()):
@@ -526,17 +553,17 @@ class CoinBot:
             if special:
                 if image is None:
                     response = response.replace("(Mints:", "📷 No picture 📷(Mints:")
-                    update.message.reply_text(response, parse_mode="Markdown")
+                    await message.reply_text(response, parse_mode="Markdown")
                 else:
-                    update.message.reply_photo(
+                    await message.reply_photo(
                         photo=image, caption=response, parse_mode="Markdown"
                     )
             else:
-                update.message.reply_text(response, parse_mode="Markdown")
+                await message.reply_text(response, parse_mode="Markdown")
             msg_counter += 1
-            time.sleep(0.2)
+            await asyncio.sleep(0.2)
             if msg_counter % 10 == 0:
-                time.sleep(1)
+                await asyncio.sleep(1)
 
     def extract_features(self, llm_output: str) -> Tuple[str, int, str]:
         """
@@ -579,7 +606,7 @@ class CoinBot:
         country = c.strip().lower().replace(".", "")
         return country, year, value
 
-    def get_year_from_full(self, update, text: str) -> int:
+    async def get_year_from_full(self, update, text: str) -> int:
         years = []
         for word in text.split(" "):
             y = get_year(word)
@@ -587,19 +614,19 @@ class CoinBot:
                 continue
             years.append(y)
         if len(years) > 1:
-            self.return_message(update, f"Found more than one year {years}, try again!")
+            await self.return_message(update, f"Found more than one year {years}, try again!")
             return -1
         elif len(years) == 0:
             return -1
         return years[0]
 
-    def search_special_coin(self, update, message: str):
+    async def search_special_coin(self, update: Update, message: str):
         # User asked for a special/commemorative coin
         text = message.split("Special")[1].strip()
         user_id = update.message.from_user.id
 
         # Extract basic features
-        year = self.get_year_from_full(update, text)
+        year = await self.get_year_from_full(update, text)
         country, matched = fuzzy_search_country(text)
         source = None
         for x in text.split(" "):
@@ -636,13 +663,13 @@ class CoinBot:
             index = False
 
         if len(coin_df) == 0:
-            self.return_message(
+            await self.return_message(
                 update,
                 f"For your special coin with:\n{query}\nthere are no special 2 euro coins. Please retry!",
             )
             return
         elif not index and len(coin_df) == num_specials:
-            self.return_message(
+            await self.return_message(
                 update, "Be more specific, the query could not be parsed. Please retry!"
             )
             return
@@ -672,30 +699,30 @@ class CoinBot:
             stage_markup = None
 
         if not index:
-            self.return_message(
+            await self.return_message(
                 update,
                 f"Found {len(coin_df)} special coins for your query:\n{query}",
             )
             # coin_df = coin_df.sort_values(by=["Year", "Country", "Name"])
-            self.report_series(update, coin_df, special=True)
+            await self.report_series(update, coin_df, special=True)
 
-            self.return_message(
+            await self.return_message(
                 update,
                 f"Those were all related special coins. {stage_msg}",
                 reply_markup=stage_markup,
             )
             return
 
-        self.return_message(
+        await self.return_message(
             update,
             f"Results for your special coin query:\n{query}.\n{stage_msg}",
             reply_markup=stage_markup,
         )
         # Performed vector index lookup, so needs to enter loop to potentially display more
         self.user_prefs[user_id]["data"] = coin_df
-        self.keep_displaying_special(update, user_id=user_id)
+        await self.keep_displaying_special(update, user_id=user_id)
 
-    def keep_displaying_special(self, update, user_id: int, start_index: int = 0):
+    async def keep_displaying_special(self, update, user_id: int, start_index: int = 0):
         """
         Displays a slice of the DataFrame and asks if the user wants to see more.
 
@@ -705,15 +732,16 @@ class CoinBot:
             user_id: The user ID.
             start_index: The index to start slicing the DataFrame from.
         """
+        message = self._message(update)
         coin_df = self.user_prefs[user_id]["data"]
         end_index = start_index + 5
         slice_df = coin_df.iloc[start_index:end_index]
 
         # Display these coins using the existing report_series method
         if not slice_df.empty:
-            self.report_series(update, slice_df, special=True)
+            await self.report_series(update, slice_df, special=True)
         else:
-            self.return_message(update, "No more special coins to display.")
+            await self.return_message(update, "No more special coins to display.")
             return
 
         # Check if there are more items to display
@@ -727,18 +755,18 @@ class CoinBot:
                 ]
             ]
             reply_markup = InlineKeyboardMarkup(keyboard)
-            update.message.reply_text(
+            await message.reply_text(
                 "Would you like to see more?", reply_markup=reply_markup
             )
         else:
-            update.message.reply_text("Those were all special coins 🙂")
+            await message.reply_text("Those were all special coins 🙂")
 
-    def callback_query_handler(self, update, context):
+    async def callback_query_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
         Handles callback queries for pagination of special coins display.
         """
         query = update.callback_query
-        query.answer()
+        await query.answer()
         user_id = query.from_user.id
 
         # Extract the index from the callback data
@@ -752,15 +780,15 @@ class CoinBot:
             )
 
             # Continue displaying special coins starting from the next index
-            self.keep_displaying_special(
+            await self.keep_displaying_special(
                 query, user_id=user_id, start_index=start_index
             )
         elif msg.startswith("stage"):
-            self.stage_coin(update=query, user_id=user_id)
+            await self.stage_coin(update=query, user_id=user_id)
         else:
             logger.error(f"Unknown query for callback handler {msg}")
 
-    def stage_coin(self, update, user_id):
+    async def stage_coin(self, update, user_id):
         # Seems like user_id has to be passed since within the query handler, the ID of a single user changes
         country, year, value, source, is_special, name, amount = self.user_prefs[user_id][
             "last_found_coin"
@@ -822,12 +850,12 @@ class CoinBot:
 
 
         # Subsequently print status update
-        self.return_message(
+        await self.return_message(
             update,
             self.db.status_delta(year=year, value=value, country=country),
         )
 
-    def search_coin_in_db(self, update, context):
+    async def search_coin_in_db(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Search for a coin in the database when a message is received."""
 
         try:
@@ -837,7 +865,7 @@ class CoinBot:
             logger.debug(f"Received: {message}")
 
             if message.lower().startswith("special"):
-                return self.search_special_coin(update, message)
+                return await self.search_special_coin(update, message)
 
             no_country = sane_no_country(message)
             if no_country:
@@ -849,7 +877,7 @@ class CoinBot:
                 if any([x in output for x in MISS_HINTS]) or any(
                     [x not in output for x in ["source", "year", "country", "value"]]
                 ):
-                    self.return_message(
+                    await self.return_message(
                         update,
                         text=output
                         + "\nFor a German coin, you need to provide the features `year`, `country`, `coin value` and `mint location` (A, D, F, G or J)",
@@ -863,7 +891,7 @@ class CoinBot:
                 if any([x in output for x in MISS_HINTS]) or any(
                     [x not in output for x in ["year", "country", "value"]]
                 ):
-                    self.return_message(
+                    await self.return_message(
                         update,
                         text=output
                         + "\nYou need to provide the features `year`, `country` and `coin value`",
@@ -897,7 +925,7 @@ class CoinBot:
             if len(coin_df) == 0:
                 response = f"🤷🏻‍♂️ The coin {match} was not found. Check your input 🧐"
                 logger.info(f"Returns: {response}\n")
-                self.return_message(update, response)
+                await self.return_message(update, response)
                 return
 
             coin_status = coin_df["Status"].values[0]
@@ -961,18 +989,17 @@ class CoinBot:
                 stage_markup = InlineKeyboardMarkup(stage_button)
 
             response = response.split("\n")[0]
-            self.return_message(
+            await self.return_message(
                 update, response, amount=amount, reply_markup=stage_markup
             )
 
         except Exception as e:
-            update.message.reply_text(f"An error occurred: {e}")
+            await update.message.reply_text(f"An error occurred: {e}")
 
     def run(self):
         logger.info("Starting bot")
         self.start_periodic_reload()
-        self.updater.start_polling()
-        self.updater.idle()
+        self.application.run_polling()
 
     def set_llms(self):
         self.eu_llm = LLM(
