@@ -3,11 +3,11 @@ import os
 import sys
 import threading
 from collections import defaultdict
+from datetime import timezone
 from random import random
 from typing import List, Tuple
 
 import pandas as pd
-import pytz
 import requests
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
@@ -86,7 +86,7 @@ class CoinBot:
         self.application = (
             ApplicationBuilder()
             .token(self.telegram_token)
-            .defaults(Defaults(tzinfo=pytz.UTC))
+            .defaults(Defaults(tzinfo=timezone.utc))
             .build()
         )
         self.dp = self.application
