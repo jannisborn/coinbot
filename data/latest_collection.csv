@@ -249,7 +249,7 @@
 247,belgium,2002,2 euro,50000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 248,belgium,2003,1 cent,10030,missing,01.01.2024,False,,,,False,,,,
 249,belgium,2003,2 cent,40010,missing,01.01.2024,False,,,,False,,,,
-250,belgium,2003,5 cent,30056,missing,01.01.2024,False,,,,False,,,,
+250,belgium,2003,5 cent,30056,collected,01.01.2024,False,04.04.2026,Jannis,,False,,,,
 251,belgium,2003,10 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 252,belgium,2003,20 cent,30006,collected,01.01.2024,False,01.01.2024,,,False,,,,
 253,belgium,2003,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -304,7 +304,7 @@
 302,belgium,2009,1 euro,10000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 303,belgium,2009,2 euro,5000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 304,belgium,2010,1 cent,30000,missing,01.01.2024,False,,,,False,,,,
-305,belgium,2010,2 cent,20000,missing,01.01.2024,False,,,,False,,,,
+305,belgium,2010,2 cent,20000,collected,01.01.2024,False,07.12.2025,Jannis,,False,,,,
 306,belgium,2010,5 cent,25000,missing,01.01.2024,False,,,,False,,,,
 307,belgium,2010,10 cent,20000,missing,01.01.2024,False,,,,False,,,,
 308,belgium,2010,20 cent,15000,missing,01.01.2024,False,,,,False,,,,
@@ -966,7 +966,7 @@
 964,france,2011,20 cent,54936,collected,01.01.2024,False,01.01.2024,,,False,,,,
 965,france,2011,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 966,france,2011,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
-967,france,2011,2 euro,36024,missing,01.01.2024,False,,,,False,,,,
+967,france,2011,2 euro,36024,collected,01.01.2024,False,04.04.2026,Michael,,False,,,,
 968,france,2012,1 cent,358566,collected,01.01.2024,False,01.01.2024,,,False,,,,
 969,france,2012,2 cent,276800,collected,01.01.2024,False,01.01.2024,,,False,,,,
 970,france,2012,5 cent,139104,collected,01.01.2024,False,01.01.2024,,,False,,,,
@@ -994,7 +994,7 @@
 992,france,2015,1 cent,287000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 993,france,2015,2 cent,199000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 994,france,2015,5 cent,97000,collected,01.01.2024,False,01.01.2024,,,False,,,,
-995,france,2015,10 cent,70000,missing,01.01.2024,False,,,,False,,,,
+995,france,2015,10 cent,70000,missing,01.01.2024,False,,Michael,,True,,,,
 996,france,2015,20 cent,27000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 997,france,2015,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 998,france,2015,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -1066,7 +1066,7 @@
 1064,france,2024,1 cent,0,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1065,france,2024,2 cent,0,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1066,france,2024,5 cent,0,unavailable,01.01.2024,False,,,,False,,,,
-1067,france,2024,10 cent,0,unavailable,01.01.2024,False,,,,False,,,,
+1067,france,2024,10 cent,0,unavailable,01.01.2024,False,,,,True,,,,
 1068,france,2024,20 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1069,france,2024,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1070,france,2024,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -1648,7 +1648,7 @@
 1646,italy,2015,1 euro,5000,missing,01.01.2024,False,,,,False,,,,
 1647,italy,2015,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 1648,italy,2016,1 cent,160000,missing,01.01.2024,False,,,,False,,,,
-1649,italy,2016,2 cent,140000,missing,01.01.2024,False,,,,False,,,,
+1649,italy,2016,2 cent,140000,missing,01.01.2024,False,,Jannis,,True,,,,
 1650,italy,2016,5 cent,70000,missing,01.01.2024,False,,,,False,,,,
 1651,italy,2016,10 cent,15000,missing,01.01.2024,False,,,,False,,,,
 1652,italy,2016,20 cent,5000,missing,01.01.2024,False,,,,False,,,,
@@ -1657,7 +1657,7 @@
 1655,italy,2016,2 euro,10000,missing,01.01.2024,False,,,,False,,,,
 1656,italy,2017,1 cent,260000,collected,01.01.2024,False,20.09.2025,Michael,,False,,,,
 1657,italy,2017,2 cent,150000,collected,01.01.2024,False,01.01.2024,,,False,,,,
-1658,italy,2017,5 cent,80000,missing,01.01.2024,False,,,,False,,,,
+1658,italy,2017,5 cent,80000,missing,01.01.2024,False,,Jannis,,True,,,,
 1659,italy,2017,10 cent,40000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1660,italy,2017,20 cent,5000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1661,italy,2017,50 cent,5000,missing,01.01.2024,False,,,,False,,,,
@@ -1676,7 +1676,7 @@
 1674,italy,2019,5 cent,90000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1675,italy,2019,10 cent,110000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1676,italy,2019,20 cent,85000,collected,01.01.2024,False,01.01.2024,,,False,,,,
-1677,italy,2019,50 cent,2000,missing,01.01.2024,False,,,,False,,,,
+1677,italy,2019,50 cent,2000,missing,01.01.2024,False,,Michael,,True,,,,
 1678,italy,2019,1 euro,1000,missing,01.01.2024,False,,,,False,,,,
 1679,italy,2019,2 euro,12000,missing,01.01.2024,False,,,,False,,,,
 1680,italy,2020,1 cent,20,missing,01.01.2024,False,,,,False,,,,
@@ -1684,7 +1684,7 @@
 1682,italy,2020,5 cent,50000,collected,01.01.2024,False,01.11.2025,Jannis,,False,,,,
 1683,italy,2020,10 cent,45000,missing,01.01.2024,False,,,,False,,,,
 1684,italy,2020,20 cent,20000,collected,01.01.2024,False,01.01.2024,,,False,,,,
-1685,italy,2020,50 cent,20000,missing,01.01.2024,False,,,,False,,,,
+1685,italy,2020,50 cent,20000,collected,01.01.2024,False,03.01.2026,Michael,,False,,,,
 1686,italy,2020,1 euro,1000,missing,01.01.2024,False,,,,False,,,,
 1687,italy,2020,2 euro,14000,collected,01.01.2024,False,01.01.2024,,,False,,,,
 1688,italy,2021,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -1699,7 +1699,7 @@
 1697,italy,2022,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1698,italy,2022,5 cent,50000,missing,01.01.2024,False,,,,False,,,,
 1699,italy,2022,10 cent,35000,collected,01.01.2024,False,01.01.2024,,,False,,,,
-1700,italy,2022,20 cent,30000,missing,01.01.2024,False,,,,False,,,,
+1700,italy,2022,20 cent,30000,missing,01.01.2024,False,,Jannis,,True,,,,
 1701,italy,2022,50 cent,20000,collected,01.01.2024,False,01.11.2025,Jannis,,False,,,,
 1702,italy,2022,1 euro,1000,collected,01.01.2024,False,01.11.2025,Nina,,False,,,,
 1703,italy,2022,2 euro,25000,collected,01.01.2024,False,20.09.2025,Jannis,,False,,,,
@@ -1707,24 +1707,24 @@
 1705,italy,2023,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1706,italy,2023,5 cent,70000,missing,01.01.2024,False,,,,False,,,,
 1707,italy,2023,10 cent,50000,collected,01.01.2024,False,20.09.2025,Jannis,,False,,,,
-1708,italy,2023,20 cent,37000,missing,01.01.2024,False,,,,False,,,,
-1709,italy,2023,50 cent,20000,missing,01.01.2024,False,,,,False,,,,
+1708,italy,2023,20 cent,37000,missing,01.01.2024,False,,Nina,,True,,,,
+1709,italy,2023,50 cent,20000,missing,01.01.2024,False,,Jannis,,True,,,,
 1710,italy,2023,1 euro,1000,missing,01.01.2024,False,,,,False,,,,
-1711,italy,2023,2 euro,22000,missing,01.01.2024,False,,,,False,,,,
+1711,italy,2023,2 euro,22000,missing,01.01.2024,False,,Jannis,,True,,,,
 1712,italy,2024,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1713,italy,2024,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1714,italy,2024,5 cent,200000,collected,04.01.2025,False,20.09.2025,Jannis,,False,,,,
-1715,italy,2024,10 cent,150000,missing,04.01.2025,False,,,,False,,,,
+1715,italy,2024,10 cent,150000,missing,04.01.2025,False,,Jannis,,True,,,,
 1716,italy,2024,20 cent,150000,missing,04.01.2025,False,,,,False,,,,
 1717,italy,2024,50 cent,160000,collected,04.01.2025,False,01.11.2025,Nina,,False,,,,
 1718,italy,2024,1 euro,40000,missing,04.01.2025,False,,,,False,,,,
-1719,italy,2024,2 euro,54000,missing,04.01.2025,False,,,,False,,,,
+1719,italy,2024,2 euro,54000,collected,04.01.2025,False,03.01.2026,Jannis,,False,,,,
 1720,italy,2025,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1721,italy,2025,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1722,italy,2025,5 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1723,italy,2025,10 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 1724,italy,2025,20 cent,0,unavailable,01.01.2024,False,,,,False,,,,
-1725,italy,2025,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
+1725,italy,2025,50 cent,0,unavailable,01.01.2024,False,,,,True,,,,
 1726,italy,2025,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 1727,italy,2025,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 1728,croatia,1999,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -2567,7 +2567,7 @@
 2565,luxembourg,2022,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 2566,luxembourg,2022,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 2567,luxembourg,2022,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
-2568,luxembourg,2023,1 cent,6250,missing,01.01.2024,False,,,,False,,,,
+2568,luxembourg,2023,1 cent,6250,collected,01.01.2024,False,07.12.2025,Michael,,False,,,,
 2569,luxembourg,2023,2 cent,8150,missing,01.01.2024,False,,,,False,,,,
 2570,luxembourg,2023,5 cent,5950,missing,01.01.2024,False,,,,False,,,,
 2571,luxembourg,2023,10 cent,5150,missing,01.01.2024,False,,,,False,,,,
@@ -2582,7 +2582,7 @@
 2580,luxembourg,2024,20 cent,3000,missing,01.01.2024,False,,,,False,,,,
 2581,luxembourg,2024,50 cent,1000,missing,01.01.2024,False,,,,False,,,,
 2582,luxembourg,2024,1 euro,7,unavailable,01.01.2024,False,,,,False,,,,
-2583,luxembourg,2024,2 euro,314,unavailable,01.01.2024,False,,,,False,,,,
+2583,luxembourg,2024,2 euro,314,collected,01.01.2024,False,07.12.2025,Jannis,,False,,,,
 2584,luxembourg,2025,1 cent,7,unavailable,01.01.2024,False,,,,False,,,,
 2585,luxembourg,2025,2 cent,7,unavailable,01.01.2024,False,,,,False,,,,
 2586,luxembourg,2025,5 cent,7,unavailable,01.01.2024,False,,,,False,,,,
@@ -3186,7 +3186,7 @@
 3184,netherlands,2019,1 cent,43,unavailable,01.01.2024,False,,,,False,,,,
 3185,netherlands,2019,2 cent,43,unavailable,01.01.2024,False,,,,False,,,,
 3186,netherlands,2019,5 cent,30000,missing,01.01.2024,False,,,,False,,,,
-3187,netherlands,2019,10 cent,15000,missing,01.01.2024,False,,,,False,,,,
+3187,netherlands,2019,10 cent,15000,collected,01.01.2024,False,03.01.2026,Michael,,False,,,,
 3188,netherlands,2019,20 cent,43,unavailable,01.01.2024,False,,,,False,,,,
 3189,netherlands,2019,50 cent,43,unavailable,01.01.2024,False,,,,False,,,,
 3190,netherlands,2019,1 euro,43,unavailable,01.01.2024,False,,,,False,,,,
@@ -3446,7 +3446,7 @@
 3444,austria,2024,20 cent,0,collected,01.01.2024,False,01.01.2024,,,False,,,,
 3445,austria,2024,50 cent,0,collected,01.01.2024,False,01.01.2024,,,False,,,,
 3446,austria,2024,1 euro,0,collected,01.01.2024,False,01.11.2025,,,False,,,,
-3447,austria,2024,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
+3447,austria,2024,2 euro,0,unavailable,01.01.2024,False,,,,True,,,,
 3448,austria,2025,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3449,austria,2025,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3450,austria,2025,5 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -3454,7 +3454,7 @@
 3452,austria,2025,20 cent,0,collected,01.01.2024,False,01.11.2025,,,False,,,,
 3453,austria,2025,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3454,austria,2025,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
-3455,austria,2025,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
+3455,austria,2025,2 euro,0,unavailable,01.01.2024,False,,,,True,,,,
 3456,portugal,1999,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3457,portugal,1999,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3458,portugal,1999,5 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -3576,7 +3576,7 @@
 3574,portugal,2013,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 3575,portugal,2013,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 3576,portugal,2014,1 cent,20000,missing,01.01.2024,False,,,,False,,,,
-3577,portugal,2014,2 cent,20000,missing,01.01.2024,False,,,,False,,,,
+3577,portugal,2014,2 cent,20000,collected,01.01.2024,False,04.04.2026,Agnes,,False,,,,
 3578,portugal,2014,5 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3579,portugal,2014,10 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 3580,portugal,2014,20 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -4334,7 +4334,7 @@
 4332,spain,2000,20 cent,29250,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4333,spain,2000,50 cent,519550,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4334,spain,2000,1 euro,89250,collected,01.01.2024,False,01.01.2024,,,False,,,,
-4335,spain,2000,2 euro,36550,missing,01.01.2024,False,,,,False,,,,
+4335,spain,2000,2 euro,36550,missing,01.01.2024,False,,Jannis,,True,,,,
 4336,spain,2001,1 cent,130850,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4337,spain,2001,2 cent,463050,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4338,spain,2001,5 cent,216050,collected,01.01.2024,False,01.01.2024,,,False,,,,
@@ -4383,7 +4383,7 @@
 4381,spain,2006,50 cent,3950,missing,01.01.2024,False,,,,False,,,,
 4382,spain,2006,1 euro,101550,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4383,spain,2006,2 euro,3950,missing,01.01.2024,False,,,,False,,,,
-4384,spain,2007,1 cent,383958,missing,01.01.2024,False,,,,False,,,,
+4384,spain,2007,1 cent,383958,missing,01.01.2024,False,,Michael,,True,,,,
 4385,spain,2007,2 cent,185258,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4386,spain,2007,5 cent,247058,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4387,spain,2007,10 cent,132058,collected,01.01.2024,False,01.01.2024,,,False,,,,
@@ -4495,7 +4495,7 @@
 4493,spain,2020,50 cent,20900,collected,01.01.2024,False,01.01.2024,,,False,,,,
 4494,spain,2020,1 euro,100900,collected,01.01.2024,False,17.03.2025,Michael,,False,,,,
 4495,spain,2020,2 euro,4300,missing,01.01.2024,False,,,,False,,,,
-4496,spain,2021,1 cent,96800,missing,01.01.2024,False,,,,False,,,,
+4496,spain,2021,1 cent,96800,collected,01.01.2024,False,03.01.2026,Jannis,,False,,,,
 4497,spain,2021,2 cent,78500,missing,01.01.2024,False,,,,False,,,,
 4498,spain,2021,5 cent,94900,collected,01.01.2024,False,01.11.2025,Ronja,,False,,,,
 4499,spain,2021,10 cent,29100,missing,01.01.2024,False,,,,False,,,,
@@ -4525,7 +4525,7 @@
 4523,spain,2024,10 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 4524,spain,2024,20 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 4525,spain,2024,50 cent,0,unavailable,01.01.2024,False,,,,False,,,,
-4526,spain,2024,1 euro,0,unavailable,01.01.2024,False,,,,False,,,,
+4526,spain,2024,1 euro,0,unavailable,01.01.2024,False,,,,True,,,,
 4527,spain,2024,2 euro,0,unavailable,01.01.2024,False,,,,False,,,,
 4528,spain,2025,1 cent,0,unavailable,01.01.2024,False,,,,False,,,,
 4529,spain,2025,2 cent,0,unavailable,01.01.2024,False,,,,False,,,,
@@ -5482,7 +5482,7 @@
 5480,germany,2014,1 euro,-1,unavailable,01.01.2024,False,,,f,False,,,,
 5481,germany,2014,1 euro,-1,unavailable,01.01.2024,False,,,g,False,,,,
 5482,germany,2014,1 euro,-1,unavailable,01.01.2024,False,,,j,False,,,,
-5483,germany,2014,2 euro,5600,missing,01.01.2024,False,,,a,False,,,,
+5483,germany,2014,2 euro,5600,collected,01.01.2024,False,03.01.2026,Jannis,a,False,,,,
 5484,germany,2014,2 euro,5800,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5485,germany,2014,2 euro,6720,missing,01.01.2024,False,,,f,False,,,,
 5486,germany,2014,2 euro,3920,collected,01.01.2024,False,01.01.2024,,g,False,,,,
@@ -5580,14 +5580,14 @@
 5578,germany,2017,5 cent,30000,collected,01.01.2024,False,01.01.2024,,a,False,,,,
 5579,germany,2017,5 cent,31000,collected,01.01.2024,False,28.12.2024,,d,False,,,,
 5580,germany,2017,5 cent,35000,collected,01.01.2024,False,01.01.2024,,f,False,,,,
-5581,germany,2017,5 cent,21000,missing,01.01.2024,False,,,g,False,,,,
+5581,germany,2017,5 cent,21000,missing,01.01.2024,False,,Michael,g,True,,,,
 5582,germany,2017,5 cent,32000,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5583,germany,2017,10 cent,25000,collected,01.01.2024,False,01.01.2024,,a,False,,,,
 5584,germany,2017,10 cent,26000,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5585,germany,2017,10 cent,28000,collected,01.01.2024,False,01.11.2025,Jannis,f,False,,,,
 5586,germany,2017,10 cent,17000,collected,01.01.2024,False,01.01.2024,,g,False,,,,
 5587,germany,2017,10 cent,26000,collected,01.01.2024,False,01.01.2024,,j,False,,,,
-5588,germany,2017,20 cent,22000,missing,01.01.2024,False,,,a,False,,,,
+5588,germany,2017,20 cent,22000,collected,01.01.2024,False,07.12.2025,Michael,a,False,,,,
 5589,germany,2017,20 cent,23000,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5590,germany,2017,20 cent,26000,missing,01.01.2024,False,,,f,False,,,,
 5591,germany,2017,20 cent,15000,missing,01.01.2024,False,,,g,False,,,,
@@ -5694,7 +5694,7 @@
 5692,germany,2020,1 cent,51000,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5693,germany,2020,2 cent,65000,collected,01.01.2024,False,01.01.2024,,a,False,,,,
 5694,germany,2020,2 cent,69000,collected,01.01.2024,False,01.11.2025,Jannis,d,False,,,,
-5695,germany,2020,2 cent,79000,missing,01.01.2024,False,,,f,False,,,,
+5695,germany,2020,2 cent,79000,collected,01.01.2024,False,01.02.2026,Michael,f,False,,,,
 5696,germany,2020,2 cent,46000,collected,01.01.2024,False,01.01.2024,,g,False,,,,
 5697,germany,2020,2 cent,88000,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5698,germany,2020,5 cent,19600,missing,01.01.2024,False,,,a,False,,,,
@@ -5766,7 +5766,7 @@
 5764,germany,2021,2 euro,6300,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5765,germany,2021,2 euro,7200,collected,01.01.2024,False,01.01.2024,,f,False,,,,
 5766,germany,2021,2 euro,4200,missing,01.01.2024,False,,,g,False,,,,
-5767,germany,2021,2 euro,6300,missing,01.01.2024,False,,,j,False,,,,
+5767,germany,2021,2 euro,6300,collected,01.01.2024,False,04.04.2026,Michael,j,False,,,,
 5768,germany,2022,1 cent,0,unavailable,01.01.2024,False,,,a,False,,,,
 5769,germany,2022,1 cent,0,unavailable,01.01.2024,False,,,d,False,,,,
 5770,germany,2022,1 cent,0,unavailable,01.01.2024,False,,,f,False,,,,
@@ -5781,7 +5781,7 @@
 5779,germany,2022,5 cent,28300,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5780,germany,2022,5 cent,32000,collected,01.01.2024,False,20.09.2025,Jannis,f,False,,,,
 5781,germany,2022,5 cent,19000,missing,01.01.2024,False,,,g,False,,,,
-5782,germany,2022,5 cent,28000,missing,01.01.2024,False,,,j,False,,,,
+5782,germany,2022,5 cent,28000,collected,01.01.2024,False,01.02.2026,Agnes,j,False,,,,
 5783,germany,2022,10 cent,20000,collected,01.01.2024,False,01.01.2024,,a,False,,,,
 5784,germany,2022,10 cent,21000,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5785,germany,2022,10 cent,24000,collected,01.01.2024,False,01.01.2024,,f,False,,,,
@@ -5829,8 +5829,8 @@
 5827,germany,2023,10 cent,21000,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5828,germany,2023,20 cent,11000,missing,01.01.2024,False,,,a,False,,,,
 5829,germany,2023,20 cent,11500,collected,01.01.2024,False,01.01.2024,,d,False,,,,
-5830,germany,2023,20 cent,13200,missing,01.01.2024,False,,Nina,f,True,,,,
-5831,germany,2023,20 cent,7700,missing,01.01.2024,False,,,g,False,,,,
+5830,germany,2023,20 cent,13200,collected,01.01.2024,False,07.12.2025,Nina,f,False,,,,
+5831,germany,2023,20 cent,7700,collected,01.01.2024,False,07.12.2025,Michael,g,False,,,,
 5832,germany,2023,20 cent,11500,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5833,germany,2023,50 cent,12000,missing,01.01.2024,False,,,a,False,,,,
 5834,germany,2023,50 cent,12600,missing,01.01.2024,False,,,d,False,,,,
@@ -5842,15 +5842,15 @@
 5840,germany,2023,1 euro,-1,unavailable,01.01.2024,False,,,f,False,,,,
 5841,germany,2023,1 euro,-1,unavailable,01.01.2024,False,,,g,False,,,,
 5842,germany,2023,1 euro,-1,unavailable,01.01.2024,False,,,j,False,,,,
-5843,germany,2023,2 euro,11000,missing,01.01.2024,False,,,a,False,,,,
+5843,germany,2023,2 euro,11000,collected,01.01.2024,False,03.01.2026,Jannis,a,False,,,,
 5844,germany,2023,2 euro,11500,collected,01.01.2024,False,01.01.2024,,d,False,,,,
 5845,germany,2023,2 euro,13200,collected,01.01.2024,False,01.01.2024,,f,False,,,,
-5846,germany,2023,2 euro,7700,missing,01.01.2024,False,,,g,False,,,,
+5846,germany,2023,2 euro,7700,collected,01.01.2024,False,08.12.2025,Nina,g,False,,,,
 5847,germany,2023,2 euro,11500,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5848,germany,2024,1 cent,14400,missing,01.01.2024,False,,,a,False,,,,
 5849,germany,2024,1 cent,14720,collected,01.01.2024,False,20.09.2025,Nina,d,False,,,,
-5850,germany,2024,1 cent,16800,missing,01.01.2024,False,,,f,False,,,,
-5851,germany,2024,1 cent,9820,missing,01.01.2024,False,,,g,False,,,,
+5850,germany,2024,1 cent,16800,collected,01.01.2024,False,08.12.2025,Nina,f,False,,,,
+5851,germany,2024,1 cent,9820,missing,01.01.2024,False,,Michael,g,True,,,,
 5852,germany,2024,1 cent,14720,missing,01.01.2024,False,,,j,False,,,,
 5853,germany,2024,2 cent,0,unavailable,01.01.2024,False,,,a,False,,,,
 5854,germany,2024,2 cent,0,unavailable,01.01.2024,False,,,d,False,,,,
@@ -5864,7 +5864,7 @@
 5862,germany,2024,5 cent,11100,missing,01.01.2024,False,,,j,False,,,,
 5863,germany,2024,10 cent,9820,missing,01.01.2024,False,,,a,False,,,,
 5864,germany,2024,10 cent,10310,collected,01.01.2024,False,01.01.2024,,d,False,,,,
-5865,germany,2024,10 cent,11780,missing,01.01.2024,False,,,f,False,,,,
+5865,germany,2024,10 cent,11780,collected,01.01.2024,False,03.01.2026,Jannis,f,False,,,,
 5866,germany,2024,10 cent,6800,collected,01.01.2024,False,01.01.2024,,g,False,,,,
 5867,germany,2024,10 cent,10300,missing,01.01.2024,False,,,j,False,,,,
 5868,germany,2024,20 cent,4400,missing,01.01.2024,False,,,a,False,,,,
@@ -5872,9 +5872,9 @@
 5870,germany,2024,20 cent,5300,collected,01.01.2024,False,01.01.2024,,f,False,,,,
 5871,germany,2024,20 cent,3100,missing,01.01.2024,False,,,g,False,,,,
 5872,germany,2024,20 cent,4600,collected,01.01.2024,False,20.09.2025,Michael,j,False,,,,
-5873,germany,2024,50 cent,9000,missing,01.01.2024,False,,,a,False,,,,
-5874,germany,2024,50 cent,9400,missing,01.01.2024,False,,,d,False,,,,
-5875,germany,2024,50 cent,10800,missing,01.01.2024,False,,,f,False,,,,
+5873,germany,2024,50 cent,9000,collected,01.01.2024,False,04.04.2026,Michael,a,False,,,,
+5874,germany,2024,50 cent,9400,collected,01.01.2024,False,03.01.2026,Jannis,d,False,,,,
+5875,germany,2024,50 cent,10800,missing,01.01.2024,False,,Jannis,f,True,,,,
 5876,germany,2024,50 cent,650,unavailable,01.01.2024,False,,,g,False,,,,
 5877,germany,2024,50 cent,8420,collected,01.01.2024,False,01.01.2024,,j,False,,,,
 5878,germany,2024,1 euro,0,unavailable,01.01.2024,False,,,a,False,,,,
@@ -5963,7 +5963,7 @@
 5961,germany,2026,1 euro,0,unavailable,01.01.2024,False,,,g,False,,,,
 5962,germany,2026,1 euro,0,unavailable,01.01.2024,False,,,j,False,,,,
 5963,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,a,False,,,,
-5964,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,d,False,,,,
+5964,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,d,True,,,,
 5965,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,f,False,,,,
 5966,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,g,False,,,,
 5967,germany,2026,2 euro,0,unavailable,01.01.2024,False,,,j,False,,,,
@@ -6434,7 +6434,7 @@
 6432,germany,2020,2 euro,6069,missing,01.01.2024,True,,,a,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
 6433,germany,2020,2 euro,6069,collected,01.01.2024,True,01.01.2024,,d,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
 6434,germany,2020,2 euro,6069,collected,01.01.2024,True,01.01.2024,,f,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
-6435,germany,2020,2 euro,6069,missing,01.01.2024,True,,,g,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
+6435,germany,2020,2 euro,6069,collected,01.01.2024,True,01.02.2026,Ronja,g,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
 6436,germany,2020,2 euro,6069,missing,01.01.2024,True,,,j,False,50 Jahre Kniefall von Warschau,True,"der aufstand im warschauer ghetto der gefangenen juden gegen ihre deportation in vernichtungslager begann am 19. april 1943. die völlig unzureichend bewaffneten aufständischen lieferten der deutschen besatzungsmacht im ghetto vier wochen lang erbitterte gefechte, die insgesamt 12.000 opfer forderten. weitere 30.000 menschen wurden nach den kämpfen erschossen, 7.000 in vernichtungslager transportiert. bundeskanzler willy brandt legte am 7. dezember 1970, unmittelbar vor der unterzeichnung des warschauer vertrags, am warschauer ghetto-ehrenmal einen kranz nieder. danach sank er auf die knie. diese demutsgeste, die bitte um vergebung für die deutschen verbrechen des zweiten weltkriegs, schrieb als kniefall von warschau geschichte. bodo broschat stellt diese szene auf der münze dar, links ist ein von zwei löwen flankierter siebenarmiger leuchter sichtbar,1310 ein symbol des judentums. kreisförmig steht in zwei segmenten „50 jahre kniefall“ / „von warschau“. links ist das ausgabejahr „2020“ dargestellt, darunter das münzstättenzeichen (a = berlin, d = münchen, f = stuttgart, g = karlsruhe oder j = hamburg), rechts das landeskürzel „d“ (deutschland) und oben das signet des designers.",https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Deutschland_2020_Kniefall.jpg/130px-Deutschland_2020_Kniefall.jpg
 6437,slovenia,2020,2 euro,1000,missing,01.01.2024,True,,,,False,500. Geburtstag Adam Bohoričs,False,"adam bohorič (≈1520–1598) aus reichenburg in der untersteiermark (heute brestanica in slowenien) studierte an der artistenfakultät der leucorea in der lutherstadt wittenberg als schüler philipp melanchthons. tätig als schulleiter, autor und philologe, veröffentlichte er 1584 auf lateinisch die erste slowenische grammatik, mit dem titel arcticae horulae succisivae (freie winterstunden; slowenischer titel: proste zimske urice). der darin enthaltene bibelvers aus dem römerbrief von paulus von tarsus „omnis lingua confitebitur deo.“ (röm 14,11 vul; auf deutsch: alle zungen sollen gott bekennen, lut) bildet das motiv der gedenkmünze, zusammen mit der ihn überlagernden slowenischen übersetzung „vſaki jesik bode boga ſposnal.“ in dem nach dem autor benannten, bis ins 19. jahrhundert in der slowenischen literatur gebräuchlichen alphabet bohoričica, mit rundem („s“) und langem s („ſ “). links und oben steht „adam bohorič 1520 | slovenija 2020“. die münze wurde gestaltet von lana semečnik und gefertigt in der italienischen prägestätte istituto poligrafico e zecca dello stato in rom.",
 6438,san marino,2020,2 euro,57,missing,01.01.2024,True,,,,False,500. Todestag Raffaels,False,"raffaello sanzio da urbino (1483–1520) war ein maler der italienischen hochrenaissance, tätig in florenz und am päpstlichen hof in rom und – nach dem tod donato bramantes – 1514 als architekt bauleiter des petersdoms. raffael erlangte vor allem als maler für seine harmonischen und ausgewogenen kompositionen und lieblichen madonnenbilder berühmtheit. motiv der münze ist ein ausschnitt des 1498 in urbino als fresko geschaffenen marienbildnisses madonna di casa santi,1261 eines der allerersten werke des damals fünfzehnjährigen raffael. oben rechts stehen die jahreszahlen „1520“ und „2020“ sowie „san marino“, unten „raffaello“ mit in der höhe versetzten buchstaben. links ist das münzstättenzeichen „r“ der italienischen prägestätte istituto poligrafico e zecca dello stato in rom abgebildet, rechts das signet „a.m.“ der münzgestalterin annalisa masini.",
@@ -6550,7 +6550,7 @@
 6548,germany,2022,2 euro,6000,missing,01.01.2024,True,,,d,False,Thüringen (Wartburg) 17. Münze der Bundesländerserie,True,,https://upload.wikimedia.org/wikipedia/de/thumb/d/de/Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg/130px-Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg
 6549,germany,2022,2 euro,6000,missing,01.01.2024,True,,,f,False,Thüringen (Wartburg) 17. Münze der Bundesländerserie,True,,https://upload.wikimedia.org/wikipedia/de/thumb/d/de/Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg/130px-Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg
 6550,germany,2022,2 euro,6000,collected,01.01.2024,True,01.01.2024,,g,False,Thüringen (Wartburg) 17. Münze der Bundesländerserie,True,,https://upload.wikimedia.org/wikipedia/de/thumb/d/de/Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg/130px-Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg
-6551,germany,2022,2 euro,6000,missing,01.01.2024,True,,,j,False,Thüringen (Wartburg) 17. Münze der Bundesländerserie,True,,https://upload.wikimedia.org/wikipedia/de/thumb/d/de/Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg/130px-Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg
+6551,germany,2022,2 euro,6000,collected,01.01.2024,True,01.02.2026,Ronja,j,False,Thüringen (Wartburg) 17. Münze der Bundesländerserie,True,,https://upload.wikimedia.org/wikipedia/de/thumb/d/de/Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg/130px-Wiki_2022_2_Euro_L%C3%A4nderserie_Deutschland_Wartburg_II.jpg
 6552,slovakia,2023,2 euro,1000,missing,01.01.2024,True,,,,False,100 Jahre Erste Bluttransfusion in der Slowakei,False,,
 6553,italy,2023,2 euro,3000,missing,01.01.2024,True,,,,False,100 Jahre Italienische Luftstreitkräfte,False,,
 6554,monaco,2023,2 euro,25,missing,01.01.2024,True,,,,False,100. Geburtstag von Fürst Rainier III.,False,,
@@ -6595,26 +6595,90 @@
 6593,latvia,2023,2 euro,415,missing,01.01.2024,True,,,,False,Ukrainische Sonnenblume,False,,
 6594,portugal,2023,2 euro,1000,missing,01.01.2024,True,,,,False,Weltjugendtag Lissabon 2023,False,,
 6595,lithuania,2023,2 euro,500,missing,01.01.2024,True,,,,False,Zusammen mit der Ukraine,False,,
-6596,luxembourg,2024,2 euro,134,missing,01.01.2024,True,,,,False,100. Jahrestag der Einführung der Franc-Münzen mit dem Feierstëppler,False,,
-6597,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,a,False,175. Jubiläum Paulskirchenverfassung,True,,
-6598,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,d,False,175. Jubiläum Paulskirchenverfassung,True,,
-6599,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,f,False,175. Jubiläum Paulskirchenverfassung,True,,
-6600,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,g,False,175. Jubiläum Paulskirchenverfassung,True,,
-6601,germany,2024,2 euro,6000,missing,01.01.2024,True,,,j,False,175. Jubiläum Paulskirchenverfassung,True,,
-6602,luxembourg,2024,2 euro,134,missing,01.01.2024,True,,,,False,175. Todestag von Großherzog Guillaume II. 31. Münze der Serie Großherzogliche Dynastie,False,,
-6603,italy,2024,2 euro,3000,missing,01.01.2024,True,,,,False,250. Jahrestag der Gründung der Guardia di Finanza,False,,
-6604,belgium,2024,2 euro,130,missing,01.01.2024,True,,,,False,EU-Ratspräsidentschaft,False,,
-6605,france,2024,2 euro,510,missing,01.01.2024,True,,,,False,Herkules und der Ringkampf – Notre Dame 4. Münze der Serie Olympische Sommerspiele 2024,False,,
-6606,germany,2024,2 euro,6000,missing,01.01.2024,True,,,a,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
-6607,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,d,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
-6608,germany,2024,2 euro,6000,missing,01.01.2024,True,,,f,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
-6609,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,g,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
-6610,germany,2024,2 euro,6000,collected,01.01.2024,True,22.12.2024,,j,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
-6611,spain,2024,2 euro,1500,missing,01.01.2024,True,,,,False,Nationales Polizeikorps,False,,
-6612,spain,2024,2 euro,1500,missing,01.01.2024,True,,,,False,"UNESCO-Weltkulturerbe – Kathedrale von Sevilla, Königlicher Alcázar und Archivo de Indias 15. Münze der Serie UNESCO-Welterbe",False,,
-6613,finland,2024,2 euro,400,missing,01.01.2024,True,,,,False,Wahlen und Demokratie,False,,
-6614,germany,2025,2 euro,6000,missing,20.09.2025,True,,,a,False,Saarland 3. Münze der Bundesländerserie II,True,,
-6615,germany,2025,2 euro,6000,missing,20.09.2025,True,,,d,False,Saarland 3. Münze der Bundesländerserie II,True,,
-6616,germany,2025,2 euro,6000,missing,20.09.2025,True,,,f,False,Saarland 3. Münze der Bundesländerserie II,True,,
-6617,germany,2025,2 euro,6000,missing,20.09.2025,True,,,g,False,Saarland 3. Münze der Bundesländerserie II,True,,
-6618,germany,2025,2 euro,6000,collected,20.09.2025,True,20.09.2025,,j,False,Saarland 3. Münze der Bundesländerserie II,True,,
+6596,andorra,2024,2 euro,60,missing,03.01.2026,True,,,,False,100 years of skiing in Andorra,False,100 years of skiing in andorra,http://37.120.179.15:8000/coinbot/XVOa22aBsO2eG9IXsgCF.jpg
+6597,andorra,2024,2 euro,60,missing,03.01.2026,True,,,,False,UCI Mountain Bike World Championships 2024,False,uci mountain bike world championships 2024,http://37.120.179.15:8000/coinbot/gQv81z0RCpeUznuK1hDw.jpg
+6598,belgium,2024,2 euro,2130,missing,03.01.2026,True,,,,False,Fight against cancer in Belgium,False,fight against cancer in belgium,http://37.120.179.15:8000/coinbot/9Rh3bNfAYj7ucj612lyN.jpg
+6599,croatia,2024,2 euro,200,missing,03.01.2026,True,,,,False,The 500th anniversary of Marko Marulićs enduring legacy,False,the 500th anniversary of marko marulićs enduring legacy,http://37.120.179.15:8000/coinbot/oeaVH1WtiauEjlAvlDQe.jpg
+6600,croatia,2024,2 euro,200,missing,03.01.2026,True,,,,False,Varadin (Stari grad Varadin  the Old Town of Varadin),False,varadin (stari grad varadin  the old town of varadin),http://37.120.179.15:8000/coinbot/ECWmEp4zhXR9NvYEw05w.jpg
+6601,cyprus,2024,2 euro,7,missing,03.01.2026,True,,,,False,20 years since the Accession of Cyprus to the European Union,False,20 years since the accession of cyprus to the european union,http://37.120.179.15:8000/coinbot/Fi4OTrmtcUAGoEtxtwfg.jpg
+6602,estonia,2024,2 euro,1000,missing,03.01.2026,True,,,,False,The cornflower  Estonian national flower,False,the cornflower  estonian national flower,http://37.120.179.15:8000/coinbot/ZIGL7GgYKTvpOap9UIYL.jpg
+6603,finland,2024,2 euro,400,missing,03.01.2026,True,,,,False,Finnish  Architecture,False,finnish  architecture,http://37.120.179.15:8000/coinbot/gpD8ukXppESKDkwZrbDP.jpg
+6604,france,2024,2 euro,24034,missing,03.01.2026,True,,,,False,The Eiffel Tower,False,the eiffel tower,http://37.120.179.15:8000/coinbot/EsDgAmhcJqEjTQecmZYe.jpg
+6605,greece,2024,2 euro,750,missing,03.01.2026,True,,,,False,150 years from the birth of Penelope Delta,False,150 years from the birth of penelope delta,http://37.120.179.15:8000/coinbot/OaknR9do6RHSLZj1Ebej.jpg
+6606,greece,2024,2 euro,750,missing,03.01.2026,True,,,,False,50 years from the restoration of democracy in Greece,False,50 years from the restoration of democracy in greece,http://37.120.179.15:8000/coinbot/KOlwEsQHktbbq2gRT5AK.jpg
+6607,italy,2024,2 euro,3000,missing,03.01.2026,True,,,,False,Rita Levi-Montalcini,False,rita levi-montalcini,http://37.120.179.15:8000/coinbot/GtjweVfVI0MDcdRJzewC.jpg
+6608,latvia,2024,2 euro,413,missing,03.01.2026,True,,,,False,Himmeli,False,himmeli,http://37.120.179.15:8000/coinbot/uJA2vMHXLUWJLiR5egPd.jpg
+6609,lithuania,2024,2 euro,500,missing,03.01.2026,True,,,,False,Lithuanian tradition of straw gardens inscribed on the UNESCO Representative List of the Intangible Cultural Heritage of Humanity,False,lithuanian tradition of straw gardens inscribed on the unesco representative list of the intangible cultural heritage of humanity,http://37.120.179.15:8000/coinbot/2UbwoNrPJTc1aovQXhkS.jpg
+6610,malta,2024,2 euro,89,missing,03.01.2026,True,,,,False,Iċ-Ċittadella (The Citadel),False,iċ-ċittadella (the citadel),http://37.120.179.15:8000/coinbot/McrsKopnIRLbBL81iGlk.jpg
+6611,malta,2024,2 euro,80,missing,03.01.2026,True,,,,False,The Maltese Honey Bee,False,the maltese honey bee,http://37.120.179.15:8000/coinbot/MmCm5S8GStXOKiN0dCaW.jpg
+6612,monaco,2024,2 euro,15,missing,03.01.2026,True,,,,False,500 years since the signature of the Treaty with Charles V,False,500 years since the signature of the treaty with charles v,http://37.120.179.15:8000/coinbot/cwmiL37to04p0C5XoYa7.jpg
+6613,portugal,2024,2 euro,520,missing,03.01.2026,True,,,,False,Portugals participation in the 33rd Olympic Games,False,portugals participation in the 33rd olympic games,http://37.120.179.15:8000/coinbot/siroTw7h9nF8vcg5A71m.jpg
+6614,portugal,2024,2 euro,515,missing,03.01.2026,True,,,,False,The 50th anniversary of the 25th of April 1974,False,the 50th anniversary of the 25th of april 1974,http://37.120.179.15:8000/coinbot/gmELgg8fr8szttthgXUP.jpg
+6615,san marino,2024,2 euro,59,missing,03.01.2026,True,,,,False,530th anniversary of the death of Ghirlandaio,False,530th anniversary of the death of ghirlandaio,http://37.120.179.15:8000/coinbot/QSv8DFEIkG6J6ltehiFx.jpg
+6616,san marino,2024,2 euro,59,missing,03.01.2026,True,,,,False,The 50th anniversary of the Declaration of Citizens' Rights and the Fundamental Principles of San Marino,False,the 50th anniversary of the declaration of citizens' rights and the fundamental principles of san marino,http://37.120.179.15:8000/coinbot/CWNobiBMht15jVZ3tvmb.jpg
+6617,slovakia,2024,2 euro,1000,missing,03.01.2026,True,,,,False,100th anniversary of the Koice Peace Marathon,False,100th anniversary of the koice peace marathon,http://37.120.179.15:8000/coinbot/02mmErF2PnT91foYHSqX.jpg
+6618,slovenia,2024,2 euro,1000,missing,03.01.2026,True,,,,False,250 years of National and University Library (Narodna in univerzitetna knjinica),False,250 years of national and university library (narodna in univerzitetna knjinica),http://37.120.179.15:8000/coinbot/41JI56EWiPXRGVMhX3AQ.jpg
+6619,vatican,2024,2 euro,86,missing,03.01.2026,True,,,,False,The 150Th anniversary of the birth of Guglielmo Marconi,False,the 150th anniversary of the birth of guglielmo marconi,http://37.120.179.15:8000/coinbot/saSFQzjgkQJ1vno4g08l.jpg
+6620,vatican,2024,2 euro,80,missing,03.01.2026,True,,,,False,The 750Th anniversary of the death of St. Thomas Aquinas,False,the 750th anniversary of the death of st. thomas aquinas,http://37.120.179.15:8000/coinbot/ai0n1N1wfFGs6L3PQEWu.jpg
+6621,luxembourg,2024,2 euro,134,missing,01.01.2024,True,,,,False,100. Jahrestag der Einführung der Franc-Münzen mit dem Feierstëppler,False,,http://37.120.179.15:8000/coinbot/Ru21ilT7H5NU1cWPVkMZ.jpg
+6622,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,a,False,175. Jubiläum Paulskirchenverfassung,True,,http://37.120.179.15:8000/coinbot/x1zOdjt2022BlymjeGqY.jpg
+6623,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,d,False,175. Jubiläum Paulskirchenverfassung,True,,http://37.120.179.15:8000/coinbot/x1zOdjt2022BlymjeGqY.jpg
+6624,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,f,False,175. Jubiläum Paulskirchenverfassung,True,,http://37.120.179.15:8000/coinbot/x1zOdjt2022BlymjeGqY.jpg
+6625,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,g,False,175. Jubiläum Paulskirchenverfassung,True,,http://37.120.179.15:8000/coinbot/x1zOdjt2022BlymjeGqY.jpg
+6626,germany,2024,2 euro,6000,collected,01.01.2024,True,07.12.2025,Michael,j,False,175. Jubiläum Paulskirchenverfassung,True,,http://37.120.179.15:8000/coinbot/x1zOdjt2022BlymjeGqY.jpg
+6627,luxembourg,2024,2 euro,134,missing,01.01.2024,True,,,,False,175. Todestag von Großherzog Guillaume II. 31. Münze der Serie Großherzogliche Dynastie,False,,http://37.120.179.15:8000/coinbot/LUu8nIxtJbBrYSf94soo.jpg
+6628,italy,2024,2 euro,3000,missing,01.01.2024,True,,,,False,250. Jahrestag der Gründung der Guardia di Finanza,False,,http://37.120.179.15:8000/coinbot/3lmeBFiEsQg3jU988Y1T.jpg
+6629,belgium,2024,2 euro,130,missing,01.01.2024,True,,,,False,EU-Ratspräsidentschaft,False,,http://37.120.179.15:8000/coinbot/lrw54yCt4fZva7Yd4cP5.jpg
+6630,france,2024,2 euro,510,missing,01.01.2024,True,,,,False,Herkules und der Ringkampf – Notre Dame 4. Münze der Serie Olympische Sommerspiele 2024,False,,http://37.120.179.15:8000/coinbot/2AS3CbmelC74fz3FLjdI.jpg
+6631,germany,2024,2 euro,6000,missing,01.01.2024,True,,,a,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
+6632,germany,2024,2 euro,6000,collected,01.01.2024,True,01.01.2024,,d,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
+6633,germany,2024,2 euro,6000,missing,01.01.2024,True,,,f,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
+6634,germany,2024,2 euro,6000,collected,01.01.2024,True,20.09.2025,,g,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
+6635,germany,2024,2 euro,6000,collected,01.01.2024,True,22.12.2024,,j,False,Mecklenburg-Vorpommern (Königsstuhl) 2. Münze der Bundesländerserie II,True,,https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG/130px-2024_-_2-Euro-Umlaufm%C3%BCnze_mit_Gedenkcharakter_%E2%80%9EMecklenburg-Vorpommern_-_K%C3%B6nigsstuhl%E2%80%9C.JPG
+6636,spain,2024,2 euro,1500,missing,01.01.2024,True,,,,False,Nationales Polizeikorps,False,,http://37.120.179.15:8000/coinbot/aDC6lajX197jpqimqyKi.jpg
+6637,spain,2024,2 euro,1500,missing,01.01.2024,True,,,,False,"UNESCO-Weltkulturerbe – Kathedrale von Sevilla, Königlicher Alcázar und Archivo de Indias 15. Münze der Serie UNESCO-Welterbe",False,,http://37.120.179.15:8000/coinbot/pe6J10YHBsZudJPM1xmF.jpg
+6638,finland,2024,2 euro,400,missing,01.01.2024,True,,,,False,Wahlen und Demokratie,False,,http://37.120.179.15:8000/coinbot/LxhIXsAlrOnK2n4BLOmr.jpg
+6639,germany,2025,2 euro,6000,missing,20.09.2025,True,,,a,False,Saarland 3. Münze der Bundesländerserie II,True,,http://37.120.179.15:8000/coinbot/JKU3W616oJRC5mCGwqIg.jpg
+6640,germany,2025,2 euro,6000,collected,20.09.2025,True,07.12.2025,Nina,d,False,Saarland 3. Münze der Bundesländerserie II,True,,http://37.120.179.15:8000/coinbot/JKU3W616oJRC5mCGwqIg.jpg
+6641,germany,2025,2 euro,6000,missing,20.09.2025,True,,,f,False,Saarland 3. Münze der Bundesländerserie II,True,,http://37.120.179.15:8000/coinbot/JKU3W616oJRC5mCGwqIg.jpg
+6642,germany,2025,2 euro,6000,missing,20.09.2025,True,,,g,False,Saarland 3. Münze der Bundesländerserie II,True,,http://37.120.179.15:8000/coinbot/JKU3W616oJRC5mCGwqIg.jpg
+6643,germany,2025,2 euro,6000,collected,20.09.2025,True,20.09.2025,,j,False,Saarland 3. Münze der Bundesländerserie II,True,,http://37.120.179.15:8000/coinbot/JKU3W616oJRC5mCGwqIg.jpg
+6644,andorra,2025,2 euro,60,missing,03.01.2026,True,,,,False,Bartgeier,False,bearded vulture,http://37.120.179.15:8000/coinbot/dTssrMkm2lJht9DoYCUd.jpg
+6645,andorra,2025,2 euro,64,missing,03.01.2026,True,,,,False,Spiele der Kleinstaaten Europas,False,games of the small states of europe,http://37.120.179.15:8000/coinbot/W8kzp0YGabu0wFLCkNkx.jpg
+6646,belgium,2025,2 euro,154,missing,03.01.2026,True,,,,False,Rennstrecke Spa-Francorchamps,False,circuit de spa francorchamps,http://37.120.179.15:8000/coinbot/OGgxrfghiApdiPbd5HkH.jpg
+6647,belgium,2025,2 euro,154,missing,03.01.2026,True,,,,False,Nationale Lotterie Belgiens,False,national lottery of belgium,http://37.120.179.15:8000/coinbot/dU0o4MNJ2rZNgSromWXX.jpg
+6648,croatia,2025,2 euro,400,missing,03.01.2026,True,,,,False,1100. Jahrestag des Kroatischen Königreichs und der Krönung von König Tomislav,False,1100th anniversary of the croatian kingdom and the coronation of king tomislav,http://37.120.179.15:8000/coinbot/ha4RrUww7xLnXGWEs0wi.jpg
+6649,croatia,2025,2 euro,200,missing,03.01.2026,True,,,,False,Stadt Pula – Arena,False,grad pula  arena,http://37.120.179.15:8000/coinbot/sHSalP1nHczT0DuYa9WA.jpg
+6650,estonia,2025,2 euro,850,missing,03.01.2026,True,,,,False,500. Jahrestag des ersten gedruckten Textes auf Estnisch,False,500th anniversary of the first printed text in estonian,http://37.120.179.15:8000/coinbot/5GEOCPMw7bihmTLHUmJF.jpg
+6651,finland,2025,2 euro,204,missing,03.01.2026,True,,,,False,Finnland–Schweden-Leichtathletikvergleich 100 Jahre,False,finland-sweden athletics match 100 years,http://37.120.179.15:8000/coinbot/YJtEGE1bqLgigF0h6gLU.jpg
+6652,finland,2025,2 euro,204,missing,03.01.2026,True,,,,False,Finnische Staatsbesuche – Diplomatie und Außenpolitik,False,finnish state visits  diplomacy and foreign policy,http://37.120.179.15:8000/coinbot/8K5ackStg2tFUHe9xWxY.jpg
+6653,france,2025,2 euro,315,missing,03.01.2026,True,,,,False,Louvre,False,louvre,http://37.120.179.15:8000/coinbot/vi9U6F3XDCWGxejXsuAT.jpg
+6654,france,2025,2 euro,20031,missing,03.01.2026,True,,,,False,Notre-Dame de Paris,False,notre dame de paris,http://37.120.179.15:8000/coinbot/sQvSYZrSHBspJcfHM4So.jpg
+6655,germany,2025,2 euro,6000,missing,03.01.2026,True,,,a,False,35 Jahre Deutsche Einheit,True,35 years of german unity,http://37.120.179.15:8000/coinbot/vJKr2cLVUbxiboYTbSzs.jpg
+6656,germany,2025,2 euro,6000,missing,03.01.2026,True,,,d,False,35 Jahre Deutsche Einheit,True,35 years of german unity,http://37.120.179.15:8000/coinbot/vJKr2cLVUbxiboYTbSzs.jpg
+6657,germany,2025,2 euro,6000,missing,03.01.2026,True,,,f,False,35 Jahre Deutsche Einheit,True,35 years of german unity,http://37.120.179.15:8000/coinbot/vJKr2cLVUbxiboYTbSzs.jpg
+6658,germany,2025,2 euro,6000,missing,03.01.2026,True,,,g,False,35 Jahre Deutsche Einheit,True,35 years of german unity,http://37.120.179.15:8000/coinbot/vJKr2cLVUbxiboYTbSzs.jpg
+6659,germany,2025,2 euro,6000,missing,03.01.2026,True,,,j,False,35 Jahre Deutsche Einheit,True,35 years of german unity,http://37.120.179.15:8000/coinbot/vJKr2cLVUbxiboYTbSzs.jpg
+6660,greece,2025,2 euro,750,missing,03.01.2026,True,,,,False,200 Jahre seit dem Tod von Laskarina Bouboulina,False,200 years from the death of laskarina bouboulina,http://37.120.179.15:8000/coinbot/AfkLrBtrnNG4vx1NQJ3l.jpg
+6661,greece,2025,2 euro,750,missing,03.01.2026,True,,,,False,Hundertster Geburtstag von Mikis Theodorakis,False,centenary of the birth of mikis theodorakis,http://37.120.179.15:8000/coinbot/9gtqVggdu0oGRKu5xxnU.jpg
+6662,italy,2025,2 euro,3000,missing,03.01.2026,True,,,,False,Amerigo-Vespucci-Welttournee 2023–2025,False,amerigo vespucci tour mondiale 2023-2025,http://37.120.179.15:8000/coinbot/oQynH4FPBJDZdi6wp6yj.jpg
+6663,italy,2025,2 euro,3000,missing,03.01.2026,True,,,,False,Jubiläum 2025,False,jubilee 2025,http://37.120.179.15:8000/coinbot/njfNyMsy1ow8eoJr1RAl.jpg
+6664,latvia,2025,2 euro,413,missing,03.01.2026,True,,,,False,Sēlija,False,sēlija,http://37.120.179.15:8000/coinbot/qMw9bcMXitwc1M7doAnV.jpg
+6665,lithuania,2025,2 euro,500,missing,03.01.2026,True,,,,False,Verteidigung,False,defence,http://37.120.179.15:8000/coinbot/uj2F4liHcCoJm1S1IVxx.jpg
+6666,lithuania,2025,2 euro,500,missing,03.01.2026,True,,,,False,Kleinlitauen,False,maajai lietuvai,
+6667,luxembourg,2025,2 euro,136,missing,03.01.2026,True,,,,False,25. Jahrestag der Thronbesteigung von Großherzog Henri,False,the 25th anniversary of the accession to the throne of grand duke henri,http://37.120.179.15:8000/coinbot/u3obPuO2a5bMYGx3SzCQ.jpg
+6668,luxembourg,2025,2 euro,136,missing,03.01.2026,True,,,,False,75. Jahrestag der Robert-Schuman-Erklärung vom 9. Mai 1950,False,the 75th anniversary of the robert schuman declaration of 9 may 1950,http://37.120.179.15:8000/coinbot/ow8u5mEH1ImRNEyF1Vwj.jpg
+6669,malta,2025,2 euro,147,missing,03.01.2026,True,,,,False,Stadt Mdina,False,city of mdina,http://37.120.179.15:8000/coinbot/2PmKeYHrr9bzGwesNBCL.jpg
+6670,malta,2025,2 euro,140,missing,03.01.2026,True,,,,False,Maltesisches Rind (il-ġendus Malti),False,maltese ox (il-gendus malti),http://37.120.179.15:8000/coinbot/vfbqjP9hmVECJCaPNty6.jpg
+6671,monaco,2025,2 euro,15,missing,03.01.2026,True,,,,False,Grafschaft Carladès,False,comté de carladès,http://37.120.179.15:8000/coinbot/53CRloeGJfwYvLy6Rjzb.jpg
+6672,monaco,2025,2 euro,15,missing,03.01.2026,True,,,,False,Markgrafschaft Les Baux,False,marquisat des baux,http://37.120.179.15:8000/coinbot/KolQiGodK8XZDlRgWGf7.jpg
+6673,portugal,2025,2 euro,515,missing,03.01.2026,True,,,,False,Nachhaltige Entwicklung,False,sustainable development,http://37.120.179.15:8000/coinbot/uVLCMiyPSV4ZLlVaKnHi.jpg
+6674,portugal,2025,2 euro,515,missing,03.01.2026,True,,,,False,Weltpfadfindertum,False,world scouting,http://37.120.179.15:8000/coinbot/2qqKXbQ3Ju8SXi3yuski.jpg
+6675,san marino,2025,2 euro,59,missing,03.01.2026,True,,,,False,Heiliges Jahr 2025 – Pilger der Hoffnung,False,giubileo anno santo 2025 - pellegrini di speranza,http://37.120.179.15:8000/coinbot/Jjm2DdglPyGczm2Hfjwv.jpg
+6676,san marino,2025,2 euro,59,missing,03.01.2026,True,,,,False,550. Jahrestag der Geburt von Michelangelo,False,the 550th anniversary of the birth of michelangelo,http://37.120.179.15:8000/coinbot/Axr9Jlo84EsVxZtLTLKz.jpg
+6677,slovakia,2025,2 euro,1000,missing,03.01.2026,True,,,,False,100. Jahrestag des ersten internationalen Sportturniers auf dem Gebiet der Slowakischen Republik – Eishockey-Europameisterschaft,False,100th anniversary of the first international sports tournament in the territory of the slovak republic  the ice hockey european championship,http://37.120.179.15:8000/coinbot/HFdSQnNEI7NjlUkdBNbT.jpg
+6678,slovenia,2025,2 euro,1000,missing,03.01.2026,True,,,,False,100. Geburtstag von Miki Muster,False,100th birthday of miki muster,http://37.120.179.15:8000/coinbot/88v2EutYs9H3tLmIGuN4.jpg
+6679,spain,2025,2 euro,2000,missing,03.01.2026,True,,,,False,Salamanca,False,salamanca,http://37.120.179.15:8000/coinbot/unG6KPCTXdD5qSctV7qZ.jpg
+6680,vatican,2025,2 euro,91,missing,03.01.2026,True,,,,False,Jubiläum 2025,False,jubilee 2025,
+6681,vatican,2025,2 euro,76,missing,03.01.2026,True,,,,False,Sedisvakanz 2025,False,sede vacante 2025,
+6682,vatican,2025,2 euro,80,missing,03.01.2026,True,,,,False,550. Jahrestag der Geburt von Michelangelo,False,the 550th anniversary of the birth of michelangelo,
