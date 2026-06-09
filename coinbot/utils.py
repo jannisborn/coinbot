@@ -216,15 +216,21 @@ def fuzzy_search_country(text: str, threshold: int = 95) -> Tuple[str, str]:
     return "", ""
 
 
-def get_file_content(url: str):
+def get_file_content(url: str, timeout: tuple[float, float] = (3, 10)):
     """Downloads file content directly into memory."""
-    if ".svg" in url:
+    if ".svg" in url.lower():
         return None
 
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
     }
-    response = requests.get(url, stream=True, headers=headers)
+    try:
+        response = requests.get(
+            url, stream=True, headers=headers, timeout=timeout
+        )
+    except requests.RequestException as exc:
+        logger.warning(f"Failed to retrieve file {url}: {exc}")
+        return None
 
     if response.status_code == 200:
         logger.debug(f"Retrieved: {url}")
