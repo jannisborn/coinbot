@@ -3,11 +3,11 @@ import os
 import sys
 import threading
 from collections import defaultdict
+from datetime import timezone
 from random import random
 from typing import List, Tuple
 
 import pandas as pd
-import pytz
 import requests
 from loguru import logger
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Message, Update
@@ -86,7 +86,7 @@ class CoinBot:
         self.application = (
             ApplicationBuilder()
             .token(self.telegram_token)
-            .defaults(Defaults(tzinfo=pytz.UTC))
+            .defaults(Defaults(tzinfo=timezone.utc))
             .build()
         )
         self.dp = self.application
@@ -506,6 +506,7 @@ class CoinBot:
         """
         message = self._message(update)
         msg_counter = 0
+        image_cache = {}
         dict_mapper = {"unavailable": "⚫", "collected": "✅", "missing": "❌"}
         for j, (i, row) in enumerate(coin_df.iterrows()):
             status = row["Status"]
@@ -515,7 +516,10 @@ class CoinBot:
                 if pd.isna(row.Link):
                     image = None
                 elif row.Link:
-                    image = get_file_content(row.Link)
+                    image = image_cache.get(row.Link)
+                    if row.Link not in image_cache:
+                        image = get_file_content(row.Link)
+                        image_cache[row.Link] = image
                 else:
                     image = None
                 match = get_tuple(
@@ -555,9 +559,14 @@ class CoinBot:
                     response = response.replace("(Mints:", "📷 No picture 📷(Mints:")
                     await message.reply_text(response, parse_mode="Markdown")
                 else:
-                    await message.reply_photo(
-                        photo=image, caption=response, parse_mode="Markdown"
-                    )
+                    try:
+                        await message.reply_photo(
+                            photo=image, caption=response, parse_mode="Markdown"
+                        )
+                    except Exception as exc:
+                        logger.warning(f"Failed to send special coin image: {exc}")
+                        response = response.replace("(Mints:", "📷 No picture 📷(Mints:")
+                        await message.reply_text(response, parse_mode="Markdown")
             else:
                 await message.reply_text(response, parse_mode="Markdown")
             msg_counter += 1
