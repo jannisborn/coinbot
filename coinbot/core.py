@@ -192,8 +192,8 @@ class CoinBot:
         overwrite_language = text.lower().startswith(
             "language:"
         ) or text.lower().startswith("sprache:")
-        overwrite_username = text.startswith("username:") or text.lower().startswith(
-            "name:"
+        overwrite_username = text.lower().startswith(
+            ("username:", "name:", "user:")
         )
 
         if text.lower().startswith("status"):
