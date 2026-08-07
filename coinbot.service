@@ -9,6 +9,7 @@ WorkingDirectory=/root/coinbot
 ExecStart=/root/.local/bin/poetry run python /root/coinbot/app.py
 Restart=always
 RestartSec=10
+MemoryLimit=8G
 Environment="LOGLEVEL=DEBUG"
 
 [Install]
