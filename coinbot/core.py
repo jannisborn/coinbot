@@ -59,7 +59,7 @@ class CoinBot:
         slack_token: str,
         latest_csv_path: str,
         vectorstorage_path: str,
-        base_llm: str = "meta-llama/Meta-Llama-3-8B-Instruct",
+        base_llm: str = "openai/gpt-oss-120b",
     ):
         """
         Args:
@@ -364,7 +364,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="openai/gpt-oss-20b",
+                model="Qwen/Qwen3.5-9B", # cheaper than the base model
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "
