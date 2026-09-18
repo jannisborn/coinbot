@@ -59,22 +59,25 @@ class CoinBot:
         slack_token: str,
         latest_csv_path: str,
         vectorstorage_path: str,
-        base_llm: str = "meta-llama/Meta-Llama-3-8B-Instruct",
+        base_llm: str,
+        embedding_model: str,
     ):
         """
         Args:
             public_link: Public link (Dropbox) to the database (xlsm)
             telegram_token: Token to post to Telegram
-            llm_token: Token to submit queries to Together
+            llm_token: Token to submit queries to Fireworks
             slack_token: Token to post on Slack. If None, no slack is used.
             latest_csv_path: Path to the CSV used in the last execution of the bot
             vectorstorage_path: Post to a npz file with embeddings for special coins
-            base_llm: Which LLM should be used. Defaults to "meta-llama/Meta-Llama-3-8B-Instruct".
+            base_llm: Which Fireworks LLM should be used.
+            embedding_model: Which Fireworks embedding model should be used.
         """
         # Load tokens and initialize variables
         self.telegram_token = telegram_token
         self.llm_token = llm_token
         self.base_llm = base_llm
+        self.embedding_model = embedding_model
         self.latest_csv_path = latest_csv_path
 
         # Initialize language preferences dictionary
@@ -107,7 +110,9 @@ class CoinBot:
         self.fetch_file(link=public_link)
         self.db = DataBase(self.filepath, latest_csv_path=latest_csv_path)
         self.vectorstorage_path = vectorstorage_path
-        self.vectorstorage = VectorStorage.load(vectorstorage_path, token=llm_token)
+        self.vectorstorage = VectorStorage.load(
+            vectorstorage_path, token=llm_token, embedding_model=embedding_model
+        )
         self.known_users = [x.lower() for x in self.db.df.Collector.unique() if isinstance(x, str)]
 
         self.set_llms()
@@ -364,7 +369,7 @@ class CoinBot:
             )
         else:
             self.translate_llm = LLM(
-                model="openai/gpt-oss-20b",
+                model=self.base_llm,
                 token=self.llm_token,
                 task_prompt=(
                     f"You are a translation tool. Translate the following into {language}. Translate exactly and word by word. NEVER make any meta comments! IMPORTANT: Do NOT translate text enclosed by `` such as `Special Austria` or `Series missing`. "

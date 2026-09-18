@@ -1,49 +1,77 @@
+"""Rebuild the special coin index with Fireworks embeddings."""
+
+import argparse
 import json
 import os
+import tempfile
+from pathlib import Path
 
+import numpy as np
 import requests
-from loguru import logger
 
 from coinbot.db import DataBase
 from coinbot.vectorstorage import VectorStorage
 
 
+ROOT = Path(__file__).resolve().parents[1]
+INDEX = ROOT / "data" / "special_coins.npz"
+
+
+def spreadsheet_names(file_link: str) -> list[str]:
+    response = requests.get(file_link, timeout=60)
+    response.raise_for_status()
+    with tempfile.NamedTemporaryFile(suffix=".xlsm") as spreadsheet:
+        spreadsheet.write(response.content)
+        spreadsheet.flush()
+        db = DataBase(
+            spreadsheet.name,
+            latest_csv_path=str(ROOT / "data" / "latest_collection.csv"),
+        )
+        return db.df[db.df.Special].Name.tolist()
+
+
 def main():
-    """Start the bot."""
-    with open(
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "secrets.json"), "r"
-    ) as f:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--from-spreadsheet", action="store_true",
+        help="Fetch current special coin names instead of reusing names in the existing index",
+    )
+    parser.add_argument(
+        "--embedding-model", default="fireworks/qwen3-embedding-8b",
+        help="Fireworks embedding model used to build the index",
+    )
+    args = parser.parse_args()
+
+    with open(ROOT / "secrets.json") as f:
         secrets = json.load(f)
-    token = secrets["together"]
-    file_link = secrets["file_link"]
-    response = requests.get(file_link)
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Write the content of the response to a file
-        with open("tmp.xlsm", "wb") as f:
-            f.write(response.content)
-        logger.debug(f"File downloaded successfully from {file_link}")
+    token = os.getenv("FIREWORKS_API_KEY") or secrets.get("fireworks")
+    if not token:
+        raise ValueError("Set FIREWORKS_API_KEY or add `fireworks` to secrets.json")
+
+    if args.from_spreadsheet or not INDEX.exists():
+        names = spreadsheet_names(secrets["file_link"])
     else:
-        logger.warning(f"Failed to download file from {file_link}")
+        with np.load(INDEX, allow_pickle=True) as data:
+            names = data["text"].tolist()
+    if not names:
+        raise ValueError("No special coin names found")
 
-    db = DataBase(
-        "tmp.xlsm",
-        latest_csv_path=os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "data", "latest_collection.csv"
-        ),
-    )
+    storage = VectorStorage(token=token, embedding_model=args.embedding_model)
+    storage.fit(names)
 
-    vectorstorage = VectorStorage(
-        token=token, embedding_model="intfloat/multilingual-e5-large-instruct"
-    )
-    special_texts = db.df[(db.df.Special)].Name.values
-    # descs = db.df[(db.df.Special)].Description.values
-    # special_texts = [f"{n} - Details: {d}" for n, d in zip(names, descs)]
-    print(special_texts[0])
-    print(special_texts[-1])
-    print(len(special_texts))
-    vectorstorage.fit(special_texts)
-    vectorstorage.save("special_coins")
+    # Keep the old index intact until all embeddings have succeeded.
+    with tempfile.NamedTemporaryFile(dir=INDEX.parent, suffix=".npz", delete=False) as temp:
+        temp_path = Path(temp.name)
+    try:
+        storage.save(str(temp_path))
+        with np.load(temp_path) as data:
+            if len(data["text"]) != len(names) or data["embeddings"].shape[0] != len(names):
+                raise ValueError("Incomplete special coin index")
+        os.replace(temp_path, INDEX)
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+    print(f"Saved {len(names)} special coin embeddings ({storage.embeddings.shape[1]} dimensions) to {INDEX}")
 
 
 if __name__ == "__main__":
