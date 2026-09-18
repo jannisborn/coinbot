@@ -85,6 +85,8 @@ class LLM:
             self.message_history = self.message_history[:-1]
 
         for chunk in response:
+            if not chunk.choices:
+                continue
             delta = chunk.choices[0].delta.content
             if delta:
                 response_content += delta
