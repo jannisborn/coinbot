@@ -636,7 +636,7 @@ class CoinBot:
 
     async def search_special_coin(self, update: Update, message: str):
         # User asked for a special/commemorative coin
-        text = message.split("Special")[1].strip()
+        text = message[len("special") :].strip()
         user_id = update.message.from_user.id
 
         # Extract basic features
