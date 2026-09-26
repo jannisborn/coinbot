@@ -16,9 +16,10 @@ class VectorStorage:
 
     def register_data(self, text: List[str]):
         self.raw_data = text
-        self.embeddings = np.zeros((len(text), 1024))
-        for i, t in tqdm(enumerate(text), desc="Embedding data", total=len(text), disable=not sys.stdout.isatty()):
-            self.embeddings[i] = self.model.embed(t)
+        self.embeddings = np.array([
+            self.model.embed(t)
+            for t in tqdm(text, desc="Embedding data", disable=not sys.stdout.isatty())
+        ])
 
     def fit(self, *args, **kwargs):
         self.register_data(*args, **kwargs)
@@ -44,6 +45,8 @@ class VectorStorage:
             return df
         logger.debug(f"Querying vector storage with {len(df)} coins and: {text}")
         query_embedding = self.model.embed(text)
+        if self.embeddings.shape[1] != len(query_embedding):
+            raise ValueError("Embedding dimensions differ; rebuild the special coin index")
         distances = np.linalg.norm(self.embeddings - query_embedding, axis=1)
         possible_matches = list(df["Name"].values)
         df_distances = [
@@ -71,21 +74,26 @@ class VectorStorage:
             embeddings=self.embeddings,
             text=self.raw_data,
             model_name=self.model_name,
-            token=self.model.token,
         )
 
     @staticmethod
-    def load(path: str, token: str):
+    def load(path: str, token: str, embedding_model: str):
         # Load embedding, embedding model and raw data with numpy
-        data = np.load(path, allow_pickle=True)
-        vectorstorage = VectorStorage(
-            token=token, embedding_model=str(data["model_name"])
-        )
-        vectorstorage.embeddings = data["embeddings"]
-        vectorstorage.raw_data = list(data["text"])
+        with np.load(path, allow_pickle=True) as data:
+            model_name = str(data["model_name"])
+            if model_name != embedding_model:
+                raise ValueError(
+                    f"Special coin index uses {model_name}; rebuild it with "
+                    "`uv run python scripts/create_storage.py` before starting the bot"
+                )
+            vectorstorage = VectorStorage(token=token, embedding_model=embedding_model)
+            vectorstorage.embeddings = data["embeddings"]
+            vectorstorage.raw_data = list(data["text"])
         if len(vectorstorage.embeddings) != len(vectorstorage.raw_data):
             raise ValueError("Unequal number of embeddings and raw data")
+        if vectorstorage.embeddings.ndim != 2 or not np.isfinite(vectorstorage.embeddings).all():
+            raise ValueError("Invalid embeddings in special coin index")
         logger.debug(
-            f"Restored vectorstorage {str(data['model_name'])} shape {vectorstorage.embeddings.shape}"
+            f"Restored vectorstorage {model_name} shape {vectorstorage.embeddings.shape}"
         )
         return vectorstorage

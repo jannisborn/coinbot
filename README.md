@@ -155,15 +155,16 @@ You need a local `secrets.json` file:
 ```json
 {
   "telegram-token": "...",
-  "together": "...",
+  "fireworks": "...",
   "file_link": "https://...",
   "slack": "..."
 }
 ```
 
-`slack` is optional. `file_link` points to the source spreadsheet. The bot also
-expects the local data files under `data/`, including `latest_collection.csv` and
-the vector index used for special coin search.
+`slack` is optional. You can set `FIREWORKS_API_KEY` instead of putting the
+"fireworks" key in `secrets.json`. `file_link` points to the source spreadsheet.
+The bot also expects the local data files under `data/`, including
+`latest_collection.csv` and the vector index used for special coin search.
 
 ## Running The Bot 🚀
 
