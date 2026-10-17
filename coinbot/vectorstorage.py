@@ -21,6 +21,28 @@ class VectorStorage:
             for t in tqdm(text, desc="Embedding data", disable=not sys.stdout.isatty())
         ])
 
+    def add_missing(self, text: List[str]) -> int:
+        """Add embeddings for names missing from the vector storage.
+
+        Args:
+            text: Coin names to check and add.
+
+        Returns:
+            Number of unique names added.
+        """
+        missing = list(dict.fromkeys(name for name in text if name not in self.raw_data))
+        if not missing:
+            return 0
+        embeddings = np.array([
+            self.model.embed(name)
+            for name in tqdm(missing, desc="Embedding new special coins", disable=not sys.stdout.isatty())
+        ])
+        if embeddings.ndim != 2 or embeddings.shape[1] != self.embeddings.shape[1]:
+            raise ValueError("Embedding dimensions differ; rebuild the special coin index")
+        self.embeddings = np.concatenate((self.embeddings, embeddings))
+        self.raw_data.extend(missing)
+        return len(missing)
+
     def fit(self, *args, **kwargs):
         self.register_data(*args, **kwargs)
 

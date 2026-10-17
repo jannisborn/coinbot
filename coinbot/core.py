@@ -113,6 +113,7 @@ class CoinBot:
         self.vectorstorage = VectorStorage.load(
             vectorstorage_path, token=llm_token, embedding_model=embedding_model
         )
+        self.update_special_coin_index()
         self.known_users = [x.lower() for x in self.db.df.Collector.unique() if isinstance(x, str)]
 
         self.set_llms()
@@ -182,9 +183,22 @@ class CoinBot:
             updated = self.fetch_file(link=self.public_link)
         except Exception as e:
             logger.error(f"Failed to reload data: {e}")
+            updated = False
         if updated:
             self.db = DataBase(self.filepath, latest_csv_path=self.latest_csv_path)
+        self.update_special_coin_index()
         threading.Timer(interval, self.reload_data, [interval]).start()
+
+    def update_special_coin_index(self):
+        """Embed new special coin names from the current spreadsheet."""
+        names = self.db.df.loc[self.db.df.Special, "Name"].dropna().tolist()
+        try:
+            added = self.vectorstorage.add_missing(names)
+            if added:
+                self.vectorstorage.save(self.vectorstorage_path)
+                logger.info(f"Added {added} special coin names to the vector index")
+        except Exception as e:
+            logger.error(f"Failed to update special coin vector index: {e}")
 
     async def setup(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
         """
