@@ -31,7 +31,7 @@ def main():
                     os.path.dirname(__file__), "data", "latest_collection.csv"
                 ),
                 vectorstorage_path=vectorstorage_path,
-                base_llm="accounts/fireworks/models/gpt-oss-120b",
+                base_llm="accounts/fireworks/models/deepseek-v4p1-flash-1017",
                 embedding_model="fireworks/qwen3-embedding-8b",
             )
             bot.run()

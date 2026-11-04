@@ -47,7 +47,7 @@ class LLM:
         self,
         token: str,
         task_prompt: str,
-        model: str = "accounts/fireworks/models/gpt-oss-120b",
+        model: str = "accounts/fireworks/models/deepseek-v4p1-flash-1017",
         temperature: float = 0.7,
         remind_task: int = 10,
     ):

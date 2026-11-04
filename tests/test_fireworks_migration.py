@@ -27,7 +27,7 @@ class FireworksMigrationTests(unittest.TestCase):
         llm = LLM(
             token="test-key",
             task_prompt="Extract coin details",
-            model="accounts/fireworks/models/gpt-oss-120b",
+            model="accounts/fireworks/models/deepseek-v4p1-flash-1017",
         )
 
         self.assertEqual(llm("Spain 2010 1 Euro"), "Spain 2010")
@@ -35,7 +35,7 @@ class FireworksMigrationTests(unittest.TestCase):
         self.assertEqual(client_class.call_args.kwargs["base_url"], "https://api.fireworks.ai/inference/v1")
         self.assertEqual(
             client_class.return_value.chat.completions.create.call_args.kwargs["model"],
-            "accounts/fireworks/models/gpt-oss-120b",
+            "accounts/fireworks/models/deepseek-v4p1-flash-1017",
         )
 
     @patch("coinbot.llm.OpenAI")
